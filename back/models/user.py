@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from database import Base
 
 class User(Base):
@@ -8,3 +9,5 @@ class User(Base):
     nombre = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
+
+    datasets = relationship("Datasets", back_populates="user")
