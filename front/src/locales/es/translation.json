@@ -1,0 +1,13 @@
+{
+  "welcome": "Bienvenido a DSGD GUI",
+  "select_language": "Seleccionar idioma",
+  "login": "Iniciar sesión",
+  "register": "Registrarse",
+  "signup": "Crear cuenta",
+  "logout": "Cerrar sesión",
+  "backToLogin": "Volver a iniciar sesión",
+  "name": "Nombre",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "confirm_password": "Confirmar contraseña"
+}
