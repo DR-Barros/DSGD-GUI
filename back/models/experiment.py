@@ -13,3 +13,4 @@ class Experiment(Base):
 
     user = relationship("User", back_populates="experiments")
     datasets = relationship("Datasets", back_populates="experiment")
+    iterations = relationship("Iteration", back_populates="experiment")

@@ -13,3 +13,4 @@ class Datasets(Base):
 
     user = relationship("User", back_populates="datasets")
     files = relationship("DatasetFile", back_populates="dataset")
+    experiment = relationship("Experiment", back_populates="datasets")
