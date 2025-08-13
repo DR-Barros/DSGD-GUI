@@ -10,6 +10,10 @@
   "email": "Correo electrónico",
   "password": "Contraseña",
   "confirm_password": "Confirmar contraseña",
+  "back": "Volver",
+  "columns": "Columnas",
+  "features": "Características",
+  "classes": "Clases",
   "menu": {
     "datasets": "Conjuntos de datos",
     "experiments": "Experimentos"
@@ -18,6 +22,11 @@
     "title": "Experimentos"
   },
   "datasets": {
-    "title": "Conjuntos de datos"
+    "title": "Conjuntos de datos",
+    "upload": {
+      "title": "Subir conjuntos de datos",
+      "submit": "Subir",
+      "select_class": "Seleccionar la columna de clase"
+    }
   }
 }

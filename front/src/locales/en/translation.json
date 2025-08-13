@@ -10,6 +10,10 @@
   "email": "Email",
   "password": "Password",
   "confirm_password": "Confirm Password",
+  "back": "Back",
+  "columns": "Columns",
+  "features": "Features",
+  "classes": "Classes",
   "menu": {
     "datasets": "Datasets",
     "experiments": "Experiments"
@@ -18,6 +22,11 @@
     "title": "Experiments"
   },
   "datasets": {
-    "title": "Datasets"
+    "title": "Datasets",
+    "upload": {
+      "title": "Upload Datasets",
+      "submit": "Upload",
+      "select_class": "Select Class Column"
+    }
   }
 }
