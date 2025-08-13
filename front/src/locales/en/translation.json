@@ -9,5 +9,15 @@
   "name": "Name",
   "email": "Email",
   "password": "Password",
-  "confirm_password": "Confirm Password"
+  "confirm_password": "Confirm Password",
+  "menu": {
+    "datasets": "Datasets",
+    "experiments": "Experiments"
+  },
+  "experiments": {
+    "title": "Experiments"
+  },
+  "datasets": {
+    "title": "Datasets"
+  }
 }

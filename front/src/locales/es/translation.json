@@ -9,5 +9,15 @@
   "name": "Nombre",
   "email": "Correo electrónico",
   "password": "Contraseña",
-  "confirm_password": "Confirmar contraseña"
+  "confirm_password": "Confirmar contraseña",
+  "menu": {
+    "datasets": "Conjuntos de datos",
+    "experiments": "Experimentos"
+  },
+  "experiments": {
+    "title": "Experimentos"
+  },
+  "datasets": {
+    "title": "Conjuntos de datos"
+  }
 }

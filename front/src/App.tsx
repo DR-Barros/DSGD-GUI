@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import Experiments from "./pages/experiment/Experiments";
+import Datasets from "./pages/dataset/Datasets";
 import "./i18n";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -9,7 +11,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Experiments />} />
+          <Route path="/datasets" element={<Datasets />} />
+          <Route path="/experiments" element={<Experiments />} />
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
