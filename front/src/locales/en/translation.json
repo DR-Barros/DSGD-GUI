@@ -38,7 +38,9 @@
         "file_type_mismatch": "Files must be of the same type.",
         "column_size_mismatch": "Files must have the same number of columns.",
         "file_type": "Upload files in CSV, XLSX, or Parquet format.",
-        "no_files": "Please select at least one file."
+        "no_files": "Please select at least one file.",
+        "upload_failed": "Failed to upload files.",
+        "name_required": "Please enter a dataset name."
       }
     }
   }

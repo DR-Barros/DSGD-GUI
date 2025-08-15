@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Cookie
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserLogin, UserRead
 from auth.hashing import hash_password, verify_password
-from auth.jwt_handler import create_access_token, create_refresh_token, get_current_user_from_refresh_token
+from auth.jwt_handler import create_access_token, create_refresh_token, get_current_user_from_refresh_token, get_current_user
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 api_router = APIRouter()
@@ -55,3 +55,12 @@ def refresh_token(request: Request, db: Session = Depends(get_db)):
     response.set_cookie(key="access_token", value=new_access_token, httponly=True)
     response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True)
     return response
+
+
+def get_current_user_from_cookie(
+    access_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db)
+) -> User:
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Token no encontrado")
+    return get_current_user(access_token, db)

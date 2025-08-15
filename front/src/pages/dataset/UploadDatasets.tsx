@@ -7,6 +7,7 @@ import {
   TextField
 } from "@mui/material";
 import * as XLSX from "xlsx";
+import { postProtected } from "../../api/client";
 
 
 type HistogramBin = {
@@ -115,8 +116,31 @@ export default function UploadDatasets() {
     };
 
     const handleSave = () => {
+        //validamos
+        if (!datasetName) {
+            setErrorMsg(t("datasets.upload.error.name_required"));
+            return;
+        }
+        //validamos archivos
+        if (selectedFiles.length === 0) {
+            setErrorMsg(t("datasets.upload.error.no_files"));
+            return;
+        }
         // Implementar la lógica para guardar los datos analizados
         console.log("Guardando datos analizados:", parsedData);
+        const formsData = new FormData();
+        //agregamos los archivos
+        selectedFiles.forEach((file) => {
+            formsData.append("files", file);
+        });
+        //agregamos nombre
+        formsData.append("name", datasetName);
+        //enviamos array de columnas
+        formsData.append("columns", JSON.stringify(summaryStats[0].map((s) => s.column)));
+        //enviamos numero de clases
+        formsData.append("n_classes", summaryStats[0].filter(s => s.column === targetColumn).map(s => s.uniqueCount)[0]);
+        let res = postProtected("/datasets/upload", formsData)
+        console.log("Response from server:", res);
     };
 
     useEffect(() => {
@@ -220,7 +244,7 @@ export default function UploadDatasets() {
                     <input
                         type="file"
                         onChange={handleFileChange}
-                        accept=".csv,.xlsx,.parquet"
+                        accept=".csv, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                     multiple
                 />
                 {errorMsg && <p className="error-message">{errorMsg}</p>}

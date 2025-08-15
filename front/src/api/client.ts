@@ -38,20 +38,19 @@ export async function fetchProtected(endpoint: string) {
 }
 
 export async function postProtected(endpoint: string, body: any) {
-  const token = localStorage.getItem("jwt");
   const isFormData = body instanceof FormData;
   const res = await fetch(`${API_URL}${endpoint}`, {
     method: "POST",
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      Authorization: `Bearer ${token}`,
     },
     body: isFormData ? body : JSON.stringify(body),
+    credentials: "include", 
   });
   if (res.status === 401) {
     const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
       method: "GET",
-      credentials: "include", // Necesario para enviar la cookie HttpOnly
+      credentials: "include", 
     });
     if (refreshRes.status === 200) {
       const data = await refreshRes.json();
@@ -61,9 +60,9 @@ export async function postProtected(endpoint: string, body: any) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${data.access_token}`,
         },
         body: JSON.stringify(body),
+        credentials: "include",
       });
       if (retryRes.status === 200) {
         return retryRes.json();

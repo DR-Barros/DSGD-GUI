@@ -10,6 +10,7 @@ class Datasets(Base):
     created_at = Column(DateTime, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     columns = Column(JSON, nullable=False)
+    n_classes = Column(Integer, nullable=False)
 
     user = relationship("User", back_populates="datasets")
     files = relationship("DatasetFile", back_populates="dataset")
