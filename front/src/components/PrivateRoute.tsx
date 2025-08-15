@@ -11,7 +11,12 @@ const PrivateRoute = () => {
   return isAuthenticated ? (
     <>
       <ResponsiveAppBar />
-      <Outlet />
+      <main style={{
+        overflowY: "auto",
+        maxHeight: "calc(100vh - 64px)", // Adjust based on your AppBar height
+      }}>
+        <Outlet />
+      </main>
     </>
   ) : (
     <Navigate to="/login" replace />

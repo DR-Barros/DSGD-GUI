@@ -81,11 +81,11 @@ export default function Login() {
                 >
                     <MenuItem value="en" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         English
-                        <img src="/flags/en.png" alt="English" height={20} style={{ marginLeft: 8 }} />
+                        <img src={`${import.meta.env.BASE_URL}flags/en.png`} alt="English" height={20} style={{ marginLeft: 8 }} />
                     </MenuItem>
                     <MenuItem value="es" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         Español
-                        <img src="/flags/es.png" alt="Español" height={20} style={{ marginLeft: 8 }} />
+                        <img src={`${import.meta.env.BASE_URL}flags/es.png`} alt="Español" height={20} style={{ marginLeft: 8 }} />
                     </MenuItem>
                 </Select>
                 </div>

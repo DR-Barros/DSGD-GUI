@@ -14,6 +14,7 @@
   "columns": "Columns",
   "features": "Features",
   "classes": "Classes",
+  "save": "Save",
   "menu": {
     "datasets": "Datasets",
     "experiments": "Experiments"
@@ -23,10 +24,22 @@
   },
   "datasets": {
     "title": "Datasets",
+    "nulls": "Nulls",
+    "unique": "Unique",
+    "min": "Min",
+    "max": "Max",
+    "mean": "Mean",
     "upload": {
       "title": "Upload Datasets",
       "submit": "Upload",
-      "select_class": "Select Class Column"
+      "select_class": "Select Class Column",
+      "dataset_name": "Dataset Name",
+      "error": {
+        "file_type_mismatch": "Files must be of the same type.",
+        "column_size_mismatch": "Files must have the same number of columns.",
+        "file_type": "Upload files in CSV, XLSX, or Parquet format.",
+        "no_files": "Please select at least one file."
+      }
     }
   }
 }

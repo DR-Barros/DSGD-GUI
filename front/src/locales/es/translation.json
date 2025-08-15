@@ -14,6 +14,7 @@
   "columns": "Columnas",
   "features": "Características",
   "classes": "Clases",
+  "save": "Guardar",
   "menu": {
     "datasets": "Conjuntos de datos",
     "experiments": "Experimentos"
@@ -23,10 +24,22 @@
   },
   "datasets": {
     "title": "Conjuntos de datos",
+    "nulls": "Nulos",
+    "unique": "Únicos",
+    "min": "Mín",
+    "max": "Máx",
+    "mean": "Promedio",
     "upload": {
       "title": "Subir conjuntos de datos",
       "submit": "Subir",
-      "select_class": "Seleccionar la columna de clase"
+      "select_class": "Seleccionar la columna de clase",
+      "dataset_name": "Nombre del conjunto de datos",
+      "error": {
+        "file_type_mismatch": "Los archivos deben ser del mismo tipo.",
+        "column_size_mismatch": "Los archivos deben tener el mismo número de columnas.",
+        "file_type": "Sube archivos en formato CSV, XLSX o Parquet.",
+        "no_files": "Por favor, selecciona al menos un archivo."
+      }
     }
   }
 }

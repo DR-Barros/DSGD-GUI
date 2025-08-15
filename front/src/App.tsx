@@ -8,8 +8,10 @@ import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
 
+  const basename = import.meta.env.MODE === 'production' ? '/dsgd/' : '/'
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Experiments />} />
