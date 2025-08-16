@@ -6,7 +6,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -39,157 +39,166 @@ export default function DatasetsView(
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [tempPage, setTempPage] = useState<string>(String(currentPage));
     const rowsOptions = [5, 10, 15, 20, 25];
+    
     return (
         <>
-            <div style={{ display: "flex", gap: "20px", overflowX: "auto" }}>
-            {/* Tabla Data */}
             <TableContainer component={Paper}>
-                <Table>
-                    <TableHead sx={{ height: 150, overflowY: "auto" }}>
-                        <TableRow>
-                            {columns.filter(col => col.field !== targetColumn).map((col) => (
-                                <TableCell key={col.field} sx={{ padding: 1, minWidth: 75 }}>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                                        <span>{col.headerName}</span>
-                                        {(() => {
-                                            const stats = summaryStats.find((s) => s.column === col.field);
-                                            return stats ? (
-                                                <div style={{ fontSize: 10, color: "#666", height: "150px", overflowY: "auto" }}>
-                                                    <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})</p>
-                                                    <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.unique")}: {stats.uniqueCount}</p>
-                                                    {stats.min !== undefined && (
-                                                        <>
-                                                            <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.min")}: {stats.min}</p>
-                                                            <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.max")}: {stats.max}</p>
-                                                            <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.mean")}: {stats.mean}</p>
-                                                            {stats.histogram && stats.histogram.length > 0 && (
-                                                                <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
-                                                                    <Bar
-                                                                        data={{
-                                                                            labels: stats.histogram.map((h: HistogramBin) => h.bin),
-                                                                            datasets: [
-                                                                                {
-                                                                                    data: stats.histogram.map((h: HistogramBin) => h.count),
-                                                                                    backgroundColor: "rgba(75, 192, 192, 0.6)",
-                                                                                },
-                                                                            ],
-                                                                        }}
-                                                                        options={{
-                                                                            responsive: true,
-                                                                            maintainAspectRatio: false,
-                                                                            plugins: {
-                                                                                legend: { display: false },
-                                                                            },
-                                                                            scales: {
-                                                                                x: { ticks: { display: false } },
-                                                                                y: { ticks: { display: false } },
-                                                                            },
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            )}
-
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ) : null;
-                                        })()}
-                                    </div>
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows
-                            .slice(
-                                (currentPage - 1) * rowsPerPage,
-                                currentPage * rowsPerPage
-                            )
-                            .map((row) => (
-                                <TableRow key={row.id}>
-                                    {columns.filter(col => col.field !== targetColumn).map((col) => (
-                                        <TableCell key={col.field}>{row[col.field]}</TableCell>
-                                    ))}
-                                </TableRow>
-                            ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            {/* Tabla clase */}
-            <TableContainer
-                component={Paper}
-                sx={{
-                    width: "fit-content",
-                    minWidth: 100,
-                    maxWidth: "100%",
-                    boxSizing: "content-box",
-                    padding: 0,
-                    margin: 0,
-                }}
-            >
-                <Table>
-                    <TableHead sx={{ height: 150, overflowY: "auto" }}>
-                        <TableRow>
-                            <TableCell key="target" sx={{ padding: 1, minWidth: 75 }}>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", height: 200 }}>
-                                    <span>{targetColumn}</span>
-                                    {(() => {
-                                        const stats = summaryStats.find((s) => s.column === targetColumn);
-                                        return stats ? (
-                                            <div style={{ fontSize: 10, color: "#666", height: "150px", overflowY: "auto" }}>
-                                                <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})</p>
-                                                <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.unique")}: {stats.uniqueCount}</p>
-                                                {stats.min !== undefined && (
-                                                    <>
-                                                        <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.min")}: {stats.min}</p>
-                                                        <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.max")}: {stats.max}</p>
-                                                        <p style={{margin: 0, lineHeight: 1.3}}>{t("datasets.mean")}: {stats.mean}</p>
-                                                    </>
-                                                )}
+                <Table stickyHeader>
+                    <TableHead>
+                    <TableRow>
+                        {columns.map((col) => (
+                        <TableCell
+                            key={col.field}
+                            sx={{
+                            padding: 1,
+                            minWidth: 75,
+                            ...(col.field === targetColumn && {
+                                position: "sticky",
+                                right: 0,
+                                background: "#fff", // fondo para que no se superponga
+                                zIndex: 2,
+                            }),
+                            }}
+                        >
+                            <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                            >
+                            <span>{col.headerName}</span>
+                            {(() => {
+                                const stats = summaryStats.find((s) => s.column === col.field);
+                                return stats ? (
+                                <div
+                                    style={{
+                                    fontSize: 10,
+                                    color: "#666",
+                                    maxHeight: "150px",
+                                    overflowY: "auto",
+                                    }}
+                                >
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
+                                    </p>
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.unique")}: {stats.uniqueCount}
+                                    </p>
+                                    {stats.min !== undefined && (
+                                    <>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.min")}: {stats.min}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.max")}: {stats.max}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.mean")}: {stats.mean}
+                                        </p>
+                                        {stats.histogram && stats.histogram.length > 0 && (
+                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
+                                                <Bar
+                                                    data={{
+                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                                                        datasets: [
+                                                            {
+                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
+                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                                            },
+                                                        ],
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            legend: { display: false },
+                                                        },
+                                                        scales: {
+                                                            x: { ticks: { display: false } },
+                                                            y: { ticks: { display: false } },
+                                                        },
+                                                    }}
+                                                />
                                             </div>
-                                        ) : null;
-                                    })()}
+                                        )}
+                                    </>
+                                    )}
                                 </div>
-                            </TableCell>
-                        </TableRow>
+                                ) : null;
+                            })()}
+                            </div>
+                        </TableCell>
+                        ))}
+                    </TableRow>
                     </TableHead>
                     <TableBody>
-                        {rows
-                            .slice(
-                                (currentPage - 1) * rowsPerPage,
-                                currentPage * rowsPerPage
-                            )
-                            .map((row) => (
-                                <TableRow key={row.id}>
-                                    <TableCell key="target" >
-                                        {targetColumn ? row[targetColumn] : ""}
-                                    </TableCell>
-                                </TableRow>
+                    {rows
+                        .slice(
+                        (currentPage - 1) * rowsPerPage,
+                        currentPage * rowsPerPage
+                        )
+                        .map((row) => (
+                        <TableRow key={row.id}>
+                            {columns.map((col) => (
+                            <TableCell
+                                key={col.field}
+                                sx={{
+                                ...(col.field === targetColumn && {
+                                    position: "sticky",
+                                    right: 0,
+                                    background: "#fff",
+                                    zIndex: 1,
+                                }),
+                                }}
+                            >
+                                {row[col.field]}
+                            </TableCell>
                             ))}
+                        </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-            </div>
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <Button
-                    onClick={() =>
+                    onClick={() =>{
                         setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
+                        setTempPage(String(Math.max(currentPage - 1, 1))); 
+                    }}
                     disabled={currentPage === 1}
                 >
                     {"<"}
                 </Button>
-                <span>
-                    {currentPage} / {Math.ceil((rows.length || 0) / rowsPerPage)}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", width: 200, justifyContent: "center" }}>
+                    <input
+                    type="number"
+                    min={1}
+                    max={Math.max(1, Math.ceil((rows.length || 0) / rowsPerPage))}
+                    value={tempPage} 
+                    onChange={(e) => setTempPage(e.target.value)} 
+                    onBlur={() => {
+                        const value = Number(tempPage);
+                        if (!isNaN(value)) {
+                        setCurrentPage(
+                            Math.max(1, Math.min(value, Math.ceil((rows.length || 0) / rowsPerPage)))
+                        );
+                        }
+                    }}
+                    style={{ width: 75, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
+                    />
+                    <p> / {Math.ceil((rows.length || 0) / rowsPerPage)}</p>
+                </div>
                 <Button
-                    onClick={() =>
+                    onClick={() =>{
                         setCurrentPage((prev) => {
                             const maxPage = Math.ceil((rows.length || 0) / rowsPerPage);
                             return prev < maxPage ? prev + 1 : prev;
                         })
-                    }
+                        setTempPage(String(Math.min(currentPage + 1, Math.ceil((rows.length || 0) / rowsPerPage)))); 
+                    }}
                     disabled={currentPage === Math.ceil((rows.length || 0) / rowsPerPage)}
                 >
                     {">"}
@@ -200,6 +209,7 @@ export default function DatasetsView(
                         const value = Number(e.target.value);
                         setRowsPerPage(value);
                         setCurrentPage((prev) => Math.max(prev - 1, 1));
+                        setTempPage(String(Math.max(currentPage - 1, 1)));
                     }}
                 >
                     {rowsOptions.map((option) => (
@@ -209,6 +219,6 @@ export default function DatasetsView(
                     ))}
                 </Select>
             </div>
-            </>
+        </>
     );
 }

@@ -256,14 +256,17 @@ export default function UploadDatasets() {
         <div className="upload-datasets-container">
             <h1>{t("datasets.upload.title")}</h1>
             {uploadPhase === 0 ? (
-                <>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="upload-form">
+                <label className="file-upload-label">
+                    <span>{t("datasets.upload.select_files")}</span>
                     <input
                         type="file"
                         onChange={handleFileChange}
                         accept=".csv, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                    multiple
-                />
+                        multiple
+                        className="file-upload-input"
+                    />
+                </label>
                 {errorMsg && <p className="error-message">{errorMsg}</p>}
                 {selectedFiles.length > 0 && (
                     <ul>
@@ -272,14 +275,21 @@ export default function UploadDatasets() {
                         ))}
                     </ul>
                 )}
-                {loadingPhase0 && <CircularProgress />}
-                <button type="submit" disabled={!canContinue && loadingPhase0}>
-                    {t("datasets.upload.submit")}
-                </button>
-                </form>
-                <br />
+                {loadingPhase0 && 
+                <div className="loading-indicator">
+                    <CircularProgress />
+                </div>
+                }
+                <p>{t("datasets.upload.instructions1")}</p>
+                <p>{t("datasets.upload.instructions2")}</p>
+                <p>{t("datasets.upload.instructions3")}</p>
+                <div className="upload-buttons">
                 <button onClick={() =>{navigate("/datasets")}}>{t("back")}</button>
-                </>
+                <button type="submit" disabled={!canContinue || (canContinue && loadingPhase0)} className={!canContinue && loadingPhase0 ? "disabled" : ""}>
+                    {t("continue")}
+                </button>
+                </div>
+                </form>
             ) : (
                 <>
                     <div>
@@ -345,6 +355,7 @@ export default function UploadDatasets() {
                         onChange={(e) => setDatasetName(e.target.value)}
                     />
                     <br />
+                    <div className="upload-buttons">
                     <button onClick={handleSave}>{t("save")}</button>
                     {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
                     <button onClick={() => {
@@ -356,6 +367,7 @@ export default function UploadDatasets() {
                     }}>
                         {t("back")}
                     </button>
+                    </div>
                 </>
             )}
         </div>

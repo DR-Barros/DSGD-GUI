@@ -16,6 +16,7 @@
   "features": "Características",
   "classes": "Clases",
   "save": "Guardar",
+  "continue": "Continuar",
   "menu": {
     "datasets": "Conjuntos de datos",
     "experiments": "Experimentos"
@@ -35,6 +36,10 @@
       "submit": "Subir",
       "select_class": "Seleccionar la columna de clase",
       "dataset_name": "Nombre del conjunto de datos",
+      "select_files": "Seleccionar archivos",
+      "instructions1": "Puedes cargar un solo archivo en formato CSV o Excel si tu dataset está completo. ",
+      "instructions2": "Si tu dataset está dividido en conjuntos de train y test, selecciona dos archivos (uno para cada conjunto por defecto el archivo más pequeño se considera el conjunto de test). ",
+      "instructions3": "Asegúrate de que ambos archivos tengan la misma estructura de columnas.",
       "error": {
         "file_type_mismatch": "Los archivos deben ser del mismo tipo.",
         "column_size_mismatch": "Los archivos deben tener el mismo número de columnas.",

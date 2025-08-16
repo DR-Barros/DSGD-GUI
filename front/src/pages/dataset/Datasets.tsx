@@ -9,11 +9,14 @@ import { useEffect, useState } from "react";
 import CloseIcon from '@mui/icons-material/Close';
 
 import "./Datasets.css"
+import DatasetsView from "../../components/DatasetsView";
 
 export default function Datasets() {
     const { t } = useTranslation();
     const [datasets, setDatasets] = useState<Dataset[]>([]);
     const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+    const [datasetPreview, setDatasetPreview] = useState<any[]>([]);
+    const [datasetStats, setDatasetStats] = useState<any[]>([]);
     const navigate = useNavigate();
 
     const handleAddDataset = () => {
@@ -38,7 +41,21 @@ export default function Datasets() {
         setSelectedDataset(datasets.find(dataset => dataset.id === datasetId) || null);
         const { data, status } = await fetchProtected(`/datasets/preview/${datasetId}`);
         console.log("Dataset preview data:", data);
+        if (status !== 200) {
+            console.log("Error fetching dataset preview");
+        }
+        else {
+            setDatasetPreview(data.map((item: any) => item.data));
+            setDatasetStats(data.map((item: any) => item.stats));
+        }
     };
+
+    useEffect(() => {
+        console.log("datasetStats:", datasetStats);
+    }, [datasetStats]);
+    useEffect(() => {
+        console.log("datasetPreview:", datasetPreview);
+    }, [datasetPreview]);
 
     return (
         <div className="datasets-container">
@@ -81,28 +98,76 @@ export default function Datasets() {
         </Fab>
         <Modal
             open={Boolean(selectedDataset)}
-            onClose={() => setSelectedDataset(null)}
+            onClose={() => {
+                setSelectedDataset(null);
+                setDatasetPreview([]);
+                setDatasetStats([]);
+            }}
         >
             <div className="modal-content" style={{
                 padding: "20px",
-                backgroundColor: "white",
+                backgroundColor: "#f5f5f5",
                 borderRadius: "8px",
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)"
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+                height: "calc(90vh - 40px)",
+                overflowY: "auto",
+                width: "90vw",
+                margin: "5vh auto",
+                position: "relative",
             }}
             >
-                <Button onClick={() => setSelectedDataset(null)}>
-                    <CloseIcon />
-                </Button>
+                <Button 
+                    onClick={() => {
+                        setSelectedDataset(null);
+                        setDatasetPreview([]);
+                        setDatasetStats([]);
+                    }}
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        minWidth: "40px",
+                        minHeight: "40px",
+                        borderRadius: "50%",
+                        border: "none",
+                    }}
+                ><CloseIcon /></Button>
             {selectedDataset && (
                 <>
-                    <h2>{selectedDataset.name}</h2>
-                    <p>{t("columns")}: {selectedDataset.columns.join(", ")}</p>
-                        <p>{t("classes")}: {selectedDataset.n_classes}</p>
-                        <p>{t("rows")}: {selectedDataset.n_rows}</p>
-                    </>
-                )}
-            </div>
-        </Modal>
-    </div>
+                    <h2>{selectedDataset.name} <span style={{ marginLeft: "15px" }}>#{selectedDataset.id}</span></h2>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
+                    <p>{t("columns")}: {selectedDataset.columns.length}</p>
+                    <p>{t("classes")}: {selectedDataset.n_classes}</p>
+                    <p>{t("rows")}: {selectedDataset.n_rows}</p>
+                    </div>
+                    {(datasetPreview.length > 0 && datasetStats.length > 0) && (
+                        <DatasetsView
+                            rows={datasetPreview[0]}
+                            summaryStats={datasetStats[0]}
+                            columns={selectedDataset.columns.map((col: string) => ({
+                                field: col,
+                            headerName: col,
+                            flex: 1,
+                        }))}
+                        targetColumn={selectedDataset.target_column}
+                    />
+                    )}
+                    {(datasetPreview.length > 1 && datasetStats.length > 1) && (
+                        <DatasetsView
+                            rows={datasetPreview[1]}
+                            summaryStats={datasetStats[1]}
+                            columns={selectedDataset.columns.map((col: string) => ({
+                                field: col,
+                                headerName: col,
+                                flex: 1,
+                            }))}
+                            targetColumn={selectedDataset.target_column}
+                        />
+                    )}
+                </>
+            )}
+        </div>
+    </Modal>
+</div>
 );
 }

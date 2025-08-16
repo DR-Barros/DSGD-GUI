@@ -1,7 +1,6 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException, Request, Form, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from typing import List
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User, DatasetFile, Datasets
@@ -11,6 +10,7 @@ from datetime import datetime
 from core.config import settings
 from schemas.dataset import DatasetOut
 import pandas as pd
+import numpy as np
 
 api_router = APIRouter()
 
@@ -35,16 +35,41 @@ async def preview_dataset(
     for dataset_file in dataset_files:
         if dataset_file.type_file == FileType.CSV:
             df = pd.read_csv(dataset_file.file_path)
-            dataset_data.append(df.to_dict(orient='records'))
         elif dataset_file.type_file == FileType.EXCEL:
             df = pd.read_excel(dataset_file.file_path)
-            dataset_data.append(df.to_dict(orient='records'))
         elif dataset_file.type_file == FileType.PARQUET:
             df = pd.read_parquet(dataset_file.file_path)
-            dataset_data.append(df.to_dict(orient='records'))
         else:
             return HTTPException(status_code=400, detail="Tipo de archivo no soportado")
-        print(dataset_file.file_path)
+        stats = []
+        n_rows = len(df)
+        for col in df.columns:
+            uniques = df[col].unique()
+            if pd.api.types.is_numeric_dtype(df[col]):
+                numeric_vals = df[col].dropna().astype(float)
+                bins = min(uniques.size, 10)
+                counts, bin_edges = np.histogram(numeric_vals, bins=bins)
+                histogram = []
+                for i in range(len(counts)):
+                    histogram.append({
+                        "bin": f"{bin_edges[i]:.2f} - {bin_edges[i+1]:.2f}",
+                        "count": int(counts[i])
+                    })
+            else:
+                histogram = None
+            
+            stats.append({
+                "column": col,
+                "type": str(df[col].dtype),
+                "nulls": int(df[col].isnull().sum()),
+                "nullPercent": float(df[col].isnull().sum() / n_rows * 100),
+                "uniqueCount": int(uniques.size),
+                "min": float(round(df[col].min(), 2)) if pd.api.types.is_numeric_dtype(df[col]) else None,
+                "max": float(round(df[col].max(), 2)) if pd.api.types.is_numeric_dtype(df[col]) else None,
+                "mean": float(round(df[col].mean(), 2)) if pd.api.types.is_numeric_dtype(df[col]) else None,
+                "histogram": histogram
+            })
+        dataset_data.append({ "data": df.to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
 
     return dataset_data
 
