@@ -9,8 +9,44 @@ from models.dataset_file import FileType, DatasetType
 from .auth import get_current_user_from_cookie
 from datetime import datetime
 from core.config import settings
+from schemas.dataset import DatasetOut
+import pandas as pd
 
 api_router = APIRouter()
+
+
+@api_router.get("/", response_model=List[DatasetOut])
+async def get_datasets(
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db)
+):
+    datasets = db.query(Datasets).filter(Datasets.user_id == current_user.id).all()
+    return datasets
+
+
+@api_router.get("/preview/{dataset_id}")
+async def preview_dataset(
+    dataset_id: int,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db)
+):
+    dataset_files = db.query(DatasetFile).filter(DatasetFile.dataset_id == dataset_id).all()
+    dataset_data = []
+    for dataset_file in dataset_files:
+        if dataset_file.type_file == FileType.CSV:
+            df = pd.read_csv(dataset_file.file_path)
+            dataset_data.append(df.to_dict(orient='records'))
+        elif dataset_file.type_file == FileType.EXCEL:
+            df = pd.read_excel(dataset_file.file_path)
+            dataset_data.append(df.to_dict(orient='records'))
+        elif dataset_file.type_file == FileType.PARQUET:
+            df = pd.read_parquet(dataset_file.file_path)
+            dataset_data.append(df.to_dict(orient='records'))
+        else:
+            return HTTPException(status_code=400, detail="Tipo de archivo no soportado")
+        print(dataset_file.file_path)
+
+    return dataset_data
 
 
 @api_router.post("/upload")
@@ -18,7 +54,9 @@ async def upload_dataset(
     name: str = Form(...),
     files: List[UploadFile] = File(...),
     columns: str = Form(...),
+    target_column: str = Form(...),
     n_classes: int = Form(...),
+    n_rows: int = Form(...),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db)
 ):
@@ -29,17 +67,23 @@ async def upload_dataset(
         raise HTTPException(status_code=400, detail="Nombre del dataset no válido")
     if not n_classes or n_classes <= 0:
         raise HTTPException(status_code=400, detail="Número de clases no válido")
+    if not n_rows or n_rows <= 0:
+        raise HTTPException(status_code=400, detail="Número de filas no válido")
     try:
         columns = json.loads(columns)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Columnas no válidas")
     if not columns or len(columns) == 0:
         raise HTTPException(status_code=400, detail="Columnas no válidas")
+    if not target_column or target_column.strip() == "" or target_column not in columns:
+        raise HTTPException(status_code=400, detail="Columna objetivo no válida")
     new_dataset = Datasets(
         name=name,
         user_id=current_user.id,
         created_at=datetime.now(datetime.now().tzinfo),
         n_classes=n_classes,
+        target_column=target_column,
+        n_rows=n_rows,
         columns=columns,
     )
     db.add(new_dataset)
