@@ -3,30 +3,24 @@ const URL = import.meta.env.PROD ? '/' : 'http://localhost:8000/';
 export const API_URL: string = `${URL}api`;
 
 export async function fetchProtected(endpoint: string) {
-  const token = localStorage.getItem("jwt");
-
   const res = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: "include",
   });
 
   if (res.status === 401) {
       const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
         method: "GET",
-        credentials: "include", // <-- Necesario para enviar la cookie HttpOnly
+        credentials: "include",
       });
       if (refreshRes.status === 200) {
         const data = await refreshRes.json();
         localStorage.setItem("jwt", data.access_token);
         // Reintentar la solicitud original
         const retryRes = await fetch(`${API_URL}${endpoint}`, {
-          headers: {
-            Authorization: `Bearer ${data.access_token}`,
-          },
+          credentials: "include",
         });
         if (retryRes.status === 200) {
-          return retryRes.json();
+          return { data: await retryRes.json(), status: retryRes.status };
         }
         throw new Error("No autorizado");
       } else {
@@ -34,7 +28,7 @@ export async function fetchProtected(endpoint: string) {
       }
   }
 
-  return res.json();
+  return { data: await res.json(), status: res.status };
 }
 
 export async function postProtected(endpoint: string, body: any) {
@@ -53,8 +47,6 @@ export async function postProtected(endpoint: string, body: any) {
       credentials: "include", 
     });
     if (refreshRes.status === 200) {
-      const data = await refreshRes.json();
-      localStorage.setItem("jwt", data.access_token);
       // Reintentar la solicitud original
       const retryRes = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
@@ -65,12 +57,12 @@ export async function postProtected(endpoint: string, body: any) {
         credentials: "include",
       });
       if (retryRes.status === 200) {
-        return retryRes.json();
+        return { data: await retryRes.json(), status: retryRes.status };
       }
     }
     throw new Error("No autorizado");
   }
-  return res.json();
+  return { data: await res.json(), status: res.status };
 }
 
 export async function putProtected(endpoint: string, body: any) {

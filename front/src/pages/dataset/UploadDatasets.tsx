@@ -115,7 +115,7 @@ export default function UploadDatasets() {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         //validamos
         if (!datasetName) {
             setErrorMsg(t("datasets.upload.error.name_required"));
@@ -124,6 +124,10 @@ export default function UploadDatasets() {
         //validamos archivos
         if (selectedFiles.length === 0) {
             setErrorMsg(t("datasets.upload.error.no_files"));
+            return;
+        }
+        if (!targetColumn) {
+            setErrorMsg(t("datasets.upload.error.target_column_required"));
             return;
         }
         // Implementar la lógica para guardar los datos analizados
@@ -139,8 +143,20 @@ export default function UploadDatasets() {
         formsData.append("columns", JSON.stringify(summaryStats[0].map((s) => s.column)));
         //enviamos numero de clases
         formsData.append("n_classes", summaryStats[0].filter(s => s.column === targetColumn).map(s => s.uniqueCount)[0]);
-        let res = postProtected("/datasets/upload", formsData)
-        console.log("Response from server:", res);
+        //enviamos numero de filas
+        formsData.append(
+            "n_rows",
+            String(rows[0].length + (rows[1] ? rows[1].length : 0))
+        );
+        //enviamos columna objetivo
+        formsData.append("target_column", targetColumn ? targetColumn : "");
+        let { data, status } = await postProtected("/datasets/upload", formsData)
+        console.log("Response from server:", data, status);
+        if (status === 200) {
+            navigate("/datasets");
+        } else {
+            setErrorMsg(data.detail);
+        }
     };
 
     useEffect(() => {
@@ -157,6 +173,7 @@ export default function UploadDatasets() {
                 return;
             }
         }
+        setErrorMsg(null);
         if (parsedData.length > 0) {
             let allData = [];
             for (let i = 0; i < parsedData.length; i++) {
@@ -281,7 +298,7 @@ export default function UploadDatasets() {
                                 flexDirection: "row",
                                 justifyContent: "space-around"
                             }}>
-                                <p>{t("columns")}: {rows.length > 0 ? rows[0].length : 0}</p>
+                                <p>{t("rows")}: {rows.length > 0 ? rows[0].length : 0}</p>
                                 <p>{t("features")}: {Object.keys(parsedData[0][0] || {}).length - 1}</p>
                                 <p>{t("classes")}: {
                                     summaryStats.length > 0 && targetColumn ?
@@ -296,7 +313,7 @@ export default function UploadDatasets() {
                                 flexDirection: "row",
                                 justifyContent: "space-around"
                             }}>
-                                <p>{t("columns")}: {rows.length > 1 ? rows[1].length : 0}</p>
+                                <p>{t("rows")}: {rows.length > 1 ? rows[1].length : 0}</p>
                                 <p>{t("features")}: {Object.keys(parsedData[1][0] || {}).length - 1}</p>
                                 <p>{t("classes")}: {
                                     summaryStats.length > 1 && targetColumn ?
@@ -329,6 +346,7 @@ export default function UploadDatasets() {
                     />
                     <br />
                     <button onClick={handleSave}>{t("save")}</button>
+                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
                     <button onClick={() => {
                         setUploadPhase(0);
                         setParsedData([]);

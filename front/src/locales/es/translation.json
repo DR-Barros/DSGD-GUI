@@ -12,6 +12,7 @@
   "confirm_password": "Confirmar contraseña",
   "back": "Volver",
   "columns": "Columnas",
+  "rows": "Filas",
   "features": "Características",
   "classes": "Clases",
   "save": "Guardar",
@@ -40,6 +41,7 @@
         "file_type": "Sube archivos en formato CSV, XLSX o Parquet.",
         "no_files": "Por favor, selecciona al menos un archivo.",
         "upload_failed": "Error al subir archivos.",
+        "target_column_required": "Por favor, selecciona una columna objetivo.",
         "name_required": "Por favor, ingresa un nombre para el conjunto de datos."
       }
     }
