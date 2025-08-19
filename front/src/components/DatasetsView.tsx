@@ -48,25 +48,104 @@ export default function DatasetsView(
                 <Table stickyHeader>
                     <TableHead>
                     <TableRow>
-                        {columns.map((col) => (
+                        {columns
+                        .filter((col) => col.field !== targetColumn)
+                        .map((col) => (
                         <TableCell
                             key={col.field}
                             sx={{
                             padding: 1,
                             minWidth: 75,
-                            ...(col.field === targetColumn && {
-                                position: "sticky",
-                                right: 0,
-                                background: "#fff", // fondo para que no se superponga
-                                zIndex: 2,
-                            }),
+                            verticalAlign: "top",
                             }}
                         >
                             <div
                             style={{
                                 display: "flex",
                                 flexDirection: "column",
-                                alignItems: "flex-start",
+                            }}
+                            >
+                            <span>{col.headerName}</span>
+                            {(() => {
+                                const stats = summaryStats.find((s) => s.column === col.field);
+                                return stats ? (
+                                <div
+                                    style={{
+                                    fontSize: 10,
+                                    color: "#666",
+                                    maxHeight: "150px",
+                                    overflowY: "auto",
+                                    }}
+                                >
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
+                                    </p>
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.unique")}: {stats.uniqueCount}
+                                    </p>
+                                    {stats.min !== undefined && (
+                                    <>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.min")}: {stats.min}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.max")}: {stats.max}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.mean")}: {stats.mean}
+                                        </p>
+                                        {stats.histogram && stats.histogram.length > 0 && (
+                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
+                                                <Bar
+                                                    data={{
+                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                                                        datasets: [
+                                                            {
+                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
+                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                                            },
+                                                        ],
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            legend: { display: false },
+                                                        },
+                                                        scales: {
+                                                            x: { ticks: { display: false } },
+                                                            y: { ticks: { display: false } },
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                    )}
+                                </div>
+                                ) : null;
+                            })()}
+                            </div>
+                        </TableCell>
+                        ))}
+                        {columns
+                        .filter((col) => col.field === targetColumn)
+                        .map((col) => (
+                        <TableCell
+                            key={col.field}
+                            sx={{
+                            padding: 1,
+                            minWidth: 75,
+                            position: "sticky",
+                            right: 0,
+                            background: "#fff", 
+                            zIndex: 2,
+                            }}
+                        >
+                            <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
                             }}
                             >
                             <span>{col.headerName}</span>
@@ -142,7 +221,26 @@ export default function DatasetsView(
                         )
                         .map((row) => (
                         <TableRow key={row.id}>
-                            {columns.map((col) => (
+                            {columns
+                            .filter((col) => col.field !== targetColumn)
+                            .map((col) => (
+                            <TableCell
+                                key={col.field}
+                                sx={{
+                                ...(col.field === targetColumn && {
+                                    position: "sticky",
+                                    right: 0,
+                                    background: "#fff",
+                                    zIndex: 1,
+                                }),
+                                }}
+                            >
+                                {row[col.field]}
+                            </TableCell>
+                            ))}
+                            {columns
+                            .filter((col) => col.field === targetColumn)
+                            .map((col) => (
                             <TableCell
                                 key={col.field}
                                 sx={{

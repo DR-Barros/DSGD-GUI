@@ -356,8 +356,6 @@ export default function UploadDatasets() {
                     />
                     <br />
                     <div className="upload-buttons">
-                    <button onClick={handleSave}>{t("save")}</button>
-                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
                     <button onClick={() => {
                         setUploadPhase(0);
                         setParsedData([]);
@@ -367,6 +365,8 @@ export default function UploadDatasets() {
                     }}>
                         {t("back")}
                     </button>
+                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+                    <button onClick={handleSave}>{t("save")}</button>
                     </div>
                 </>
             )}
