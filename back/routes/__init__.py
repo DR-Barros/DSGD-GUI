@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from routes import auth, datasets
+from routes import auth, datasets, experiments
 
 api_router = APIRouter()
 
 
 api_router.include_router(auth.api_router, prefix="/auth", tags=["auth"])
 api_router.include_router(datasets.api_router, prefix="/datasets", tags=["datasets"])
+api_router.include_router(experiments.api_router, prefix="/experiments", tags=["experiments"])
