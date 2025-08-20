@@ -17,23 +17,28 @@
   "classes": "Classes",
   "save": "Save",
   "continue": "Continue",
+  "close": "Close",
   "menu": {
     "datasets": "Datasets",
     "experiments": "Experiments"
   },
   "experiments": {
-    "title": "Experiments"
+    "title": "Experiments",
+    "add_experiment": "Add New Experiment",
+    "name": "Experiment Name"
   },
   "datasets": {
     "title": "Datasets",
     "dataset": "Dataset",
     "train_dataset": "Train Dataset",
     "test_dataset": "Test Dataset",
+    "shape": "Shape",
     "nulls": "Nulls",
     "unique": "Unique",
     "min": "Min",
     "max": "Max",
     "mean": "Mean",
+    "upload_new": "Upload New Dataset",
     "upload": {
       "title": "Upload Datasets",
       "submit": "Upload",

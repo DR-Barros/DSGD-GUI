@@ -17,7 +17,7 @@ type HistogramBin = {
 
 import "./UploadDatasets.css"
 import DatasetsView from "../../components/DatasetsView";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function UploadDatasets() {
     const { t } = useTranslation();
@@ -37,6 +37,7 @@ export default function UploadDatasets() {
     const [errorMsg, setErrorMsg] = useState<TranslationReturn | null>(null);
     const [loadingPhase0, setLoadingPhase0] = useState<boolean>(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -55,6 +56,14 @@ export default function UploadDatasets() {
             setTargetColumn(null);
             setParsedData([]);
             setSummaryStats([]);
+        }
+    };
+
+    const handleBack = () => {
+        if (location.state?.from === "experiments") {
+            navigate("/experiments", { state: { from: "datasets", modal: true, experimentName: location.state.experimentName } });
+        } else {
+            navigate(-1);
         }
     };
 
@@ -228,7 +237,7 @@ export default function UploadDatasets() {
         let { data, status } = await postProtected("/datasets/upload", formsData)
         console.log("Response from server:", data, status);
         if (status === 200) {
-            navigate("/datasets");
+            handleBack();
         } else {
             console.error("Error al subir el dataset:", data);
             setErrorMsg(t("datasets.upload.error.upload_failed"));
@@ -377,7 +386,9 @@ export default function UploadDatasets() {
                 <p>{t("datasets.upload.instructions2")}</p>
                 <p>{t("datasets.upload.instructions3")}</p>
                 <div className="upload-buttons">
-                <button onClick={() =>{navigate("/datasets")}}>{t("back")}</button>
+                <button onClick={handleBack}>
+                    {t("back")}
+                </button>
                 <button type="submit" disabled={!canContinue || (canContinue && loadingPhase0)} className={!canContinue && loadingPhase0 ? "disabled" : ""}>
                     {t("continue")}
                 </button>

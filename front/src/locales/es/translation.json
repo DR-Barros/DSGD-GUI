@@ -17,23 +17,28 @@
   "classes": "Clases",
   "save": "Guardar",
   "continue": "Continuar",
+  "close": "Cerrar",
   "menu": {
     "datasets": "Conjuntos de datos",
     "experiments": "Experimentos"
   },
   "experiments": {
-    "title": "Experimentos"
+    "title": "Experimentos",
+    "add_experiment": "Agregar nuevo experimento",
+    "name": "Nombre del experimento"
   },
   "datasets": {
     "title": "Conjuntos de datos",
     "dataset": "Conjunto de datos",
     "train_dataset": "Conjunto de entrenamiento",
     "test_dataset": "Conjunto de prueba",
+    "shape": "Forma",
     "nulls": "Nulos",
     "unique": "Únicos",
     "min": "Mín",
     "max": "Máx",
     "mean": "Promedio",
+    "upload_new": "Subir nuevo conjunto de datos",
     "upload": {
       "title": "Subir conjuntos de datos",
       "submit": "Subir",
