@@ -22,7 +22,10 @@ import { useNavigate } from "react-router-dom";
 export default function UploadDatasets() {
     const { t } = useTranslation();
     type TranslationReturn = ReturnType<typeof t>;
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFileTest, setSelectedFileTest] = useState<File | null>(null);
+    const [nFiles, setNFiles] = useState<1|2>(1);
+    const [hasHeader, setHasHeader] = useState<boolean>(true);
     const [datasetName, setDatasetName] = useState<string>("");
     const [uploadPhase, setUploadPhase] = useState<0 | 1>(0);
     const [parsedData, setParsedData] = useState<any[][]>([]);
@@ -37,57 +40,119 @@ export default function UploadDatasets() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const filesArray = Array.from(e.target.files).slice(0, 2); // solo 1 o 2 archivos
-            setSelectedFiles(filesArray);
+            const filesArray = Array.from(e.target.files)
+            setSelectedFile(filesArray[0] || null);
             setTargetColumn(null);
             setParsedData([]);
             setSummaryStats([]);
-            //validamos si puede continuar (al menos 1 archivo y si hay 2 que sean del mismo tipo)
-            if (filesArray.length > 0) {
-                //si los tipos son distintos a csv, xlsx o parquet
-                const validTypes = ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream"];
-                if (!validTypes.includes(filesArray[0].type)) {
-                    setErrorMsg(t("datasets.upload.error.file_type"));
-                    setCanContinue(false);
-                }
-                if (filesArray.length === 2 && filesArray[0].type !== filesArray[1].type) {
-                    setErrorMsg(t("datasets.upload.error.file_type_mismatch"));
-                    setCanContinue(false);
-                } else {
-                    setErrorMsg(null);
-                    setCanContinue(true);
-                }
-            } else {
-                setErrorMsg(t("datasets.upload.error.no_files"));
-                setCanContinue(false);
-            }
         }
     };
 
+    const handleFileChangeTest = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const filesArray = Array.from(e.target.files)
+            setSelectedFileTest(filesArray[0] || null);
+            setTargetColumn(null);
+            setParsedData([]);
+            setSummaryStats([]);
+        }
+    };
+
+    useEffect(() => {
+        const validTypes = ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream"];
+        //validamos los archivos
+        if (nFiles === 1) {
+            if (selectedFile && validTypes.includes(selectedFile.type)) {
+                setCanContinue(true);
+            } else{
+                setErrorMsg(t("datasets.upload.error.file_type"));
+                setCanContinue(false);
+            }
+        } else if (nFiles === 2) {
+            if (selectedFile && selectedFileTest && validTypes.includes(selectedFileTest.type) && validTypes.includes(selectedFile.type)) {
+                if (selectedFile.type !== selectedFileTest.type) {
+                    setErrorMsg(t("datasets.upload.error.file_type_mismatch"));
+                    setCanContinue(false);
+                } else {
+                    setCanContinue(true);
+                }
+            } else {
+                setErrorMsg(t("datasets.upload.error.file_type"));
+                setCanContinue(false);
+            }
+        }
+    }, [selectedFile, selectedFileTest, nFiles]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedFiles.length > 0) {
-            if (selectedFiles[0].type == "text/csv") {
-                console.log("CSV seleccionados:", selectedFiles);
-                setLoadingPhase0(true);
-                selectedFiles.forEach((file) => {
-                    console.log("Parsing file:", file.name);
-                    Papa.parse(file, {
-                    header: true,
+        if (selectedFile) {
+            setLoadingPhase0(true);
+            console.log("Archivo seleccionado:", selectedFile);
+            if (selectedFile.type === "text/csv") {
+                Papa.parse(selectedFile, {
+                    header: hasHeader,
                     complete: (results: Papa.ParseResult<any>) => {
                         const filteredData = results.data.filter((row: any) => {
                             return Object.values(row).some(
                                 (val) => val !== null && val !== undefined && String(val).trim() !== ""
                             );
                         });
-                        setParsedData((prev) => [...prev, filteredData]);
+                        setParsedData([filteredData]);
                     },
                 });
-            })}
-            else if (selectedFiles[0].type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-                console.log("Excel seleccionados:", selectedFiles);
-                setLoadingPhase0(true);
-                selectedFiles.forEach((file) => {
+            }
+            else if (selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                    const workbook = XLSX.read(data, { type: "array" });
+
+                    // Tomar la primera hoja
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+
+                    // Convertir a JSON
+                    const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { 
+                        defval: "",
+                        header: hasHeader ? undefined : 1
+                    });
+
+                    // Filtrar filas vacías
+                    const filteredData = jsonData.filter((row) =>
+                        Object.values(row).some(
+                            (val) => val !== null && val !== undefined && String(val).trim() !== ""
+                        )
+                    );
+
+                    setParsedData([filteredData]);
+                };
+                reader.readAsArrayBuffer(selectedFile);
+            }
+            else {
+                setErrorMsg(t("datasets.upload.error.file_type"));
+                return;
+            }
+        } else {
+            setErrorMsg(t("datasets.upload.error.no_files"));
+            return;
+        }
+        if (nFiles === 2){
+            if (selectedFileTest) {
+                console.log("Archivo de prueba seleccionado:", selectedFileTest);
+                if (selectedFileTest.type === "text/csv") {
+                    Papa.parse(selectedFileTest, {
+                        header: hasHeader,
+                        complete: (results: Papa.ParseResult<any>) => {
+                            const filteredData = results.data.filter((row: any) => {
+                                return Object.values(row).some(
+                                    (val) => val !== null && val !== undefined && String(val).trim() !== ""
+                                );
+                            });
+                            setParsedData((prev) => [...prev, filteredData]);
+                        },
+                    });
+                }
+                else if (selectedFileTest.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -109,8 +174,13 @@ export default function UploadDatasets() {
 
                         setParsedData((prev) => [...prev, filteredData]);
                     };
-                    reader.readAsArrayBuffer(file);
-                });
+                    reader.readAsArrayBuffer(selectedFileTest);
+                }
+                else{
+                    setErrorMsg(t("datasets.upload.error.file_type"));
+                }
+            } else {
+                setErrorMsg(t("datasets.upload.error.no_files"));
             }
         }
     };
@@ -122,7 +192,7 @@ export default function UploadDatasets() {
             return;
         }
         //validamos archivos
-        if (selectedFiles.length === 0) {
+        if (selectedFile === null || (nFiles === 2 && selectedFileTest === null)) {
             setErrorMsg(t("datasets.upload.error.no_files"));
             return;
         }
@@ -134,9 +204,12 @@ export default function UploadDatasets() {
         console.log("Guardando datos analizados:", parsedData);
         const formsData = new FormData();
         //agregamos los archivos
-        selectedFiles.forEach((file) => {
-            formsData.append("files", file);
-        });
+        if (selectedFile) {
+            formsData.append("files", selectedFile);
+        }
+        if (nFiles === 2 && selectedFileTest) {
+            formsData.append("files", selectedFileTest);
+        }
         //agregamos nombre
         formsData.append("name", datasetName);
         //enviamos array de columnas
@@ -148,6 +221,8 @@ export default function UploadDatasets() {
             "n_rows",
             String(rows[0].length + (rows[1] ? rows[1].length : 0))
         );
+        //enviamos si tiene header
+        formsData.append("header", hasHeader.toString());
         //enviamos columna objetivo
         formsData.append("target_column", targetColumn ? targetColumn : "");
         let { data, status } = await postProtected("/datasets/upload", formsData)
@@ -155,7 +230,8 @@ export default function UploadDatasets() {
         if (status === 200) {
             navigate("/datasets");
         } else {
-            setErrorMsg(data.detail);
+            console.error("Error al subir el dataset:", data);
+            setErrorMsg(t("datasets.upload.error.upload_failed"));
         }
     };
 
@@ -257,24 +333,41 @@ export default function UploadDatasets() {
             <h1>{t("datasets.upload.title")}</h1>
             {uploadPhase === 0 ? (
                 <form onSubmit={handleSubmit} className="upload-form">
+                    <select value={nFiles} onChange={(e) => setNFiles(Number(e.target.value) as 1 | 2)}>
+                        <option value={1}>{t("datasets.upload.single_file")}</option>
+                        <option value={2}>{t("datasets.upload.multiple_files")}</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" checked={hasHeader} onChange={(e) => setHasHeader(e.target.checked)} />
+                        {t("datasets.upload.file_header")}
+                    </label>
                 <label className="file-upload-label">
-                    <span>{t("datasets.upload.select_files")}</span>
+                    <span>{nFiles === 1 ? t("datasets.upload.select_file") : t("datasets.upload.select_train_file")}</span>
                     <input
                         type="file"
                         onChange={handleFileChange}
                         accept=".csv, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                        multiple
+                        multiple={false}
                         className="file-upload-input"
                     />
                 </label>
-                {errorMsg && <p className="error-message">{errorMsg}</p>}
-                {selectedFiles.length > 0 && (
-                    <ul>
-                        {selectedFiles.map((file, idx) => (
-                            <li key={idx}>{file.name}</li>
-                        ))}
-                    </ul>
+                {nFiles === 2 && (
+                <label className="file-upload-label">
+                    <span>{t("datasets.upload.select_test_file")}</span>
+                    <input
+                        type="file"
+                        onChange={handleFileChangeTest}
+                        accept=".csv, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                        multiple={false}
+                        className="file-upload-input"
+                    />
+                </label>
                 )}
+                {errorMsg && <p className="error-message">{errorMsg}</p>}
+                <ul>
+                    {selectedFile && <li>{nFiles === 1 ? t("datasets.upload.selected_file") : t("datasets.upload.selected_train_file")}: {selectedFile.name}</li>}
+                    {selectedFileTest && <li>{t("datasets.upload.selected_test_file")}: {selectedFileTest.name}</li>}
+                </ul>
                 {loadingPhase0 && 
                 <div className="loading-indicator">
                     <CircularProgress />
@@ -303,6 +396,8 @@ export default function UploadDatasets() {
                         </label>
                         <br />
                         {parsedData.length > 0 && (
+                            <>
+                            <h3>{nFiles === 1 ? t("datasets.dataset") : t("datasets.train_dataset")}</h3>
                             <div style={{
                                 display: "flex",
                                 flexDirection: "row",
@@ -315,9 +410,20 @@ export default function UploadDatasets() {
                                     summaryStats[0].filter(s => s.column === targetColumn).map(s => s.uniqueCount)[0]
                                     : 0
                             }</p>
-                        </div>
+                            </div>
+                            {(parsedData.length > 0 && rows.length > 0 && summaryStats.length > 0) &&
+                            (<DatasetsView
+                                summaryStats={summaryStats[0]}
+                                rows={rows[0]}
+                                columns={columns}
+                                targetColumn={targetColumn}
+                            />
+                            )}
+                            </>
                         )}
                         {parsedData.length == 2 && (
+                            <>
+                            <h3>{t("datasets.test_dataset")}</h3>
                             <div style={{
                                 display: "flex",
                                 flexDirection: "row",
@@ -331,24 +437,17 @@ export default function UploadDatasets() {
                                     : 0
                             }</p>
                             </div>
+                            {(parsedData.length > 1 && rows.length > 1 && summaryStats.length > 1) &&
+                            (<DatasetsView
+                                summaryStats={summaryStats[1]}
+                                rows={rows[1]}
+                                columns={columns}
+                                targetColumn={targetColumn}
+                            />
+                            )}
+                            </>
                         )}
                     </div>
-                    {(parsedData.length > 0 && rows.length > 0 && summaryStats.length > 0) &&
-                    (<DatasetsView
-                        summaryStats={summaryStats[0]}
-                        rows={rows[0]}
-                        columns={columns}
-                        targetColumn={targetColumn}
-                    />
-                    )}
-                    {(parsedData.length > 1 && rows.length > 1 && summaryStats.length > 1) &&
-                    (<DatasetsView
-                        summaryStats={summaryStats[1]}
-                        rows={rows[1]}
-                        columns={columns}
-                        targetColumn={targetColumn}
-                    />
-                    )}
                     <TextField
                         label={t("datasets.upload.dataset_name")}
                         value={datasetName}
@@ -360,7 +459,8 @@ export default function UploadDatasets() {
                         setUploadPhase(0);
                         setParsedData([]);
                         setSummaryStats([]);
-                        setSelectedFiles([]);
+                        setSelectedFile(null);
+                        setSelectedFileTest(null);
                         setLoadingPhase0(false);
                     }}>
                         {t("back")}

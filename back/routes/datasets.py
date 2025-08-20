@@ -34,9 +34,9 @@ async def preview_dataset(
     dataset_data = []
     for dataset_file in dataset_files:
         if dataset_file.type_file == FileType.CSV:
-            df = pd.read_csv(dataset_file.file_path)
+            df = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
         elif dataset_file.type_file == FileType.EXCEL:
-            df = pd.read_excel(dataset_file.file_path)
+            df = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
         elif dataset_file.type_file == FileType.PARQUET:
             df = pd.read_parquet(dataset_file.file_path)
         else:
@@ -59,7 +59,7 @@ async def preview_dataset(
                 histogram = None
             
             stats.append({
-                "column": col,
+                "column": str(col),
                 "type": str(df[col].dtype),
                 "nulls": int(df[col].isnull().sum()),
                 "nullPercent": float(df[col].isnull().sum() / n_rows * 100),
@@ -82,6 +82,7 @@ async def upload_dataset(
     target_column: str = Form(...),
     n_classes: int = Form(...),
     n_rows: int = Form(...),
+    header: bool = Form(...),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db)
 ):
@@ -102,6 +103,8 @@ async def upload_dataset(
         raise HTTPException(status_code=400, detail="Columnas no válidas")
     if not target_column or target_column.strip() == "" or target_column not in columns:
         raise HTTPException(status_code=400, detail="Columna objetivo no válida")
+    if header is None:
+        raise HTTPException(status_code=400, detail="Debe especificar si el archivo tiene encabezados")
     new_dataset = Datasets(
         name=name,
         user_id=current_user.id,
@@ -133,13 +136,13 @@ async def upload_dataset(
             dataset_id=new_dataset.id,
             file_path=file_path,
             type_file=type_file,
-            dataset_type=DatasetType.ALL
+            dataset_type=DatasetType.ALL,
+            header=header
         )
         db.add(dataset_file)
         db.commit()
         db.refresh(dataset_file)
     else:
-        files.sort(key=lambda x: x.size)  # Ordenar por tamaño
         for file in files:
             ext = file.filename.split(".")[-1].lower()
             if ext not in ["csv", "xlsx", "xls", "parquet"]:
@@ -158,7 +161,8 @@ async def upload_dataset(
                 dataset_id=new_dataset.id,
                 file_path=file_path,
                 type_file=type_file,
-                dataset_type=DatasetType.TRAINING if file == files[1] else DatasetType.TESTING
+                dataset_type=DatasetType.TRAINING if file == files[0] else DatasetType.TESTING,
+                header=header
             )
             db.add(dataset_file)
             db.commit()

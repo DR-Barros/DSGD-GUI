@@ -83,16 +83,16 @@ export default function DatasetsView(
                                     <p style={{ margin: 0, lineHeight: 1.3 }}>
                                     {t("datasets.unique")}: {stats.uniqueCount}
                                     </p>
-                                    {stats.min !== undefined && (
+                                    {(stats.min !== undefined && stats.min !== null) && (
                                     <>
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.min")}: {stats.min}
+                                        {t("datasets.min")}: {Number(stats.min).toFixed(2)}
                                         </p>
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.max")}: {stats.max}
+                                        {t("datasets.max")}: {Number(stats.max).toFixed(2)}
                                         </p>
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.mean")}: {stats.mean}
+                                        {t("datasets.mean")}: {Number(stats.mean).toFixed(2)}
                                         </p>
                                         {stats.histogram && stats.histogram.length > 0 && (
                                             <div style={{ width: "100px", height: "80px", marginTop: 4 }}>

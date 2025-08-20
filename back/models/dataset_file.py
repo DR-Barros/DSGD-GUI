@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 import enum
@@ -28,5 +28,6 @@ class DatasetFile(Base):
     file_path = Column(String, nullable=False)
     type_file = Column(Enum(FileType), nullable=False)
     dataset_type = Column(Enum(DatasetType), nullable=False)
+    header = Column(Boolean, nullable=False)
 
     dataset = relationship("Datasets", back_populates="files")
