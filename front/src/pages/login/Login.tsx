@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { API_URL } from "../api/client";
+import { API_URL } from "../../api/client";
 import {Card, CardContent, Select, MenuItem, TextField, Snackbar, Alert  } from '@mui/material';
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../store/AppContext";
+import { useAppContext } from "../../store/AppContext";
 
 import "./Login.css"
 
@@ -73,7 +73,7 @@ export default function Login() {
 
             const data = await res.json();
 
-            if (res.ok) {
+            if (res.status === 200) {
                 setSnackbar({ open: true, message: t("register_success"), type: "success" });
                 setTimeout(() => setLoginState("logging"), 1500); // vuelve a login
             } else {
