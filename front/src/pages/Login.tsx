@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { API_URL } from "../api/client";
-import {Card, CardContent, Select, MenuItem, TextField } from '@mui/material';
+import {Card, CardContent, Select, MenuItem, TextField, Snackbar, Alert  } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../store/AppContext";
 
@@ -15,6 +15,11 @@ export default function Login() {
         password: "",
         password2: "",
         name: ""
+    });
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type: "success" | "error" }>({
+        open: false,
+        message: "",
+        type: "success"
     });
     const navigate = useNavigate();
     const { setUser } = useAppContext();
@@ -42,29 +47,41 @@ export default function Login() {
 
         const data = await res.json();
         console.log(data);
-        if (data) {
+        if (res.status === 200) {
             setUser(data);
             navigate("/");
+        } else {
+            setSnackbar({ open: true, message: data.detail || t("login_failed"), type: "error" });
         }
     };
 
     const register = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const res = await fetch(`${API_URL}/auth/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: credentials.name,
-                email: credentials.email,
-                password: credentials.password
-            })
-        });
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: credentials.name,
+                    email: credentials.email,
+                    password: credentials.password
+                })
+            });
 
-        const data = await res.json();
-        console.log(data);
+            const data = await res.json();
+
+            if (res.ok) {
+                setSnackbar({ open: true, message: t("register_success"), type: "success" });
+                setTimeout(() => setLoginState("logging"), 1500); // vuelve a login
+            } else {
+                setSnackbar({ open: true, message: data.message || t("register_failed"), type: "error" });
+            }
+        } catch (err) {
+            setSnackbar({ open: true, message: t("network_error"), type: "error" });
+        }
     };
 
     return (
@@ -154,6 +171,18 @@ export default function Login() {
                 )}
                 </CardContent>
             </Card>
+
+            {/* Snackbar */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.type} sx={{ width: "100%" }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }
