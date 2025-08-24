@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/login/Login";
-import Experiments from "./pages/experiment/Experiments";
+import Experiments from "./pages/experiments/Experiments";
 import Datasets from "./pages/dataset/Datasets";
 import UploadDatasets from "./pages/dataset/UploadDatasets";
 import "./i18n";
