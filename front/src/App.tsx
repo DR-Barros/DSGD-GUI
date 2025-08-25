@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Experiments from "./pages/experiments/Experiments";
+import Experiment from "./pages/experiment/Experiment";
 import Datasets from "./pages/dataset/Datasets";
 import UploadDatasets from "./pages/dataset/UploadDatasets";
 import "./i18n";
@@ -18,6 +19,7 @@ function App() {
           <Route path="/datasets" element={<Datasets />} />
           <Route path="/datasets/upload" element={<UploadDatasets />} />
           <Route path="/experiments" element={<Experiments />} />
+          <Route path="/experiment/:id" element={<Experiment />} />
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>

@@ -5,7 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import {Fab} from "@mui/material";
 import { useEffect, useState } from "react";
 import ModalExperiment from "./components/ModalExperiment";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchProtected } from "../../api/client";
 import type { Experiment } from "../../types/experiment";
 
@@ -13,6 +13,7 @@ import "./Experiments.css"
 
 export default function Experiments() {
     const location = useLocation();
+    const navigate = useNavigate();
     const { t } = useTranslation();
     const [experiments, setExperiments] = useState<Experiment[]>([]);
     const [modalOpen, setModalOpen] = useState(location.state?.modal || false);
@@ -61,7 +62,9 @@ export default function Experiments() {
                         </p>
                     } />
                 <ListItemIcon>
-                    <ArrowForwardIcon color="primary" />
+                    <Button onClick={() => navigate(`/experiment/${exp.id}`)}>
+                        <ArrowForwardIcon color="primary" />
+                    </Button>
                 </ListItemIcon>
                 </ListItem>
                 <Divider />
