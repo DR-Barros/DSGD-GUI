@@ -6,14 +6,17 @@ import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Select, TextField } from '@mui/material';
+import { postProtected } from '../../../api/client';
+import { indexValues, replaceVariables } from '../../../utils/parser';
 
 interface PreTrainPhaseProps {
     datasetPreview: any[];
     datasetStats: any[];
     Dataset: Dataset | null;
+    experimentId?: string;
 }
 
-export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset }: PreTrainPhaseProps) {
+export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId }: PreTrainPhaseProps) {
     const [activeStep, setActiveStep] = useState(0);
     const [params, setParams] = useState({
         testSize: 0.2,
@@ -32,14 +35,33 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset }:
         singleRule: boolean;
         multipleRules: boolean;
         breakRules: number;
-        selectedRules: string[];
+        selectedColumns: string[];
     }>({
         singleRule: true,
         multipleRules: false,
         breakRules: 3,
-        selectedRules: []
+        selectedColumns: []
     });
+    const [encodedRules, setEncodedRules] = useState<any[]>([]);
+    const [masses, setMasses] = useState<any[]>([]);
     const { t } = useTranslation();
+
+    const handleGenerateRules = async () => {
+        const {data, status} = await postProtected(`/train/generate-rules/${experimentId}`, {
+            singleRule: generateRuleParams.singleRule,
+            multipleRule: generateRuleParams.multipleRules,
+            breakRules: generateRuleParams.breakRules,
+            selectedColumns: generateRuleParams.selectedColumns
+        });
+        if (status === 200) {
+            console.log("Generated rules:", data.rules);
+            console.log("Masses:", data.masses);
+            setEncodedRules(data.rules);
+            setMasses(data.masses);
+        } else {
+            console.error("Error generating rules:", data);
+        }
+    };
 
     return (
         <div>
@@ -178,8 +200,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset }:
                             control={
                                 <Select
                                     multiple
-                                    value={generateRuleParams.selectedRules}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, selectedRules: e.target.value as string[] })}
+                                    value={generateRuleParams.selectedColumns}
+                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, selectedColumns: e.target.value as string[] })}
                                     renderValue={(selected) => (selected as string[]).join(', ')}
                                     style={{ minWidth: '200px' }}
                                     >
@@ -217,12 +239,61 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset }:
                             }}
                         />
                         <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
-                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }}>
+                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleGenerateRules}>
                             {t("experiment.generateRules")}
                         </Button>
                         </div>
                     </CardContent>
                 </Card>
+                <div>
+                    {/* mostramos las reglas */}
+                    {(() => {
+                    // Agrupamos dentro del render
+                    const groupedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {};
+
+                    encodedRules.forEach((ruleEntry, index) => {
+                    const r = ruleEntry[0];
+                    const vars = ruleEntry[1];
+                    const mass = masses[index];
+                    const rulesWithValues = replaceVariables(r, vars);
+                    const indices = Array.from(indexValues(r, vars));
+
+                    if (indices.length > 1) {
+                        const joinedIdx = indices.join('-');
+                        if (!groupedRules[joinedIdx]) groupedRules[joinedIdx] = [];
+                        groupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues });
+                    } else {
+                        indices.forEach((idx) => {
+                            if (!groupedRules[idx]) groupedRules[idx] = [];
+                            groupedRules[idx].push({ rule: r, vars, mass, rulesWithValues });
+                        });
+                    }
+                    });
+
+                    // Renderizamos los grupos
+                    return Object.entries(groupedRules).map(([idx, rulesArray]) => (
+                    <div key={idx} style={{ marginBottom: "1rem", padding: "0.5rem", border: "1px solid #ccc", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                        <h3>Index: {idx}</h3>
+                        {rulesArray.map((item, i) => (
+                        <div key={i} style={{ marginBottom: "1rem", borderBottom: "1px solid #ccc", display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
+                                {item.rulesWithValues.map((cond: any, ci: number) => (
+                                    <div key={ci} style={{ display: "flex", flexDirection: "row", marginRight: "1rem" }}>
+                                        <p>{JSON.stringify(cond.left, null, 2)}</p>
+                                        <p>{JSON.stringify(cond.op, null, 2)}</p>
+                                        <p>{JSON.stringify(cond.right, null, 2)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            {item.mass.map((m, mi) => (
+                            <div key={mi}>Mass {mi + 1}: {m.toFixed(4)}</div>
+                            ))}
+                        </div>
+                        ))}
+                    </div>
+                    ));
+                })()}
+                </div>
                 <button onClick={() => setActiveStep(0)}>
                     {t("back")}
                 </button>

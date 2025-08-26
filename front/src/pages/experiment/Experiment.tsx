@@ -37,7 +37,7 @@ export default function Experiment() {
         <div>
             <DrawerMenu />
             <div className="experiment-container">
-                {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} />}
+                {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} />}
             </div>
         </div>
     );
