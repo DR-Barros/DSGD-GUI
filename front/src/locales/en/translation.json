@@ -34,7 +34,24 @@
   "experiment":{
     "dataset": "Dataset",
     "rules": "Rules",
-    "train": "Train"
+    "train": "Train",
+    "training": "Training",
+    "randomSeed": "Random Seed",
+    "testSize": "Test Size",
+    "splitSeed": "Split Seed",
+    "shuffle": "Shuffle",
+    "dropNulls": "Drop Nulls",
+    "dropDuplicates": "Drop Duplicates",
+    "seeRules": "See Rules",
+    "singleRule": "Add Single Rule",
+    "multipleRules": "Add Multiple Rules",
+    "breakRules": "Number of Break",
+    "selectColumns": "Select Columns",
+    "generateRules": "Generate Rules",
+    "maxEpochs": "Max Epochs",
+    "minEpochs": "Min Epochs",
+    "batchSize": "Batch Size",
+    "learningRate": "Learning Rate"
   },
   "datasets": {
     "title": "Datasets",

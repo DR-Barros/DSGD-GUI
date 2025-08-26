@@ -34,7 +34,24 @@
   "experiment":{
     "dataset": "Conjunto de datos",
     "rules": "Reglas",
-    "train": "Entrenar"
+    "train": "Entrenar",
+    "training": "Entrenamiento",
+    "randomSeed": "Semilla aleatoria",
+    "testSize": "Tamaño de prueba",
+    "splitSeed": "Semilla de división",
+    "shuffle": "Barajar",
+    "dropNulls": "Eliminar nulos",
+    "dropDuplicates": "Eliminar duplicados",
+    "seeRules": "Ver reglas",
+    "singleRule": "Agregar regla única",
+    "multipleRules": "Agregar múltiples reglas",
+    "breakRules": "Número de cortes",
+    "selectColumns": "Seleccionar columnas",
+    "generateRules": "Generar reglas",
+    "maxEpochs": "Número máximo de épocas",
+    "minEpochs": "Número mínimo de épocas",
+    "batchSize": "Tamaño de lote",
+    "learningRate": "Tasa de aprendizaje"
   },
   "datasets": {
     "title": "Conjuntos de datos",
