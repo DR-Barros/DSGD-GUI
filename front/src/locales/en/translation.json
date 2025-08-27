@@ -51,7 +51,11 @@
     "maxEpochs": "Max Epochs",
     "minEpochs": "Min Epochs",
     "batchSize": "Batch Size",
-    "learningRate": "Learning Rate"
+    "learningRate": "Learning Rate",
+    "optimFunction": "Optimization Function",
+    "lossFunction": "Loss Function",
+    "uncertainty": "Uncertainty",
+    "mass": "Mass"
   },
   "datasets": {
     "title": "Datasets",

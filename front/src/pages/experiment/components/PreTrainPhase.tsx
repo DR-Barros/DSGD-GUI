@@ -19,6 +19,7 @@ import {
     Tooltip,
     Legend
 } from "chart.js";
+import RuleGroup from './RuleGroup';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -45,7 +46,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         dropDuplicates: true,
         maxEpochs: 100,
         minEpochs: 10,
-        batchSize: 32,
+        batchSize: 4000,
         lossFunction: "MSE",
         optimFunction: "Adam",
         learningRate: 0.001
@@ -133,6 +134,9 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             <div>
             {activeStep === 0 && <>
                 <Card>
+                    <CardContent sx={{ display: "flex", flexDirection: "row", gap: "16px" }}>
+                    {datasetPreview.length > 1 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
                     <label>
                         {t("experiment.testSize")}
                         <input
@@ -163,6 +167,9 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             onChange={(e) => setParams({ ...params, shuffle: e.target.checked })}
                         />
                     </label>
+                    </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
                     <label>
                         {t("experiment.dropNulls")}
                         <input
@@ -179,6 +186,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             onChange={(e) => setParams({ ...params, dropDuplicates: e.target.checked })}
                         />
                     </label>
+                    </div>
+                    </CardContent>
                 </Card>
                 <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                 <p>{t("columns")}: {Dataset?.columns.length}</p>
@@ -215,7 +224,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             </>}
             {activeStep === 1 && <>
                 <Card sx={{marginBottom: 2}}>
-                    <h2>{t("experiment.generateRules")}</h2>
+                    <h2 style={{marginLeft: "16px"}}>{t("experiment.generateRules")}</h2>
                     <CardContent sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
                         <FormControlLabel
                             control={
@@ -301,111 +310,17 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 </Card>
                 <div>
                     {/* mostramos las reglas */}
-                    {(() => {
-                    // Renderizamos los grupos
-                    return Object.entries(
-                        encodedRules
-                    ).map(([idx, rulesArray]) => (
-                    <div key={idx} style={{ marginBottom: "1rem", padding: "0.5rem", border: "1px solid #ccc", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                        <h3>Index: {idx}</h3>
-                        {idx.split('-').map((i) => {
-                            console.log(i);
-                            console.log(datasetStats);
-                            const stats = datasetStats[0].find((s: any) => s.column == i);
-                            console.log(stats);
-                            return stats ? (
-                                <div
-                                    style={{
-                                    fontSize: 10,
-                                    color: "#666",
-                                    maxHeight: "150px",
-                                    overflowY: "auto",
-                                    }}
-                                >
-                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
-                                    </p>
-                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                    {t("datasets.unique")}: {stats.uniqueCount}
-                                    </p>
-                                    {(stats.min !== undefined && stats.min !== null) && (
-                                    <>
-                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.min")}: {Number(stats.min).toFixed(2)}
-                                        </p>
-                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.max")}: {Number(stats.max).toFixed(2)}
-                                        </p>
-                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                        {t("datasets.mean")}: {Number(stats.mean).toFixed(2)}
-                                        </p>
-                                        {stats.histogram && stats.histogram.length > 0 && (
-                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
-                                                <Bar
-                                                    data={{
-                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
-                                                        datasets: [
-                                                            {
-                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
-                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
-                                                            },
-                                                        ],
-                                                    }}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: {
-                                                            legend: { display: false },
-                                                        },
-                                                        scales: {
-                                                            x: { ticks: { display: false } },
-                                                            y: { ticks: { display: false } },
-                                                        },
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-                                    </>
-                                    )}
-                                </div>
-                                ) : null;
-                        })}
-                        {rulesArray.map((item, i) => (
-                        <div key={i} style={{ marginBottom: "1rem", borderBottom: "1px solid #ccc", display: "flex", flexDirection: "row", gap: "0.5rem" }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
-                                <RuleEditor
-                                    conditions={item.rulesWithValues}
-                                    onChange={(newConditions) => {
-                                        setEncodedRules((prev) => {
-                                        // Clonamos todo el objeto
-                                        const updated = { ...prev };
-
-                                        // Clonamos el array del índice actual
-                                        const updatedArray = [...updated[idx]];
-
-                                        // Reemplazamos el item en la posición i
-                                        updatedArray[i] = {
-                                            ...updatedArray[i],
-                                            rulesWithValues: newConditions,
-                                        };
-
-                                        // Asignamos el array modificado de vuelta al índice
-                                        updated[idx] = updatedArray;
-
-                                        return updated;
-                                        });
-                                    }}
-                                    columns={Dataset?.columns || []}
-                                />
-                            </div>
-                            {item.mass.map((m: number, mi: number) => (
-                            <div key={mi}>Mass {mi + 1}: {m.toFixed(4)}</div>
-                            ))}
-                        </div>
-                        ))}
-                    </div>
-                    ));
-                })()}
+                    {Object.entries(encodedRules).map(([idx, rulesArray]) => (
+                    <RuleGroup
+                        key={idx}
+                        idx={idx}
+                        rulesArray={rulesArray}
+                        datasetStats={datasetStats}
+                        Dataset={Dataset}
+                        t={t}
+                        setEncodedRules={setEncodedRules}
+                    />
+                    ))}
                 </div>
                 <button onClick={() => setActiveStep(0)}>
                     {t("back")}
@@ -420,43 +335,107 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         <h2 style={{gridColumn: 'span 3', textAlign: 'center'}}>
                             {t("experiment.training")}
                         </h2>
-                        <label>
-                            {t("experiment.maxEpochs")}
-                            <TextField
-                                type="number"
-                                value={params.maxEpochs}
-                                onChange={(e) => setParams({ ...params, maxEpochs: parseInt(e.target.value) })}
-                                style={{ width: '100px' }}
-                            />
-                        </label>
-                        <label>
-                            {t("experiment.minEpochs")}
-                            <TextField
-                                type="number"
-                                value={params.minEpochs}
-                                onChange={(e) => setParams({ ...params, minEpochs: parseInt(e.target.value) })}
-                                style={{ width: '100px' }}
-                            />
-                        </label>
-                        <label>
-                            {t("experiment.batchSize")}
-                            <TextField
-                                type="number"
-                                value={params.batchSize}
-                                onChange={(e) => setParams({ ...params, batchSize: parseInt(e.target.value) })}
-                                style={{ width: '100px' }}
-                            />
-                        </label>
-                        <label>
-                            {t("experiment.learningRate")}
-                            <TextField
-                                type="number"
-                                value={params.learningRate}
-                                onChange={(e) => setParams({ ...params, learningRate: parseFloat(e.target.value) })}
-                                style={{ width: '100px' }}
-                            />
-                        </label>
-                         <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
+                        <FormControlLabel
+                            control={
+                                <TextField
+                                    type="number"
+                                    value={params.maxEpochs}
+                                    onChange={(e) => setParams({ ...params, maxEpochs: parseInt(e.target.value) })}
+                                    style={{ width: '100px' }}
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: params.minEpochs + 1,
+                                            max: 10000
+                                        }
+                                    }}
+                                />
+                            }
+                            label={t("experiment.maxEpochs")}
+                            labelPlacement='start'
+                        />
+                        <FormControlLabel
+                            control={
+                                <TextField
+                                    type="number"
+                                    value={params.minEpochs}
+                                    onChange={(e) => setParams({ ...params, minEpochs: parseInt(e.target.value) })}
+                                    style={{ width: '100px' }}
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: 1,
+                                            max: params.maxEpochs - 1
+                                        }
+                                    }}
+                                />
+                            }
+                            label={t("experiment.minEpochs")}
+                            labelPlacement='start'
+                        />
+                        <FormControlLabel
+                            control={
+                                <TextField
+                                    type="number"
+                                    value={params.batchSize}
+                                    onChange={(e) => setParams({ ...params, batchSize: parseInt(e.target.value) })}
+                                    style={{ width: '100px' }}
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: 1
+                                        }
+                                    }}
+                                />
+                            }
+                            label={t("experiment.batchSize")}
+                            labelPlacement='start'
+                        />
+                        <FormControlLabel
+                            control={
+                                <TextField
+                                    type="number"
+                                    value={params.learningRate}
+                                    onChange={(e) => setParams({ ...params, learningRate: parseFloat(e.target.value) })}
+                                    style={{ width: '100px' }}
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: 0.0000000000001,
+                                            max: 0.9999999999999,
+                                            step: 0.0001
+                                        }
+                                    }}
+                                />
+                            }
+                            label={t("experiment.learningRate")}
+                            labelPlacement='start'
+                        />
+                        <FormControlLabel
+                            control={
+                                <Select
+                                    value={params.lossFunction}
+                                    onChange={(e) => setParams({ ...params, lossFunction: e.target.value })}
+                                    style={{ width: '150px' }}
+                                >
+                                    <MenuItem value="MSE">MSE</MenuItem>
+                                    <MenuItem value="CE">CrossEntropy</MenuItem>
+                                </Select>
+                            }
+                            label={t("experiment.lossFunction")}
+                            labelPlacement='start'
+                        />
+                        <FormControlLabel
+                            control={
+                                <Select
+                                    value={params.optimFunction}
+                                    onChange={(e) => setParams({ ...params, optimFunction: e.target.value })}
+                                    style={{ width: '150px' }}
+                                >
+                                    <MenuItem value="Adam">Adam</MenuItem>
+                                    <MenuItem value="sgd">SGD</MenuItem>
+                                </Select>
+                            }
+                            label={t("experiment.optimFunction")}
+                            labelPlacement='start'
+                        />
+                        <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
                         <Button variant="contained" color="primary" style={{ marginTop: '20px' }}>
                             {t("experiment.train")}
                         </Button>
