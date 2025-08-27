@@ -1,13 +1,32 @@
 import Stepper from '@mui/joy/Stepper';
 import Step from '@mui/joy/Step';
 import StepButton from '@mui/joy/StepButton';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Select, TextField } from '@mui/material';
 import { postProtected } from '../../../api/client';
 import { indexValues, replaceVariables } from '../../../utils/parser';
+import RuleEditor from './RuleEditor';
+import { Bar } from "react-chartjs-2";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+} from "chart.js";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+
+type HistogramBin = {
+    bin: string;
+    count: number;
+};
 
 interface PreTrainPhaseProps {
     datasetPreview: any[];
@@ -42,8 +61,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         breakRules: 3,
         selectedColumns: []
     });
-    const [encodedRules, setEncodedRules] = useState<any[]>([]);
-    const [masses, setMasses] = useState<any[]>([]);
+    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>>>({});
     const { t } = useTranslation();
 
     const handleGenerateRules = async () => {
@@ -56,12 +74,48 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         if (status === 200) {
             console.log("Generated rules:", data.rules);
             console.log("Masses:", data.masses);
-            setEncodedRules(data.rules);
-            setMasses(data.masses);
+            const groupedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {};
+
+            interface RuleEntry {
+                0: any; // rule
+                1: any; // vars
+            }
+
+            interface GroupedRule {
+                rule: any;
+                vars: any;
+                mass: any;
+                rulesWithValues: any;
+            }
+
+            (data.rules as RuleEntry[]).forEach((ruleEntry: RuleEntry, index: number) => {
+                const r: any = ruleEntry[0];
+                const vars: any = ruleEntry[1];
+                const mass: any = data.masses[index];
+                const rulesWithValues: any = replaceVariables(r, vars);
+                const indices: string[] = Array.from(indexValues(r, vars));
+
+                if (indices.length > 1) {
+                    const joinedIdx: string = indices.join('-');
+                    if (!groupedRules[joinedIdx]) groupedRules[joinedIdx] = [];
+                    groupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues } as GroupedRule);
+                } else {
+                    indices.forEach((idx: string) => {
+                        if (!groupedRules[idx]) groupedRules[idx] = [];
+                        groupedRules[idx].push({ rule: r, vars, mass, rulesWithValues } as GroupedRule);
+                    });
+                }
+            });
+            console.log("Grouped Rules:", groupedRules);
+            setEncodedRules(groupedRules);
         } else {
             console.error("Error generating rules:", data);
         }
     };
+
+    useEffect(() => {
+        console.log(datasetStats);
+    }, [datasetStats]);
 
     return (
         <div>
@@ -248,44 +302,103 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 <div>
                     {/* mostramos las reglas */}
                     {(() => {
-                    // Agrupamos dentro del render
-                    const groupedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {};
-
-                    encodedRules.forEach((ruleEntry, index) => {
-                    const r = ruleEntry[0];
-                    const vars = ruleEntry[1];
-                    const mass = masses[index];
-                    const rulesWithValues = replaceVariables(r, vars);
-                    const indices = Array.from(indexValues(r, vars));
-
-                    if (indices.length > 1) {
-                        const joinedIdx = indices.join('-');
-                        if (!groupedRules[joinedIdx]) groupedRules[joinedIdx] = [];
-                        groupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues });
-                    } else {
-                        indices.forEach((idx) => {
-                            if (!groupedRules[idx]) groupedRules[idx] = [];
-                            groupedRules[idx].push({ rule: r, vars, mass, rulesWithValues });
-                        });
-                    }
-                    });
-
                     // Renderizamos los grupos
-                    return Object.entries(groupedRules).map(([idx, rulesArray]) => (
+                    return Object.entries(
+                        encodedRules
+                    ).map(([idx, rulesArray]) => (
                     <div key={idx} style={{ marginBottom: "1rem", padding: "0.5rem", border: "1px solid #ccc", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                         <h3>Index: {idx}</h3>
+                        {idx.split('-').map((i) => {
+                            console.log(i);
+                            console.log(datasetStats);
+                            const stats = datasetStats[0].find((s: any) => s.column == i);
+                            console.log(stats);
+                            return stats ? (
+                                <div
+                                    style={{
+                                    fontSize: 10,
+                                    color: "#666",
+                                    maxHeight: "150px",
+                                    overflowY: "auto",
+                                    }}
+                                >
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
+                                    </p>
+                                    <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                    {t("datasets.unique")}: {stats.uniqueCount}
+                                    </p>
+                                    {(stats.min !== undefined && stats.min !== null) && (
+                                    <>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.min")}: {Number(stats.min).toFixed(2)}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.max")}: {Number(stats.max).toFixed(2)}
+                                        </p>
+                                        <p style={{ margin: 0, lineHeight: 1.3 }}>
+                                        {t("datasets.mean")}: {Number(stats.mean).toFixed(2)}
+                                        </p>
+                                        {stats.histogram && stats.histogram.length > 0 && (
+                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
+                                                <Bar
+                                                    data={{
+                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                                                        datasets: [
+                                                            {
+                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
+                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                                            },
+                                                        ],
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            legend: { display: false },
+                                                        },
+                                                        scales: {
+                                                            x: { ticks: { display: false } },
+                                                            y: { ticks: { display: false } },
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                    )}
+                                </div>
+                                ) : null;
+                        })}
                         {rulesArray.map((item, i) => (
                         <div key={i} style={{ marginBottom: "1rem", borderBottom: "1px solid #ccc", display: "flex", flexDirection: "row", gap: "0.5rem" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
-                                {item.rulesWithValues.map((cond: any, ci: number) => (
-                                    <div key={ci} style={{ display: "flex", flexDirection: "row", marginRight: "1rem" }}>
-                                        <p>{JSON.stringify(cond.left, null, 2)}</p>
-                                        <p>{JSON.stringify(cond.op, null, 2)}</p>
-                                        <p>{JSON.stringify(cond.right, null, 2)}</p>
-                                    </div>
-                                ))}
+                                <RuleEditor
+                                    conditions={item.rulesWithValues}
+                                    onChange={(newConditions) => {
+                                        setEncodedRules((prev) => {
+                                        // Clonamos todo el objeto
+                                        const updated = { ...prev };
+
+                                        // Clonamos el array del índice actual
+                                        const updatedArray = [...updated[idx]];
+
+                                        // Reemplazamos el item en la posición i
+                                        updatedArray[i] = {
+                                            ...updatedArray[i],
+                                            rulesWithValues: newConditions,
+                                        };
+
+                                        // Asignamos el array modificado de vuelta al índice
+                                        updated[idx] = updatedArray;
+
+                                        return updated;
+                                        });
+                                    }}
+                                    columns={Dataset?.columns || []}
+                                />
                             </div>
-                            {item.mass.map((m, mi) => (
+                            {item.mass.map((m: number, mi: number) => (
                             <div key={mi}>Mass {mi + 1}: {m.toFixed(4)}</div>
                             ))}
                         </div>
