@@ -2,6 +2,10 @@
 const URL = import.meta.env.PROD ? '/' : 'http://localhost:8000/';
 export const API_URL: string = `${URL}api`;
 
+function redirectToLogin() {
+  window.location.href = '/login';
+}
+
 export async function fetchProtected(endpoint: string) {
   const res = await fetch(`${API_URL}${endpoint}`, {
     credentials: "include",
@@ -22,8 +26,10 @@ export async function fetchProtected(endpoint: string) {
         if (retryRes.status === 200) {
           return { data: await retryRes.json(), status: retryRes.status };
         }
+        redirectToLogin();
         throw new Error("No autorizado");
       } else {
+        redirectToLogin();
         throw new Error("No autorizado");
       }
   }
@@ -60,6 +66,7 @@ export async function postProtected(endpoint: string, body: any) {
         return { data: await retryRes.json(), status: retryRes.status };
       }
     }
+    redirectToLogin();
     throw new Error("No autorizado");
   }
   return { data: await res.json(), status: res.status };
@@ -96,6 +103,7 @@ export async function putProtected(endpoint: string, body: any) {
         return retryRes.json();
       }
     }
+    redirectToLogin();
     throw new Error("No autorizado");
   }
   return res.json();
@@ -128,6 +136,7 @@ export async function deleteProtected(endpoint: string) {
         return retryRes.json();
       }
     }
+    redirectToLogin();
     throw new Error("No autorizado");
   }
   return res.json();

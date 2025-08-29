@@ -22,6 +22,7 @@
   "save": "Guardar",
   "continue": "Continuar",
   "close": "Cerrar",
+  "and": "y",
   "menu": {
     "datasets": "Conjuntos de datos",
     "experiments": "Experimentos"
@@ -55,7 +56,10 @@
     "optimFunction": "Función de optimización",
     "lossFunction": "Función de pérdida",
     "uncertainty": "Incertidumbre",
-    "mass": "Masa"
+    "mass": "Masa",
+    "splitSettings": "Configuración de división",
+    "cleaningSettings": "Configuración de limpieza",
+    "addManualRule": "Agregar regla manual"
   },
   "datasets": {
     "title": "Conjuntos de datos",

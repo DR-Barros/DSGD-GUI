@@ -20,6 +20,7 @@ import {
     Legend
 } from "chart.js";
 import RuleGroup from './RuleGroup';
+import { use } from 'i18next';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -56,14 +57,28 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         multipleRules: boolean;
         breakRules: number;
         selectedColumns: string[];
+        manualColumns?: string[];
     }>({
         singleRule: true,
         multipleRules: false,
         breakRules: 3,
-        selectedColumns: []
+        selectedColumns: Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : [],
+        manualColumns: [],
     });
     const [encodedRules, setEncodedRules] = useState<Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>>>({});
+    const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
+
+    useEffect(() => {
+        console.log("Dataset changed, updating selectedColumns and manualColumns");
+        if (Dataset) {
+            const cols = Dataset.columns.filter(col => col !== Dataset.target_column);
+            setGenerateRuleParams(prev => ({
+                ...prev,
+                selectedColumns: cols,
+            }));
+        }
+    }, [Dataset]);
 
     const handleGenerateRules = async () => {
         const {data, status} = await postProtected(`/train/generate-rules/${experimentId}`, {
@@ -135,8 +150,9 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             {activeStep === 0 && <>
                 <Card>
                     <CardContent sx={{ display: "flex", flexDirection: "row", gap: "16px" }}>
-                    {datasetPreview.length > 1 && (
+                    {datasetPreview.length === 1 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
+                    <h3>{t("experiment.splitSettings")}</h3>
                     <label>
                         {t("experiment.testSize")}
                         <input
@@ -170,6 +186,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     </div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
+                    <h3>{t("experiment.cleaningSettings")}</h3>
                     <label>
                         {t("experiment.dropNulls")}
                         <input
@@ -322,8 +339,47 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     />
                     ))}
                 </div>
+                {modalRuleOpen &&
+                <div>
+                    <FormControlLabel
+                            control={
+                                <Select
+                                    multiple
+                                    value={generateRuleParams.manualColumns}
+                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, manualColumns: e.target.value as string[] })}
+                                    renderValue={(selected) => (selected as string[]).join(', ')}
+                                    style={{ minWidth: '200px' }}
+                                    >
+                                {Dataset?.columns
+                                .filter((col) => col !== Dataset.target_column)
+                                .map((col) => (
+                                    <MenuItem key={col} value={col}>
+                                        {col}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                            }
+                            label={t("experiment.selectColumns")}
+                            labelPlacement='start'
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                gap: 1,
+                            }}
+                        />
+                        <button onClick={() => {
+                            setModalRuleOpen(false);
+                            //creamos el idx a crear
+                            let idx = generateRuleParams.manualColumns?.join('-') || '';
+                            setEncodedRules(prev => ({...prev, [idx]: []}))
+                        }}>Crear</button>
+                </div>}
                 <button onClick={() => setActiveStep(0)}>
                     {t("back")}
+                </button>
+                <button onClick={() => setModalRuleOpen(true)}>
+                    {t("experiment.addManualRule")}
                 </button>
                 <button onClick={() => setActiveStep(2)}>
                     {t("experiment.train")}

@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import RuleEditor from "./RuleEditor"; // Ajusta la importación según corresponda
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import EditOffIcon from '@mui/icons-material/EditOff';
+import { Tooltip } from "@mui/material";
+import type { Dataset } from "../../../types/dataset";
 
 type HistogramBin = {
   bin: string | number;
@@ -19,7 +23,7 @@ interface RuleGroupProps {
   idx: string;
   rulesArray: RuleItem[];
   datasetStats: any[];
-  Dataset: any;
+  Dataset: Dataset | null;
   t: (key: string) => string;
   setEncodedRules: React.Dispatch<
     React.SetStateAction<Record<string, RuleItem[]>>
@@ -35,6 +39,11 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
   setEncodedRules,
 }) => {
     const [viewStats, setViewStats] = React.useState(false);
+    const [editing, setEditing] = React.useState<boolean>(false);
+    useEffect(() => {
+        console.log("Rendering RuleGroup for idx:", idx);
+        console.log("Current rulesArray:", rulesArray);
+    }, [idx]);
 
     return (
         <div
@@ -51,6 +60,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         <h3>Index: {idx}</h3>
         <button onClick={() => setViewStats(!viewStats)}>
             <VisibilityIcon />
+        </button>
+        <button onClick={() => setEditing(!editing)}>
+            {editing ? <EditOffIcon /> : <ModeEditIcon />}
         </button>
         </div>
 
@@ -143,6 +155,10 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 {mi === rulesArray[0].mass.length - 1 ? t("experiment.uncertainty") : `${t("experiment.mass")} ${mi + 1}`}
                 </th>
             ))}
+            <th>
+                validez
+            </th>
+            {editing && <th></th>}
             </tr>
         </thead>
         <tbody>
@@ -165,6 +181,8 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     });
                     }}
                     columns={Dataset?.columns || []}
+                    idx={idx}
+                    editing={editing}
                 />
                 </td>
 
@@ -174,6 +192,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     key={mi}
                     style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}
                 >
+                    {editing ? (
                     <input
                     type="number"
                     step="0.0001"
@@ -205,12 +224,71 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                         textAlign: "right",
                     }}
                     />
+                    ) : (
+                    <span>{m.toFixed(3)}</span>
+                    )}
                 </td>
                 ))}
+                {/* valido si las masas suman 1 */}
+                <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
+                    <Tooltip title={Math.abs(item.mass.reduce((a, b) => a + b, 0)) }>
+                        <p>{Math.abs(item.mass.reduce((a, b) => a + b, 0)) == 1 ? "✅" : "❌"}</p>
+                    </Tooltip>
+                </td>
+                {editing && (
+                <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
+                    <button onClick={() => {
+                    setEncodedRules((prev) => {
+                        const updated = { ...prev };
+                        const updatedArray = [...updated[idx]];
+                        const filtered = updatedArray.filter((_, ri) => ri !== i);
+                        updated[idx] = filtered;
+                        return updated;
+                    })}}>
+                        Delete
+                    </button>
+                </td>
+                )}
             </tr>
             ))}
         </tbody>
         </table>
+        {/* Botón para agregar nueva regla */}
+        <button
+        onClick={() => {
+            setEncodedRules((prev) => {
+            const updated = { ...prev };
+            const currentRules = updated[idx] ? [...updated[idx]] : [];
+
+            // Nueva regla "vacía"
+            const newRule: RuleItem = {
+                rule: null,
+                vars: null,
+                mass: new Array(rulesArray[0]?.mass.length || Dataset!.n_classes +1 || 2).fill(0), // ej: tantas columnas mass como las demás
+                rulesWithValues: [{
+                    left: idx,
+                    op: null,
+                    right: 0,
+                }],
+            };
+
+            currentRules.push(newRule);
+            updated[idx] = currentRules;
+            return updated;
+            });
+        }}
+        style={{
+            marginTop: "0.5rem",
+            padding: "6px 12px",
+            backgroundColor: "#1976d2",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+        }}
+        >
+        {t("experiment.addRule")}
+        </button>
 
         </div>
     );

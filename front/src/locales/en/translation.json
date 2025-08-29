@@ -22,6 +22,7 @@
   "save": "Save",
   "continue": "Continue",
   "close": "Close",
+  "and": "and",
   "menu": {
     "datasets": "Datasets",
     "experiments": "Experiments"
@@ -55,7 +56,10 @@
     "optimFunction": "Optimization Function",
     "lossFunction": "Loss Function",
     "uncertainty": "Uncertainty",
-    "mass": "Mass"
+    "mass": "Mass",
+    "splitSettings": "Split Settings",
+    "cleaningSettings": "Cleaning Settings",
+    "addManualRule": "Add Manual Rule"
   },
   "datasets": {
     "title": "Datasets",
