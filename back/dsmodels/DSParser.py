@@ -200,7 +200,7 @@ class DSParser:
             []
         return index_values
 
-    def build_expr(self, condition):
+    def build_expr(self, condition, columns):
         """
         Construye un nodo AST a partir de una condición en JSON.
         Soporta combinaciones booleanas (and/or) y comparaciones encadenadas.
@@ -211,34 +211,34 @@ class DSParser:
         if isinstance(condition, dict) and 'op' in condition and condition['op'] in ('and', 'or'):
             # caso de combinación booleana
             op = ast.And() if condition['op'] == 'and' else ast.Or()
-            values = [self.build_expr(c) for c in condition['values']]
+            values = [self.build_expr(c, columns) for c in condition['values']]
             return ast.BoolOp(op=op, values=values)
         
 
         elif isinstance(condition, list):
             # caso de comparación encadenada: [a <= x[0], x[0] < b]
-            left = self.build_side(condition[0]['left'])
+            left = self.build_side(condition[0]['left'], columns)
             comparators = []
             ops = []
 
             for c in condition:
                 ops.append(self.op_inverse_map[c['op']]())
-                comparators.append(self.build_side(c['right']))
+                comparators.append(self.build_side(c['right'], columns))
 
             return ast.Compare(left=left, ops=ops, comparators=comparators)
 
         elif isinstance(condition, dict):
             # caso simple: {'left': ..., 'op': ..., 'right': ...}
             return ast.Compare(
-                left=self.build_side(condition['left']),
+                left=self.build_side(condition['left'], columns),
                 ops=[self.op_inverse_map[condition['op']]()],
-                comparators=[self.build_side(condition['right'])]
+                comparators=[self.build_side(condition['right'], columns)]
             )
 
         else:
             raise ValueError(f"No se puede procesar la condición: {condition}")
 
-    def build_side(self, value):
+    def build_side(self, value, columns):
         """
         Construye un lado de una expresión AST a partir de un valor en JSON.
         
@@ -248,8 +248,8 @@ class DSParser:
         if isinstance(value, dict) and 'op' in value:
             # Expresión binaria
             op_class = self.op_inverse_map[value['op']]
-            left = self.build_side(value['left'])
-            right = self.build_side(value['right'])
+            left = self.build_side(value['left'], columns)
+            right = self.build_side(value['right'], columns)
             return ast.BinOp(left=left, op=op_class(), right=right)
         elif isinstance(value, str) and value.startswith('x['):
             # parseamos 'x[0]' → ast.Subscript
@@ -261,18 +261,24 @@ class DSParser:
                 ctx=ast.Load()
             )
         elif isinstance(value, str):
+            if value in columns:
+                return ast.Subscript(
+                    value=ast.Name(id='x', ctx=ast.Load()),
+                    slice=ast.Constant(value=columns.index(value)),
+                    ctx=ast.Load()
+                )
             # Nombre de variable
             return ast.Name(id=value, ctx=ast.Load())
         else:
             # Constante (numero, booleano, etc.)
             return ast.Constant(value=value)
 
-    def json_to_lambda(self, json_condition):
+    def json_to_lambda(self, json_condition, columns):
         """
         Retorna una lambda x: ... a partir de una condición en JSON,
         y guarda el JSON dentro de un atributo oculto para reconstrucción futura.
         """
-        expr = self.build_expr(json_condition)
+        expr = self.build_expr(json_condition, columns)
         lambda_func = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=[], args=[ast.arg(arg='x')], kwonlyargs=[],

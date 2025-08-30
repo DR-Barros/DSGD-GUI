@@ -169,9 +169,10 @@ class DSClassifierMultiQ(ClassifierMixin):
                                                    num_workers=self.num_workers, pin_memory=False)
 
         epoch = 0
+        since = time.time()
         for epoch in range(self.max_iter):
             if print_every_epochs is not None and epoch % print_every_epochs == 0:
-                yield "\rProcessing epoch\t%d\t%.4f\t" % (epoch + 1, losses[-1] if len(losses) > 0 else 1)
+                yield f"{epoch + 1} {self.max_iter} {losses[-1] if losses else 0} {time.time() - since:.4f} {(time.time() - since)/ (epoch + 1) * self.max_iter:.4f}"
             acc_loss = 0
             if print_epoch_progress:
                 acc_n = 0

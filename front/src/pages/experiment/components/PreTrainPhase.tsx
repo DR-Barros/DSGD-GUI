@@ -8,38 +8,20 @@ import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Select, TextField } from '@mui/material';
 import { postProtected } from '../../../api/client';
 import { indexValues, replaceVariables } from '../../../utils/parser';
-import RuleEditor from './RuleEditor';
-import { Bar } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-} from "chart.js";
 import RuleGroup from './RuleGroup';
-import { use } from 'i18next';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-
-type HistogramBin = {
-    bin: string;
-    count: number;
-};
+import type { TrainingParams, RuleParams } from '../../../types/params';
 
 interface PreTrainPhaseProps {
     datasetPreview: any[];
     datasetStats: any[];
     Dataset: Dataset | null;
     experimentId?: string;
+    startTraining: (params: TrainingParams, rulesWithValues: any[]) => Promise<void>;
 }
 
-export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId }: PreTrainPhaseProps) {
+export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId, startTraining }: PreTrainPhaseProps) {
     const [activeStep, setActiveStep] = useState(0);
-    const [params, setParams] = useState({
+    const [params, setParams] = useState<TrainingParams>({
         testSize: 0.2,
         splitSeed: 42,
         shuffle: true,
@@ -52,13 +34,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         optimFunction: "Adam",
         learningRate: 0.001
     });
-    const [generateRuleParams, setGenerateRuleParams] = useState<{
-        singleRule: boolean;
-        multipleRules: boolean;
-        breakRules: number;
-        selectedColumns: string[];
-        manualColumns?: string[];
-    }>({
+    const [generateRuleParams, setGenerateRuleParams] = useState<RuleParams>({
         singleRule: true,
         multipleRules: false,
         breakRules: 3,
@@ -492,7 +468,18 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             labelPlacement='start'
                         />
                         <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
-                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            style={{ marginTop: '20px' }}
+                            onClick={() => {
+                                // Flatten all rule arrays and extract rulesWithValues
+                                const allRulesWithValues: any[] = Object.values(encodedRules)
+                                    .flat()
+                                    .map((rule: any) => rule.rulesWithValues);
+                                startTraining(params, allRulesWithValues);
+                            }}
+                        >
                             {t("experiment.train")}
                         </Button>
                         </div>
