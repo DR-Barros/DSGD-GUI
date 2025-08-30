@@ -59,7 +59,12 @@
     "mass": "Mass",
     "splitSettings": "Split Settings",
     "cleaningSettings": "Cleaning Settings",
-    "addManualRule": "Add Manual Rule"
+    "addManualRule": "Add Manual Rule",
+    "epoch": "Epoch",
+    "loss": "Loss",
+    "timeElapsed": "Time Elapsed",
+    "timeRemaining": "Estimated Time Remaining",
+    "evaluating": "Evaluating"
   },
   "datasets": {
     "title": "Datasets",

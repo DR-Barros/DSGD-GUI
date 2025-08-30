@@ -59,7 +59,12 @@
     "mass": "Masa",
     "splitSettings": "Configuración de división",
     "cleaningSettings": "Configuración de limpieza",
-    "addManualRule": "Agregar regla manual"
+    "addManualRule": "Agregar regla manual",
+    "epoch": "Época",
+    "loss": "Pérdida",
+    "timeElapsed": "Tiempo transcurrido",
+    "timeRemaining": "Tiempo estimado restante",
+    "evaluating": "Evaluando"
   },
   "datasets": {
     "title": "Conjuntos de datos",

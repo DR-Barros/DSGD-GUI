@@ -10,6 +10,7 @@ class Iteration(Base):
     experiment_id = Column(Integer, ForeignKey('experiments.id'), nullable=False)
     trained = Column(Boolean, default=False)
     model_path = Column(String, nullable=True)
+    label_encoder =Column(JSON, nullable=True)
     # Hyperparameters for datasets
     train_test_split = Column(Float, nullable=True)
     train_test_split_seed = Column(Integer, nullable=True)

@@ -206,6 +206,7 @@ async def train_model_post(
         optimizer = optim_function,
         learning_rate = learning_rate,
         training_status = "pending",
+        label_encoder = label_to_num
     )
     db.add(iteration)
     db.commit()
@@ -227,6 +228,7 @@ async def train_model_post(
         functions, #funciones de las reglas
         dataset.n_classes,
         label_to_num,
+        db,
     ), task_id))
     return {"task_id": task_id, "status": "Task enqueued"}
 

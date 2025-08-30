@@ -7,6 +7,9 @@ import PreTrainPhase from "./components/PreTrainPhase";
 import { fetchProtected } from "../../api/client";
 import type { Dataset } from "../../types/dataset";
 import type { TrainingParams } from "../../types/params";
+import type { MessageData } from "../../types/train";
+import TrainPhase from "./components/TrainPhase";
+
 
 export default function Experiment() {
     const {id} = useParams();
@@ -14,7 +17,7 @@ export default function Experiment() {
     const [datasetPreview, setDatasetPreview] = useState<any[]>([]);
     const [datasetStats, setDatasetStats] = useState<any[]>([]);
     const [Dataset, setDataset] = useState<Dataset | null>(null);
-    const [trainingMsg, setTrainingMsg] = useState<string | null>(null);
+    const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -72,7 +75,12 @@ export default function Experiment() {
 
             ws.onmessage = (event) => {
                 console.log(`Progreso: ${event.data}`);
-                setTrainingMsg(event.data);
+                try {
+                    let evento = JSON.parse(event.data);
+                    setTrainingMsg(evento);
+                } catch (error) {
+                    console.error("Error al parsear el mensaje:", error);
+                }
             };
 
             ws.onclose = () => {
@@ -90,13 +98,18 @@ export default function Experiment() {
         }
     }
 
+    useEffect(() => {
+        if (trainingMsg) {
+            console.log("Mensaje de entrenamiento:", trainingMsg);
+        }
+    }, [trainingMsg]);
 
     return (
         <div>
             <DrawerMenu />
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
-                {phase === "train" && <div>Training... {trainingMsg}</div>}
+                {phase === "train" && <TrainPhase trainingMsg={trainingMsg} />}
                 {phase === "posttrain" && <div>
                     Post-train phase
                     <button onClick={() => setPhase("pretrain")}>Restart Training</button>

@@ -127,7 +127,7 @@ async def upload_dataset(
         type_file = FileType.CSV if ext == "csv" else FileType.EXCEL if ext in ["xlsx", "xls"] else FileType.PARQUET
         
         #guardar dataset
-        file_path = f"{settings.UPLOAD_FOLDER}/{new_dataset.id}_{file.filename}"
+        file_path = f"{settings.DATASETS_FOLDER}/{new_dataset.id}_{file.filename}"
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
@@ -152,7 +152,7 @@ async def upload_dataset(
             type_file = FileType.CSV if ext == "csv" else FileType.EXCEL if ext in ["xlsx", "xls"] else FileType.PARQUET
 
             # Guardar dataset
-            file_path = f"{settings.UPLOAD_FOLDER}/{new_dataset.id}_{file.filename}"
+            file_path = f"{settings.DATASETS_FOLDER}/{new_dataset.id}_{file.filename}"
             with open(file_path, "wb") as f:
                 content = await file.read()
                 f.write(content)
