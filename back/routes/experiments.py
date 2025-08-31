@@ -81,7 +81,8 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
                 "mean": float(round(df[col].mean(), 2)) if pd.api.types.is_numeric_dtype(df[col]) else None,
                 "histogram": histogram
             })
-        dataset_data.append({ "data": df.to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
+        min_rows = min(n_rows, 1000)
+        dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
     dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
     return {
         "data": dataset_data,

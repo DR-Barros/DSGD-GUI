@@ -69,7 +69,8 @@ async def preview_dataset(
                 "mean": float(round(df[col].mean(), 2)) if pd.api.types.is_numeric_dtype(df[col]) else None,
                 "histogram": histogram
             })
-        dataset_data.append({ "data": df.to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
+        min_rows = min(n_rows, 1000)
+        dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
 
     return dataset_data
 
@@ -103,6 +104,9 @@ async def upload_dataset(
         raise HTTPException(status_code=400, detail="Columnas no válidas")
     if not target_column or target_column.strip() == "" or target_column not in columns:
         raise HTTPException(status_code=400, detail="Columna objetivo no válida")
+    for col in columns:
+        if not col or col.strip() == "":
+            raise HTTPException(status_code=400, detail="Una de las columnas está vacía")
     if header is None:
         raise HTTPException(status_code=400, detail="Debe especificar si el archivo tiene encabezados")
     new_dataset = Datasets(

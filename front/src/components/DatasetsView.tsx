@@ -38,7 +38,7 @@ export default function DatasetsView(
 ) {
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [tempPage, setTempPage] = useState<string>(String(currentPage));
     const rowsOptions = [5, 10, 15, 20, 25];
     
