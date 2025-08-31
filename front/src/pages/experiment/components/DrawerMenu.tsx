@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Drawer,
     ListItem,
@@ -8,17 +8,27 @@ import {
     Fab
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Outlet } from 'react-router-dom';
+import { fetchProtected } from '../../../api/client';
+import type { Iteration } from '../../../types/experiment';
 
-const drawerWidth = 100;
+const drawerWidth = 150;
 
-export default function DrawerMenu() {
+export default function DrawerMenu(
+    { id }: { id: string | undefined }
+) {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [iterations, setIterations] = useState([
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
-    ]);
+    const [iterations, setIterations] = useState<Iteration[]>([]);
+
+    const handleIterations = async () => {
+        const { data, status } = await fetchProtected(`/experiments/iteration/${id}`);
+        console.log("Dataset preview data:", data);
+        if (status !== 200) {
+            console.log("Error fetching dataset preview");
+        }
+        else {
+            setIterations(data);
+        }
+    };
 
     const toggleDrawer = (open: boolean) => () => {
         setMobileOpen(open);
@@ -27,10 +37,16 @@ export default function DrawerMenu() {
     const drawerContent = (
         <Box sx={{ width: drawerWidth-1, display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 2 }} role="presentation">
             {iterations.map((item) => (
-                    <p key={item.id}>{item.id}</p>
+                    <p key={item.id}>{item.id} - {item.training_status}</p>
             ))}
         </Box>
     );
+
+    useEffect(() => {
+        if (id) {
+            handleIterations();
+        }
+    }, [id]);
 
     return (
         <>
@@ -45,6 +61,7 @@ export default function DrawerMenu() {
                     [`& .MuiDrawer-paper`]: {
                         width: drawerWidth,
                         boxSizing: 'border-box',
+                        top: 64,
                     },
                 }}
             >

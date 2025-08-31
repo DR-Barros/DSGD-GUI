@@ -266,3 +266,15 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
         await websocket.close() 
     except WebSocketDisconnect:
         print(f"Cliente desconectado: {task_id}")
+
+
+@api_router.get("/iteration/{iteration_id}")
+async def get_iteration_data(
+    iteration_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie)
+):
+    iteration = db.query(Iteration).filter(Iteration.id == iteration_id).first()
+    if not iteration:
+        raise HTTPException(status_code=404, detail="Iteration not found")
+    return iteration

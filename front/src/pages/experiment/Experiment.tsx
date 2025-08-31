@@ -9,6 +9,7 @@ import type { Dataset } from "../../types/dataset";
 import type { TrainingParams } from "../../types/params";
 import type { MessageData } from "../../types/train";
 import TrainPhase from "./components/TrainPhase";
+import PostTrainPhase from "./components/PostTrainPhase";
 
 
 export default function Experiment() {
@@ -18,6 +19,7 @@ export default function Experiment() {
     const [datasetStats, setDatasetStats] = useState<any[]>([]);
     const [Dataset, setDataset] = useState<Dataset | null>(null);
     const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
+    const [iterations, setIterations] = useState<number | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -60,6 +62,7 @@ export default function Experiment() {
 
             const data = await response.json();
             const taskId = data.task_id;
+            setIterations(taskId);
             console.log(`Task enqueued. Task ID: ${taskId}`);
             if (!taskId) {
                 console.error("No task ID returned");
@@ -106,14 +109,11 @@ export default function Experiment() {
 
     return (
         <div>
-            <DrawerMenu />
+            <DrawerMenu id={id} />
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} />}
-                {phase === "posttrain" && <div>
-                    Post-train phase
-                    <button onClick={() => setPhase("pretrain")}>Restart Training</button>
-                    </div>}
+                {phase === "posttrain" && <PostTrainPhase id={iterations} back={() => setPhase("pretrain")} />}
             </div>
         </div>
     );

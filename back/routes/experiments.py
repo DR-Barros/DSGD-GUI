@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from typing import List
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
-from models import User, Experiment, DatasetFile, Datasets
+from models import User, Experiment, DatasetFile, Datasets, Iteration
 from models.dataset_file import FileType, DatasetType
 from schemas.experiment import ExperimentOut
 from .auth import get_current_user_from_cookie
@@ -88,3 +88,8 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
         "data": dataset_data,
         "info": dataset
     }
+
+@api_router.get("/iteration/{experiment_id}")
+async def get_experiment_iteration(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    iterations = db.query(Iteration).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).order_by(Iteration.created_at.desc()).all()
+    return iterations
