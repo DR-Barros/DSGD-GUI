@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sklearn.calibration import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sqlalchemy.orm import Session, joinedload
+from utils.sanitize import sanitize_json
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
 from models.dataset_file import FileType, DatasetType
@@ -156,24 +157,48 @@ async def train_model_post(
             "header": dataset_file.header,
             "dataset_type": dataset_file.dataset_type
         })
-    X = datasets[0]["data"]
-    X.columns = X.columns.map(str)
-    X = X[dataset.columns]
     drop_na = data.get("dropNulls", True)
     drop_duplicates = data.get("dropDuplicates", True)
-    if drop_na:
-        X = X.dropna()
-    if drop_duplicates:
-        X = X.drop_duplicates()
-    y = X[dataset.target_column]
-    #pasar y a numeros
-    l = LabelEncoder()
-    y = l.fit_transform(y)
-    label_to_num = {label: idx for idx, label in enumerate(l.classes_)}
-    X = X.drop(columns=[dataset.target_column])
     test_size = data.get("testSize", 0.2)
     split_seed = data.get("splitSeed", 42)
     shuffle = data.get("shuffle", True)
+    if len(datasets) == 1:
+        X = datasets[0]["data"]
+        X.columns = X.columns.map(str)
+        X = X[dataset.columns]
+        if drop_na:
+            X = X.dropna()
+        if drop_duplicates:
+            X = X.drop_duplicates()
+        y = X[dataset.target_column]
+        #pasar y a numeros
+        l = LabelEncoder()
+        y = l.fit_transform(y)
+        X = X.drop(columns=[dataset.target_column])
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
+    elif len(datasets) == 2:
+        X_train = datasets[0]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[1]["data"]
+        X_test = datasets[1]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[0]["data"]
+        X_train.columns = X_train.columns.map(str)
+        X_test.columns = X_test.columns.map(str)
+        if drop_na:
+            X_train = X_train.dropna()
+            X_test = X_test.dropna()
+        if drop_duplicates:
+            X_train = X_train.drop_duplicates()
+            X_test = X_test.drop_duplicates()
+        y_train = X_train[dataset.target_column]
+        y_test = X_test[dataset.target_column]
+        #pasar y a numeros
+        l = LabelEncoder()
+        y_train = l.fit_transform(y_train)
+        y_test = l.transform(y_test)
+        X_train = X_train.drop(columns=[dataset.target_column])
+        X_test = X_test.drop(columns=[dataset.target_column])
+    else:
+        return HTTPException(status_code=400, detail="More than 2 dataset files found")
+    
+    label_to_num = {label: idx for idx, label in enumerate(l.classes_)}
     max_epochs = data.get("maxEpochs", 100)
     min_epochs = data.get("minEpochs", 10)
     batch_size = data.get("batchSize", 4000)
@@ -183,12 +208,6 @@ async def train_model_post(
     rules = data.get("rules", [])
     if len(rules) == 0:
         return HTTPException(status_code=404, detail="No rules provided for training")
-    
-    dsparser = DSParser.DSParser()
-    functions = []
-    for i in range(len(rules)):
-        f = dsparser.json_to_lambda(rules[i], X.columns.tolist())
-        functions.append(f)
 
     iteration = Iteration(
         created_at=datetime.now(),
@@ -206,7 +225,7 @@ async def train_model_post(
         optimizer = optim_function,
         learning_rate = learning_rate,
         training_status = "pending",
-        label_encoder = label_to_num
+        label_encoder = sanitize_json(label_to_num)
     )
     db.add(iteration)
     db.commit()
@@ -214,18 +233,17 @@ async def train_model_post(
     task_id = str(iteration.id)
     # Encolar el entrenamiento
     settings.TASK_QUEUE.put((train_model, (
-        X,
-        y,
-        test_size,
-        split_seed,
-        shuffle,
+        X_train,
+        X_test,
+        y_train,
+        y_test,
         max_epochs,
         min_epochs,
         batch_size,
         loss_function,
         optim_function,
         learning_rate,
-        functions, #funciones de las reglas
+        rules,
         dataset.n_classes,
         label_to_num,
         db,

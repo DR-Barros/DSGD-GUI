@@ -174,11 +174,11 @@ class DSClassifierMultiQ(ClassifierMixin):
         for epoch in range(self.max_iter):
             if print_every_epochs is not None and epoch % print_every_epochs == 0:
                 data = {
-                    "epoch": epoch,
+                    "epoch": epoch + 1,
                     "max": self.max_iter,
                     "loss": losses[-1] if losses else 0,
                     "time": time.time() - since,
-                    "eta": (time.time() - since)/ (epoch + 1) * self.max_iter,
+                    "eta": (time.time() - since)/ (epoch) * self.max_iter if epoch > 0 else 0,
                     "status": "training"
                 }
                 yield json.dumps(data)

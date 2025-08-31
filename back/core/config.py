@@ -1,6 +1,7 @@
 import os
 import queue
 from dotenv import load_dotenv
+import torch
 
 load_dotenv()
 
@@ -15,7 +16,7 @@ class Settings:
     MAX_WORKERS = 2
     TASK_QUEUE = queue.Queue()
     TASKS_PROGRESS = {}
-    
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     def __init__(self):
         if not os.path.exists(self.UPLOAD_FOLDER):

@@ -21,8 +21,7 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
                 <div style={{ textAlign: "center" }}>  
                     {trainingMsg.status === "evaluation" ? (
                         <>
-                        <p>{t("experiment.evaluating")}:  {trainingMsg.epoch} / {trainingMsg.max}</p>
-                        <LinearProgress variant="determinate" value={(trainingMsg.epoch / trainingMsg.max) * 100} style={{ maxWidth: "500px", marginTop: 16 }} />
+                        <p>{t("experiment.evaluating")}</p>
                         </>
                     ) : (
                         <>
@@ -34,7 +33,7 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
                         ) : (
                             <p>{t("experiment.timeRemaining")}: 00:00</p>
                         )}
-                        <LinearProgress variant="determinate" value={(trainingMsg.time / trainingMsg.eta) * 100} style={{ maxWidth: "500px", marginTop: 16 }} />
+                        <LinearProgress variant="determinate" value={(time / trainingMsg.eta) * 100} style={{ maxWidth: "500px", marginTop: 16 }} />
                     </>
                     )}
                 </div>

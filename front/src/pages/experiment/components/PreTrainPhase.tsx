@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
-import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import { postProtected } from '../../../api/client';
 import { indexValues, replaceVariables } from '../../../utils/parser';
 import RuleGroup from './RuleGroup';
@@ -179,6 +179,9 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             onChange={(e) => setParams({ ...params, dropDuplicates: e.target.checked })}
                         />
                     </label>
+                    <Button onClick={() => setActiveStep(1)} variant="contained">
+                        {t("experiment.seeRules")}
+                    </Button>
                     </div>
                     </CardContent>
                 </Card>
@@ -211,9 +214,6 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         targetColumn={Dataset!.target_column}
                     />
                 )}
-                <button onClick={() => setActiveStep(1)}>
-                    {t("experiment.seeRules")}
-                </button>
             </>}
             {activeStep === 1 && <>
                 <Card sx={{marginBottom: 2}}>
@@ -315,9 +315,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     />
                     ))}
                 </div>
-                {modalRuleOpen &&
-                <div>
-                    <FormControlLabel
+                <Modal
+                    open={modalRuleOpen}
+                    onClose={() => setModalRuleOpen(false)}
+                >
+                    <div style={{ backgroundColor: 'white', padding: '20px', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <FormControlLabel
                             control={
                                 <Select
                                     multiple
@@ -325,15 +328,15 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, manualColumns: e.target.value as string[] })}
                                     renderValue={(selected) => (selected as string[]).join(', ')}
                                     style={{ minWidth: '200px' }}
-                                    >
-                                {Dataset?.columns
-                                .filter((col) => col !== Dataset.target_column)
-                                .map((col) => (
-                                    <MenuItem key={col} value={col}>
-                                        {col}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                                >
+                                    {Dataset?.columns
+                                        .filter((col) => col !== Dataset.target_column)
+                                        .map((col) => (
+                                            <MenuItem key={col} value={col}>
+                                                {col}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
                             }
                             label={t("experiment.selectColumns")}
                             labelPlacement='start'
@@ -350,7 +353,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             let idx = generateRuleParams.manualColumns?.join('-') || '';
                             setEncodedRules(prev => ({...prev, [idx]: []}))
                         }}>Crear</button>
-                </div>}
+                    </div>
+                </Modal>
                 <button onClick={() => setActiveStep(0)}>
                     {t("back")}
                 </button>

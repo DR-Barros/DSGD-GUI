@@ -12,11 +12,10 @@ from datetime import datetime
 
 
 def train_model(
-    X: pd.DataFrame,
-    y: np.ndarray,
-    test_size: float = 0.2,
-    split_random_state: int = 42,
-    shuffle: bool = True,
+    X_train: pd.DataFrame,
+    X_test: pd.DataFrame,
+    y_train: np.ndarray,
+    y_test: np.ndarray,
     max_iter: int = 100,
     min_iter: int = 10,
     batch_size: int = 4000,
@@ -30,7 +29,15 @@ def train_model(
     tasks_id: str = None,
 ):
     try:
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=split_random_state, shuffle=shuffle)
+        #eliminemos las columnas no numericas o booleanas
+        X_train = X_train.select_dtypes(include=[np.number, 'bool'])
+        X_test = X_test.select_dtypes(include=[np.number, 'bool'])
+        dsparser = DSParser.DSParser()
+        functions = []
+        for i in range(len(rules)):
+            f = dsparser.json_to_lambda(rules[i], X_train.columns.tolist())
+            functions.append(f)
+        print(X_train.dtypes)
         X_train_np = X_train.to_numpy()
         X_test_np = X_test.to_numpy()
         columns = X_train.columns.tolist()
@@ -43,9 +50,10 @@ def train_model(
             batch_size=batch_size,
             lossfn=loss_function,
             optim=optimizer,
-            debug_mode=True
+            debug_mode=True,
+            device=settings.DEVICE
         )
-        for rule in rules:
+        for rule in functions:
             ds.model.add_rule(DSRule(rule, "<lambda>"))
 
         iteration = db.query(Iteration).filter(Iteration.id == int(tasks_id)).first()
@@ -59,8 +67,6 @@ def train_model(
             db.commit()
             print(msg)
         data = {
-            "epoch": 0,
-            "max": 6,
             "status": "evaluation"
         }
         settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
@@ -74,23 +80,11 @@ def train_model(
         print("Final evaluation...")
         y_pred = ds.predict(X_test_np)
         acc = accuracy_score(y_test, y_pred)
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         precision = precision_score(y_test, y_pred, average='weighted')
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         recall = recall_score(y_test, y_pred, average='weighted')
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         f1 = f1_score(y_test, y_pred, average='weighted')
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         confusion = confusion_matrix(y_test, y_pred)
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         report = classification_report(y_test, y_pred, output_dict=True)
-        data["epoch"] += 1
-        settings.TASKS_PROGRESS[tasks_id] = json.dumps(data)
         iteration.accuracy = acc
         iteration.precision = precision
         iteration.recall = recall
@@ -107,6 +101,7 @@ def train_model(
         
         settings.TASKS_PROGRESS[tasks_id] = "Training finished ✅"
     except Exception as e:
+        print(f"Error during training: {e}")
         settings.TASKS_PROGRESS[tasks_id] = f"Error during training: {e}"
         iteration.training_status = "error"
         iteration.training_message = str(e)
