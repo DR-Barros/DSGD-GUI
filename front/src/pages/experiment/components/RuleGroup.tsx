@@ -4,6 +4,7 @@ import RuleEditor from "./RuleEditor"; // Ajusta la importación según correspo
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
 
@@ -57,13 +58,24 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         }}
         >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h3>Index: {idx}</h3>
-        <button onClick={() => setViewStats(!viewStats)}>
-            <VisibilityIcon />
-        </button>
-        <button onClick={() => setEditing(!editing)}>
-            {editing ? <EditOffIcon /> : <ModeEditIcon />}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <h3>Index: {idx}</h3>
+            <button onClick={() => setViewStats(!viewStats)}>
+                <VisibilityIcon />
+            </button>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button onClick={() => setEditing(!editing)}>
+                {editing ? <EditOffIcon /> : <ModeEditIcon />}
+            </button>
+            <button onClick={() => setEncodedRules((prev) => {
+                const newRules = { ...prev };
+                delete newRules[idx];
+                return newRules;
+            })}>
+                <DeleteIcon />
+            </button>
+        </div>
         </div>
 
         {viewStats && (
@@ -254,6 +266,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         </tbody>
         </table>
         {/* Botón para agregar nueva regla */}
+        {editing && (
         <button
         onClick={() => {
             setEncodedRules((prev) => {
@@ -289,7 +302,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         >
         {t("experiment.addRule")}
         </button>
-
+        )}
         </div>
     );
 };

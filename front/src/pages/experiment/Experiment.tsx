@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import DrawerMenu from "./components/DrawerMenu";
 
 import "./Experiment.css"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PreTrainPhase from "./components/PreTrainPhase";
 import { fetchProtected } from "../../api/client";
 import type { Dataset } from "../../types/dataset";
@@ -20,6 +20,7 @@ export default function Experiment() {
     const [Dataset, setDataset] = useState<Dataset | null>(null);
     const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
     const [iterations, setIterations] = useState<number | null>(null);
+    const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -68,48 +69,70 @@ export default function Experiment() {
                 console.error("No task ID returned");
                 return;
             }
-            // 2️⃣ Conectarse al WebSocket para recibir progreso
-            const ws = new WebSocket(`ws://localhost:8000/api/train/ws/${taskId}`);
-
-            ws.onopen = () => {
-                console.log('WebSocket conectado');
-                setPhase("train");
-            };
-
-            ws.onmessage = (event) => {
-                console.log(`Progreso: ${event.data}`);
-                try {
-                    let evento = JSON.parse(event.data);
-                    setTrainingMsg(evento);
-                } catch (error) {
-                    console.error("Error al parsear el mensaje:", error);
-                }
-            };
-
-            ws.onclose = () => {
-                console.log('WebSocket cerrado');
-                setPhase("posttrain");
-            };
-
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                setPhase("pretrain");
-            };
+            // 2️⃣ Conectar al WebSocket para recibir actualizaciones
+            websocket(taskId);
 
         } catch (err) {
             console.error('Error iniciando entrenamiento:', err);
         }
     }
 
-    useEffect(() => {
-        if (trainingMsg) {
-            console.log("Mensaje de entrenamiento:", trainingMsg);
+    const websocket = async (taskId: string) => {
+        if (wsRef.current) {
+            wsRef.current.close();
         }
-    }, [trainingMsg]);
+        const ws = new WebSocket(`ws://localhost:8000/api/train/ws/${taskId}`);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+            console.log('WebSocket conectado');
+            setPhase("train");
+        };
+
+        ws.onmessage = (event) => {
+            console.log(`Progreso: ${event.data}`);
+            try {
+                let evento = JSON.parse(event.data);
+                setTrainingMsg(evento);
+            } catch (error) {
+                console.error("Error al parsear el mensaje:", error);
+            }
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket cerrado');
+            setPhase("posttrain");
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            setPhase("pretrain");
+        };
+    };
+
+    useEffect(() => {
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+        };
+    }, []);
 
     return (
         <div>
-            <DrawerMenu id={id} />
+            <DrawerMenu id={id} openIterations={(iterationId, status) => {
+                    setIterations(iterationId);
+                    if (wsRef.current) {
+                        wsRef.current.close();
+                    }
+                    if (status === "running" || status === "pending"){
+                        setPhase("train");
+                        websocket(iterationId.toString());
+                    }
+                    else if (status === "completed") setPhase("posttrain");
+                }}
+                train={() => setPhase("pretrain")} 
+            />
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} />}

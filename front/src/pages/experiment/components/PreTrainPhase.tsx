@@ -57,22 +57,25 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
     }, [Dataset]);
 
     const handleGenerateRules = async () => {
-        const {data, status} = await postProtected(`/train/generate-rules/${experimentId}`, {
+        const { data, status } = await postProtected(`/train/generate-rules/${experimentId}`, {
             singleRule: generateRuleParams.singleRule,
             multipleRule: generateRuleParams.multipleRules,
             breakRules: generateRuleParams.breakRules,
             selectedColumns: generateRuleParams.selectedColumns
         });
+
         if (status === 200) {
             console.log("Generated rules:", data.rules);
             console.log("Masses:", data.masses);
-            const groupedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {};
+
+            const updatedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {
+                ...encodedRules
+            };
 
             interface RuleEntry {
-                0: any; // rule
-                1: any; // vars
+                0: any; 
+                1: any; 
             }
-
             interface GroupedRule {
                 rule: any;
                 vars: any;
@@ -80,6 +83,9 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 rulesWithValues: any;
             }
 
+            const newGroupedRules: Record<string, GroupedRule[]> = {};
+
+            // Creamos un nuevo conjunto de reglas por índice
             (data.rules as RuleEntry[]).forEach((ruleEntry: RuleEntry, index: number) => {
                 const r: any = ruleEntry[0];
                 const vars: any = ruleEntry[1];
@@ -89,21 +95,28 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
                 if (indices.length > 1) {
                     const joinedIdx: string = indices.join('-');
-                    if (!groupedRules[joinedIdx]) groupedRules[joinedIdx] = [];
-                    groupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues } as GroupedRule);
+                    if (!newGroupedRules[joinedIdx]) newGroupedRules[joinedIdx] = [];
+                    newGroupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues });
                 } else {
                     indices.forEach((idx: string) => {
-                        if (!groupedRules[idx]) groupedRules[idx] = [];
-                        groupedRules[idx].push({ rule: r, vars, mass, rulesWithValues } as GroupedRule);
+                        if (!newGroupedRules[idx]) newGroupedRules[idx] = [];
+                        newGroupedRules[idx].push({ rule: r, vars, mass, rulesWithValues });
                     });
                 }
             });
-            console.log("Grouped Rules:", groupedRules);
-            setEncodedRules(groupedRules);
+
+            Object.keys(newGroupedRules).forEach(idx => {
+                updatedRules[idx] = newGroupedRules[idx];
+            });
+
+            console.log("Updated Grouped Rules:", updatedRules);
+            setEncodedRules(updatedRules);
         } else {
             console.error("Error generating rules:", data);
         }
     };
+
+
 
     useEffect(() => {
         console.log(datasetStats);
@@ -179,16 +192,16 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             onChange={(e) => setParams({ ...params, dropDuplicates: e.target.checked })}
                         />
                     </label>
-                    <Button onClick={() => setActiveStep(1)} variant="contained">
-                        {t("experiment.seeRules")}
-                    </Button>
                     </div>
                     </CardContent>
                 </Card>
-                <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
-                <p>{t("columns")}: {Dataset?.columns.length}</p>
-                <p>{t("classes")}: {Dataset?.n_classes}</p>
-                <p>{t("rows")}: {Dataset?.n_rows}</p>
+                <div style={{ display: "flex", flexDirection: "row", gap: "40px", marginTop: "20px", marginBottom: "20px", alignItems: "center", justifyContent: "space-evenly" }}>
+                    <p>{t("columns")}: {Dataset?.columns.length}</p>
+                    <p>{t("classes")}: {Dataset?.n_classes}</p>
+                    <p>{t("rows")}: {Dataset?.n_rows}</p>
+                    <Button onClick={() => setActiveStep(1)} variant="contained">
+                        {t("experiment.seeRules")}
+                    </Button>
                 </div>
                 {(datasetPreview.length > 0 && datasetStats.length > 0) && (
                     <DatasetsView
@@ -237,10 +250,15 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         <FormControlLabel
                             control={
                                 <TextField
-                                type="number"
-                                value={generateRuleParams.breakRules}
-                                onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, breakRules: parseInt(e.target.value) })}
+                                
+                                    type="number"
+                                    value={generateRuleParams.breakRules}
+                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, breakRules: parseInt(e.target.value) })}
                                     style={{ width: '100px' }}
+                                    inputProps={{
+                                        min: 1,
+                                        step: 1,
+                                    }}
                                     />
                                 }
                             label={t("experiment.breakRules")}
@@ -259,7 +277,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     value={generateRuleParams.selectedColumns}
                                     onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, selectedColumns: e.target.value as string[] })}
                                     renderValue={(selected) => (selected as string[]).join(', ')}
-                                    style={{ minWidth: '200px' }}
+                                    style={{ maxWidth: '300px' }}
                                     >
                                 {Dataset?.columns
                                 .filter((col) => col !== Dataset.target_column)
@@ -301,6 +319,17 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         </div>
                     </CardContent>
                 </Card>
+                <div style={{ display: 'flex', justifyContent: 'space-evenly', marginTop: '20px', marginBottom: '20px' }}>
+                    <Button variant='contained' onClick={() => setActiveStep(0)}>
+                        {t("back")}
+                    </Button>
+                    <Button variant='contained' onClick={() => setModalRuleOpen(true)}>
+                        {t("experiment.addManualRule")}
+                    </Button>
+                    <Button variant='contained' onClick={() => setActiveStep(2)}>
+                        {t("experiment.train")}
+                    </Button>
+                </div>
                 <div>
                     {/* mostramos las reglas */}
                     {Object.entries(encodedRules).map(([idx, rulesArray]) => (
@@ -355,15 +384,6 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         }}>Crear</button>
                     </div>
                 </Modal>
-                <button onClick={() => setActiveStep(0)}>
-                    {t("back")}
-                </button>
-                <button onClick={() => setModalRuleOpen(true)}>
-                    {t("experiment.addManualRule")}
-                </button>
-                <button onClick={() => setActiveStep(2)}>
-                    {t("experiment.train")}
-                </button>
             </>}
             {activeStep === 2 && <>
                 <Card sx={{marginBottom: 10, marginTop: 10}}>

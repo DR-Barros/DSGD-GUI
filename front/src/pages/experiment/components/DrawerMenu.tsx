@@ -1,23 +1,25 @@
 import { useState, useEffect } from 'react';
 import {
     Drawer,
-    ListItem,
-    ListItemText,
-    ListItemButton,
     Box,
     Fab
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PendingIcon from '@mui/icons-material/Pending';
 import { fetchProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
+import { useTranslation } from 'react-i18next';
 
-const drawerWidth = 150;
+const drawerWidth = 250;
 
 export default function DrawerMenu(
-    { id }: { id: string | undefined }
+    { id, openIterations, train }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void }
 ) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [iterations, setIterations] = useState<Iteration[]>([]);
+    const { t } = useTranslation();
 
     const handleIterations = async () => {
         const { data, status } = await fetchProtected(`/experiments/iteration/${id}`);
@@ -35,10 +37,25 @@ export default function DrawerMenu(
     };
 
     const drawerContent = (
-        <Box sx={{ width: drawerWidth-1, display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 2 }} role="presentation">
+        <Box sx={{ width: drawerWidth-20, display: 'flex', flexDirection: 'column', pt: 1, pb: 1 }} role="presentation">
             {iterations.map((item) => (
-                    <p key={item.id}>{item.id} - {item.training_status}</p>
+                    <div key={item.id} style={{paddingLeft: "10px"}}>
+                        <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+                        <p>{item.id} - {item.training_status}</p>
+                        {item.training_status === "completed" ? (
+                            <CheckCircleIcon style={{ color: "#1976d2" }} />
+                        ) : (
+                            <PendingIcon style={{ color: "#1976d2" }} />
+                        )}
+                        <button onClick={() => openIterations(item.id, item.training_status)} style={{ background: "none", border: "none"}}> <ArrowForwardIcon style={{ color: "#1976d2" }} /> </button>
+                        </div>
+                        <p>acc: {item.accuracy?.toFixed(2)}</p>
+                        <hr />
+                    </div>
             ))}
+            <div style={{paddingLeft: "10px", marginTop: "10px"}}>
+                <button onClick={train}>{t('experiment.train')}</button>
+            </div>
         </Box>
     );
 
@@ -62,6 +79,7 @@ export default function DrawerMenu(
                         width: drawerWidth,
                         boxSizing: 'border-box',
                         top: 64,
+                        height: 'calc(100vh - 64px)',
                     },
                 }}
             >
