@@ -120,6 +120,10 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         }
     };
 
+    const inverseLabelMap: Record<number, string> = Object.fromEntries(
+        Object.entries(postTrainData.label_encoder ?? {}).map(([name, idx]) => [idx, name])
+    );
+
     return (
         <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "16px" }}>
             {/* Título ocupa todo el ancho */}
@@ -130,14 +134,39 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             {postTrainData && (
                 <Card style={{ flex: 1, minWidth: "250px" }}>
                 <CardContent>
-                    <h3 className="text-lg font-semibold mb-2">{t("postTrain.metrics")}</h3>
-                    <ul className="space-y-1">
+                    <h3>{t("postTrain.metrics")}</h3>
+                    <ul>
                     <li>Accuracy: {postTrainData.accuracy?.toFixed(2) ?? "—"}</li>
                     <li>Precision: {postTrainData.precision?.toFixed(2) ?? "—"}</li>
                     <li>Recall: {postTrainData.recall?.toFixed(2) ?? "—"}</li>
                     <li>F1 Score: {postTrainData.f1_score?.toFixed(2) ?? "—"}</li>
                     <li>ROC AUC: {postTrainData.roc_auc?.toFixed(2) ?? "—"}</li>
                     </ul>
+                    {/* Tabla por clase */}
+                    <table>
+                        <thead>
+                        <tr >
+                            <th >Class</th>
+                            <th >Precision</th>
+                            <th >Recall</th>
+                            <th >F1 Score</th>
+                            <th >Support</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {Object.keys(postTrainData.classification_report ?? {})
+                            .filter((k) => !isNaN(Number(k))) // solo claves numéricas (clases)
+                            .map((cls) => (
+                            <tr key={cls}>
+                                <td >{inverseLabelMap[Number(cls)] ?? cls}</td>
+                                <td >{postTrainData.classification_report?.[cls].precision.toFixed(2)}</td>
+                                <td >{postTrainData.classification_report?.[cls].recall.toFixed(2)}</td>
+                                <td >{postTrainData.classification_report?.[cls]["f1-score"].toFixed(2)}</td>
+                                <td >{postTrainData.classification_report?.[cls].support}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </CardContent>
                 </Card>
             )}
