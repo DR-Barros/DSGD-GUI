@@ -13,6 +13,7 @@ class Datasets(Base):
     target_column = Column(String, nullable=False)
     n_rows = Column(Integer, nullable=False)
     n_classes = Column(Integer, nullable=False)
+    columns_encoder = Column(JSON, default=None)
 
     user = relationship("User", back_populates="datasets")
     files = relationship("DatasetFile", back_populates="dataset")

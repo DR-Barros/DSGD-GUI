@@ -11,6 +11,7 @@ from core.config import settings
 from schemas.dataset import DatasetOut
 import pandas as pd
 import numpy as np
+from sklearn.calibration import LabelEncoder
 
 api_router = APIRouter()
 
@@ -121,6 +122,7 @@ async def upload_dataset(
     db.add(new_dataset)
     db.commit()
     db.refresh(new_dataset)
+    datasets = []
     if len(files) == 1:
         file = files[0]
         ext = file.filename.split(".")[-1].lower()
@@ -135,7 +137,12 @@ async def upload_dataset(
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
-
+        if type_file == FileType.CSV:
+            datasets.append(pd.read_csv(file_path))
+        elif type_file == FileType.EXCEL:
+            datasets.append(pd.read_excel(file_path))
+        else:
+            datasets.append(pd.read_parquet(file_path))
         dataset_file = DatasetFile(
             dataset_id=new_dataset.id,
             file_path=file_path,
@@ -160,7 +167,12 @@ async def upload_dataset(
             with open(file_path, "wb") as f:
                 content = await file.read()
                 f.write(content)
-
+            if type_file == FileType.CSV:
+                datasets.append(pd.read_csv(file_path))
+            elif type_file == FileType.EXCEL:
+                datasets.append(pd.read_excel(file_path))
+            else:
+                datasets.append(pd.read_parquet(file_path))
             dataset_file = DatasetFile(
                 dataset_id=new_dataset.id,
                 file_path=file_path,
@@ -172,4 +184,16 @@ async def upload_dataset(
             db.commit()
             db.refresh(dataset_file)
 
+    X = pd.concat(datasets)
+    columns_encoder = {}
+    for column in X.select_dtypes(exclude=["number"]).columns:
+        print(column)
+        encoder = LabelEncoder()
+        encoder.fit_transform(X[column])
+        label_to_num = {label: idx for idx, label in enumerate(encoder.classes_)}
+        columns_encoder[column] = label_to_num
+    print(columns_encoder)
+    new_dataset.columns_encoder = columns_encoder
+    db.commit()
+    db.refresh(new_dataset)
     return {"info": f"Dataset '{name}' uploaded successfully"}
