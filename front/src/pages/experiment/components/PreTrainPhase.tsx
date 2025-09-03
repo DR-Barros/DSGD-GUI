@@ -16,7 +16,7 @@ interface PreTrainPhaseProps {
     datasetStats: any[];
     Dataset: Dataset | null;
     experimentId?: string;
-    startTraining: (params: TrainingParams, rulesWithValues: any[]) => Promise<void>;
+    startTraining: (params: TrainingParams, rulesWithValues: any[], masses: any[], labels: any[]) => Promise<void>;
 }
 
 export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId, startTraining }: PreTrainPhaseProps) {
@@ -41,7 +41,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         selectedColumns: Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : [],
         manualColumns: [],
     });
-    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>>>({});
+    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any; labels: any }>>>({});
     const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
 
@@ -68,7 +68,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             console.log("Generated rules:", data.rules);
             console.log("Masses:", data.masses);
 
-            const updatedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any }>> = {
+            const updatedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any; labels: any}>> = {
                 ...encodedRules
             };
 
@@ -81,6 +81,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 vars: any;
                 mass: any;
                 rulesWithValues: any;
+                labels: any;
             }
 
             const newGroupedRules: Record<string, GroupedRule[]> = {};
@@ -90,17 +91,18 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 const r: any = ruleEntry[0];
                 const vars: any = ruleEntry[1];
                 const mass: any = data.masses[index];
+                const labels: any = data.labels[index]
                 const rulesWithValues: any = replaceVariables(r, vars);
                 const indices: string[] = Array.from(indexValues(r, vars));
 
                 if (indices.length > 1) {
                     const joinedIdx: string = indices.join('-');
                     if (!newGroupedRules[joinedIdx]) newGroupedRules[joinedIdx] = [];
-                    newGroupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues });
+                    newGroupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues, labels})
                 } else {
                     indices.forEach((idx: string) => {
                         if (!newGroupedRules[idx]) newGroupedRules[idx] = [];
-                        newGroupedRules[idx].push({ rule: r, vars, mass, rulesWithValues });
+                        newGroupedRules[idx].push({ rule: r, vars, mass, rulesWithValues, labels});
                     });
                 }
             });
@@ -501,7 +503,13 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                 const allRulesWithValues: any[] = Object.values(encodedRules)
                                     .flat()
                                     .map((rule: any) => rule.rulesWithValues);
-                                startTraining(params, allRulesWithValues);
+                                const allMases: any [] = Object.values(encodedRules)
+                                    .flat()
+                                    .map((rule:any) => rule.mass)
+                                const allLabels: any [] = Object.values(encodedRules)
+                                    .flat()
+                                    .map((rule:any) => rule.labels)
+                                startTraining(params, allRulesWithValues, allMases, allLabels)
                             }}
                         >
                             {t("experiment.train")}

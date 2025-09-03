@@ -34,9 +34,9 @@ def train_model(
         X_test = X_test.select_dtypes(include=[np.number, 'bool'])
         dsparser = DSParser.DSParser()
         functions = []
-        for i in range(len(rules)):
-            f = dsparser.json_to_lambda(rules[i], X_train.columns.tolist())
-            functions.append(f)
+        for rule, mass, label in rules:
+            f = dsparser.json_to_lambda(rule, X_train.columns.tolist())
+            functions.append((f, mass, label))
         print(X_train.dtypes)
         X_train_np = X_train.to_numpy()
         X_test_np = X_test.to_numpy()
@@ -53,8 +53,13 @@ def train_model(
             debug_mode=True,
             device=settings.DEVICE
         )
-        for rule in functions:
-            ds.model.add_rule(DSRule(rule, "<lambda>"))
+        for rule, mass, label in functions:
+            m_uncert = None
+            m_sing = None
+            if sum(mass) == 1:
+                m_uncert = mass[-1]
+                m_sing = mass[:-1]
+            ds.model.add_rule(DSRule(rule, label), m_sing=m_sing, m_uncert=m_uncert)
 
         iteration = db.query(Iteration).filter(Iteration.id == int(tasks_id)).first()
         iteration.training_status = "running"

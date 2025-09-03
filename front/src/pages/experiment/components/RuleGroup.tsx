@@ -18,6 +18,7 @@ type RuleItem = {
   vars: any;
   mass: number[];
   rulesWithValues: any;
+  labels: any;
 };
 
 interface RuleGroupProps {
@@ -178,6 +179,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             <tr key={i}>
                 {/* Columna RuleEditor */}
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px" }}>
+                {editing ? (
                 <RuleEditor
                     conditions={item.rulesWithValues}
                     onChange={(newConditions) => {
@@ -196,6 +198,11 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     idx={idx}
                     editing={editing}
                 />
+                ) : (
+                    <p>
+                        {item.labels}
+                    </p>
+                )}
                 </td>
 
                 {/* Columnas Mass */}

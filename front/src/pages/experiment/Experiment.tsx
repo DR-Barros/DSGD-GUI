@@ -41,11 +41,13 @@ export default function Experiment() {
         }
     };
 
-    async function startTraining(params: TrainingParams, rulesWithValues: any[]) {
+    async function startTraining(params: TrainingParams, rulesWithValues: any[], masses: any[], labels: any[]) {
         try {
             const body = {
                 ...params,
-                rules: rulesWithValues
+                rules: rulesWithValues,
+                masses: masses,
+                labels: labels
             };
             // 1️⃣ Hacer POST para encolar el entrenamiento
             const response = await fetch(`http://localhost:8000/api/train/train-model/${id}`, {

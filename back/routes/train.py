@@ -59,73 +59,78 @@ def generate_rules(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie)
 ):
-    selectedColumns = rule_params.selectedColumns
-    breakRules = rule_params.breakRules
-    singleRule = rule_params.singleRule
-    multipleRule = rule_params.multipleRule
-    print(multipleRule, singleRule, breakRules, selectedColumns)
-    dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
-    if not dataset_files:
-        raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-    for dataset_file in dataset_files:
-        if dataset_file.dataset_type == DatasetType.TESTING:
-            continue
-        if dataset_file.type_file == FileType.CSV:
-            X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.EXCEL:
-            X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.PARQUET:
-            X = pd.read_parquet(dataset_file.file_path)
-        else:
-            return HTTPException(status_code=400, detail="Unsupported file type")
-    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
-    if not dataset:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    print("Selected columns:", selectedColumns)
-    X.columns = X.columns.map(str)
-    print("columns:", X.columns.tolist())
-    #nos quedamos con selectedColumns
-    X = X[selectedColumns]
-    X_np = X.to_numpy()
-    # Get the experiment from the database
-    experiment = db.query(Experiment).filter(Experiment.id == experiment_id).first()
-    if not experiment:
-        raise HTTPException(status_code=404, detail="Experiment not found")
+    try:
+        selectedColumns = rule_params.selectedColumns
+        breakRules = rule_params.breakRules
+        singleRule = rule_params.singleRule
+        multipleRule = rule_params.multipleRule
+        print(multipleRule, singleRule, breakRules, selectedColumns)
+        dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
+        if not dataset_files:
+            raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
+        for dataset_file in dataset_files:
+            if dataset_file.dataset_type == DatasetType.TESTING:
+                continue
+            if dataset_file.type_file == FileType.CSV:
+                X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
+            elif dataset_file.type_file == FileType.EXCEL:
+                X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
+            elif dataset_file.type_file == FileType.PARQUET:
+                X = pd.read_parquet(dataset_file.file_path)
+            else:
+                return HTTPException(status_code=400, detail="Unsupported file type")
+        dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+        if not dataset:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+        print("Selected columns:", selectedColumns)
+        X.columns = X.columns.map(str)
+        #nos quedamos con selectedColumns
+        X = X[selectedColumns]
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X.columns:
+                X[key] = X[key].replace(column_encoder)
+        X_np = X.to_numpy()
+        # Get the experiment from the database
+        experiment = db.query(Experiment).filter(Experiment.id == experiment_id).first()
+        if not experiment:
+            raise HTTPException(status_code=404, detail="Experiment not found")
 
-    # Generate rules using the DSParser
-    ds_parser = DSParser.DSParser()
-    cr = classifier.DSClassifierMultiQ(dataset.n_classes)
-    if singleRule:
-        cr.model.generate_statistic_single_rules(X_np, breakRules, selectedColumns)
-    if multipleRule:
-        cr.model.generate_mult_pair_rules(X_np, selectedColumns)
-    rules = cr.model.preds
-    masses = cr.model._params
-    masses = [m.tolist() for m in masses]  # Convertir a float para JSON serializable
-    #a las masas la squiero con solo 3 decimales
-    for i in range(len(masses)):
-        mass = masses[i]
-        mass = [round(m, 3) for m in mass]
-        masses[i] = mass
+        # Generate rules using the DSParser
+        ds_parser = DSParser.DSParser()
+        cr = classifier.DSClassifierMultiQ(dataset.n_classes)
+        if singleRule:
+            cr.model.generate_statistic_single_rules(X_np, breakRules, selectedColumns)
+        if multipleRule:
+            cr.model.generate_mult_pair_rules(X_np, selectedColumns)
+        rules = cr.model.preds
+        masses = cr.model._params
+        masses = [m.tolist() for m in masses]  # Convertir a float para JSON serializable
+        #a las masas la squiero con solo 3 decimales
+        for i in range(len(masses)):
+            mass = masses[i]
+            mass = [round(m, 3) for m in mass]
+            masses[i] = mass
 
-    print("Generated rules:", rules)
-    print("Masses:", masses)
-    encoded_rules = []
-    for rule in rules:
-        vars = rule.ld.__defaults__
-        #pasamos los valores np.float a float
-        vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
-        lambda_fn = ds_parser.lambda_rule_to_json(rule.ld, vars)
-        encoded_rules.append(lambda_fn)
-    for rule, vars in encoded_rules:
-        keys = ds_parser.json_index(rule, vars)
-        #elimina duplicados
-        keys = list(set(keys))
-        print("Rule keys:", keys)
-        for key in keys:
-            value = vars.get(key, None)
-            vars[key] = selectedColumns[value] if value is not None and value < len(selectedColumns) else value
-    return {"rules": encoded_rules, "masses": masses}
+        encoded_rules = []
+        labels = []
+        for rule in rules:
+            vars = rule.ld.__defaults__
+            #pasamos los valores np.float a float
+            vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
+            lambda_fn = ds_parser.lambda_rule_to_json(rule.ld, vars)
+            encoded_rules.append(lambda_fn)
+            labels.append(rule.caption)
+        for rule, vars in encoded_rules:
+            keys = ds_parser.json_index(rule, vars)
+            #elimina duplicados
+            keys = list(set(keys))
+            for key in keys:
+                value = vars.get(key, None)
+                vars[key] = selectedColumns[value] if value is not None and value < len(selectedColumns) else value
+        return sanitize_json({"rules": encoded_rules, "masses": masses, "labels": labels})
+    except Exception as e:
+        print("Error generating rules:", e)
+        raise HTTPException(status_code=500, detail="Error generating rules")
 
 
 @api_router.post("/train-model/{experiment_id}")
@@ -175,6 +180,9 @@ async def train_model_post(
         l = LabelEncoder()
         y = l.fit_transform(y)
         X = X.drop(columns=[dataset.target_column])
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X.columns:
+                X[key] = X[key].replace(column_encoder)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
     elif len(datasets) == 2:
         X_train = datasets[0]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[1]["data"]
@@ -195,6 +203,12 @@ async def train_model_post(
         y_test = l.transform(y_test)
         X_train = X_train.drop(columns=[dataset.target_column])
         X_test = X_test.drop(columns=[dataset.target_column])
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X_train.columns:
+                X_train[key] = X_train[key].replace(column_encoder)
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X_test.columns:
+                X_test[key] = X_test[key].replace(column_encoder)
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
     
@@ -206,9 +220,14 @@ async def train_model_post(
     optim_function = data.get("optimFunction", "adam").lower()
     learning_rate = data.get("learningRate", 0.001)
     rules = data.get("rules", [])
+    masses = data.get("masses", [])
+    labels = data.get("labels", [])
     if len(rules) == 0:
         return HTTPException(status_code=404, detail="No rules provided for training")
-
+    if len(rules) != len(masses) != len(labels):
+        return HTTPException(status_code=404, detail="The rules are bad")
+    rules = zip(rules, masses, labels)
+    
     iteration = Iteration(
         created_at=datetime.now(),
         experiment_id=experiment_id,
