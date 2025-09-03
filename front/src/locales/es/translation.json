@@ -64,7 +64,9 @@
     "loss": "Pérdida",
     "timeElapsed": "Tiempo transcurrido",
     "timeRemaining": "Tiempo estimado restante",
-    "evaluating": "Evaluando"
+    "evaluating": "Evaluando",
+    "metrics": "Métricas",
+    "predict": "Predecir"
   },
   "datasets": {
     "title": "Conjuntos de datos",

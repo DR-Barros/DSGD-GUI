@@ -32,7 +32,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         batchSize: 4000,
         lossFunction: "MSE",
         optimFunction: "Adam",
-        learningRate: 0.001
+        learningRate: 0.005
     });
     const [generateRuleParams, setGenerateRuleParams] = useState<RuleParams>({
         singleRule: true,

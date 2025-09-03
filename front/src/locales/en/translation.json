@@ -64,7 +64,9 @@
     "loss": "Loss",
     "timeElapsed": "Time Elapsed",
     "timeRemaining": "Estimated Time Remaining",
-    "evaluating": "Evaluating"
+    "evaluating": "Evaluating",
+    "metrics": "Metrics",
+    "predict": "Predict"
   },
   "datasets": {
     "title": "Datasets",

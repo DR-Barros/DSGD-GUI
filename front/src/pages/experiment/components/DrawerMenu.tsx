@@ -36,6 +36,12 @@ export default function DrawerMenu(
         setMobileOpen(open);
     };
 
+    useEffect(() => {
+        if (id) {
+            handleIterations();
+        }
+    }, [mobileOpen]);
+
     const drawerContent = (
         <Box sx={{ width: drawerWidth-20, display: 'flex', flexDirection: 'column', pt: 1, pb: 1 }} role="presentation">
             {iterations.map((item) => (
@@ -47,7 +53,10 @@ export default function DrawerMenu(
                         ) : (
                             <PendingIcon style={{ color: "#1976d2" }} />
                         )}
-                        <button onClick={() => openIterations(item.id, item.training_status)} style={{ background: "none", border: "none"}}> <ArrowForwardIcon style={{ color: "#1976d2" }} /> </button>
+                        <button onClick={() => {
+                            openIterations(item.id, item.training_status);
+                            setMobileOpen(false);
+                        }} style={{ background: "none", border: "none"}}> <ArrowForwardIcon style={{ color: "#1976d2" }} /> </button>
                         </div>
                         <p>acc: {item.accuracy?.toFixed(2)}</p>
                         <hr />

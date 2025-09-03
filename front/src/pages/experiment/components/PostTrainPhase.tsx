@@ -1,8 +1,11 @@
 import { useTranslation } from "react-i18next";
+import Stepper from '@mui/joy/Stepper';
+import Step from '@mui/joy/Step';
+import StepButton from '@mui/joy/StepButton';
 import { useEffect, useState } from "react";
 import { fetchProtected } from "../../../api/client";
 import type { Iteration } from '../../../types/experiment';
-import { Button, Card, CardContent } from "@mui/material";
+import { Button, Card, CardContent, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
 import {
   Chart as ChartJS,
   Title,
@@ -24,13 +27,30 @@ ChartJS.register(
   MatrixElement
 );
 
+interface Rule {
+    rule: string;
+    mass: number[];
+}
+
+interface Rules {
+    rules: Rule[];
+    classes: Record<string, number>;
+}
+
 export default function PostTrainPhase({ id, back }: { id: number | null, back: () => void }) {
     const { t } = useTranslation();
+    const [activeStep, setActiveStep] = useState<0|1|2>(0);
     const [postTrainData, setPostTrainData] = useState<Iteration | null>(null);
+    const [rules, setRules] = useState<Rules | null>(null);
+    const [sortedRules, setSortedRules] = useState<Rule[]>([]);
+    const [sortColumn, setSortColumn] = useState<number | "rule">("rule");
+    const [sortAsc, setSortAsc] = useState(true);
+
 
     useEffect(() => {
         if (id) {
             fetchPostTrainData(id);
+            fetchRules(id);
         }
     }, [id]);
 
@@ -43,6 +63,34 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         }
     };
 
+    const fetchRules = async (iterationId: number) => {
+        const { data, status } = await fetchProtected(`/experiments/iteration/rules/${iterationId}`);
+        if (status === 200) {
+            console.log("Fetched rules:", data);
+            setRules(data);
+            setSortedRules(data.rules);
+        } else {
+            console.error("Error fetching post-training rules");
+        }
+    };
+
+    const handleSort = (col: number | "rule") => {
+        const asc = sortColumn === col ? !sortAsc : true;
+        setSortColumn(col);
+        setSortAsc(asc);
+
+        const sorted = [...sortedRules].sort((a, b) => {
+            if (col === "rule") {
+            return asc
+                ? a.rule.localeCompare(b.rule)
+                : b.rule.localeCompare(a.rule);
+            } else {
+            return asc ? a.mass[col] - b.mass[col] : b.mass[col] - a.mass[col];
+            }
+        });
+
+        setSortedRules(sorted);
+    };
 
 
     if (!postTrainData) {
@@ -124,17 +172,34 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         Object.entries(postTrainData.label_encoder ?? {}).map(([name, idx]) => [idx, name])
     );
 
+    const idxToClassName: Record<number, string> = {};
+    if (rules?.classes) {
+        Object.entries(rules.classes).forEach(([name, idx]) => {
+            idxToClassName[idx] = name;
+        });
+    }
+
     return (
         <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "16px" }}>
-            {/* Título ocupa todo el ancho */}
-            <h2 style={{ width: "100%" }}>{t("postTrain.title")}</h2>
-
+            <Stepper sx={{ width: '100%', maxWidth: 600, margin: '20px auto' }}>
+                <Step key={0}>
+                    <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : ''}>{t('experiment.metrics')}</StepButton>
+                </Step>
+                <Step key={1}>
+                    <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : ''}>{t('experiment.rules')}</StepButton>
+                </Step>
+                <Step key={2}>
+                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : ''}>{t('experiment.predict')}</StepButton>
+                </Step>
+            </Stepper>
             {/* Cards en fila */}
+            {activeStep === 0 &&
+            <>
             <div style={{ display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap" }}>
             {postTrainData && (
                 <Card style={{ flex: 1, minWidth: "250px" }}>
                 <CardContent>
-                    <h3>{t("postTrain.metrics")}</h3>
+                    <h3>{t("experiment.metrics")}</h3>
                     <ul>
                     <li>Accuracy: {postTrainData.accuracy?.toFixed(2) ?? "—"}</li>
                     <li>Precision: {postTrainData.precision?.toFixed(2) ?? "—"}</li>
@@ -187,6 +252,58 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
                 Back to Pre-Training
             </Button>
             </div>
+            </>}
+            {activeStep === 1 &&
+            <>
+                {rules ? (<>
+                    <h3>Rules</h3>
+                    <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                        <TableRow>
+                            <TableCell>
+                            <TableSortLabel
+                                active={sortColumn === "rule"}
+                                direction={sortColumn === "rule" && !sortAsc ? "desc" : "asc"}
+                                onClick={() => handleSort("rule")}
+                            >
+                                Rule
+                            </TableSortLabel>
+                            </TableCell>
+
+                            {rules.rules[0].mass.map((_, idx) => (
+                            <TableCell key={idx}>
+                                <TableSortLabel
+                                active={sortColumn === idx}
+                                direction={sortColumn === idx && !sortAsc ? "desc" : "asc"}
+                                onClick={() => handleSort(idx)}
+                                >
+                                {idxToClassName[idx] ?? t("experiment.uncertainty")}
+                                </TableSortLabel>
+                            </TableCell>
+                            ))}
+                        </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                        {sortedRules.map((rule, index) => (
+                            <TableRow key={index}>
+                            <TableCell>{rule.rule}</TableCell>
+                            {rule.mass.map((value, i) => (
+                                <TableCell key={i}>{value.toFixed(2)}</TableCell>
+                            ))}
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    </TableContainer>
+                </>) : (
+                    <p>{t("experiment.loadingRules")}</p>
+                )}
+            </>}
+            {activeStep === 2 &&
+            <>
+            </>}
         </div>
     );
 }

@@ -8,6 +8,7 @@ from models.dataset_file import FileType, DatasetType
 from schemas.experiment import ExperimentOut
 from .auth import get_current_user_from_cookie
 from datetime import datetime
+from dsmodels import classifier
 from core.config import settings
 import pandas as pd
 import numpy as np
@@ -93,3 +94,20 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
 async def get_experiment_iteration(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
     iterations = db.query(Iteration).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).order_by(Iteration.created_at.desc()).all()
     return iterations
+
+
+@api_router.get("/iteration/rules/{iteration_id}")
+async def get_experiment_iteration(iteration_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Experiment.user_id == current_user.id).first()
+    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == iteration.experiment_id, Experiment.user_id == current_user.id).first()
+    path = iteration.model_path
+    model = classifier.DSClassifierMultiQ(dataset.n_classes)
+    model.model.load_rules_bin(path)
+    rules = []
+    for i in range(len(model.model.preds)):
+        rules.append({
+            "rule": model.model.preds[i].caption,
+            "mass": model.model._params[i].detach().tolist()
+        })
+        print(f"Rule: {model.model.preds[i].caption}, Mass: {model.model._params[i]}")
+    return {"rules": rules, "classes": iteration.label_encoder}
