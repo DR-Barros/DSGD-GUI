@@ -8,10 +8,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 interface ModalExperimentProps {
     open: boolean;
     onClose: () => void;
+    reload: () => void;
 }
 
 export default function ModalExperiment(
-    { open, onClose }: ModalExperimentProps
+    { open, onClose, reload }: ModalExperimentProps
 ) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,6 +49,7 @@ export default function ModalExperiment(
         if (status === 200) {
             console.log("Experiment created successfully", data);
             onClose();
+            reload();
         } else {
             console.log("Error creating experiment");
         }

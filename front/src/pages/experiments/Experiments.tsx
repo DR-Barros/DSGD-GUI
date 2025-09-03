@@ -137,7 +137,7 @@ export default function Experiments() {
         >
             <AddIcon />
         </Fab>
-        <ModalExperiment open={modalOpen} onClose={() => setModalOpen(false)} />
-        </div>
-    );
+        <ModalExperiment open={modalOpen} onClose={() => setModalOpen(false)} reload={fetchExperiments} />
+    </div>
+);
 }
