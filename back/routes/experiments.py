@@ -89,6 +89,13 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
         "data": dataset_data,
         "info": dataset
     }
+    
+@api_router.get("/dataset/{experiment_id}/columns")
+async def get_experiment_dataset_columns(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found for this experiment")
+    return {"columns": dataset.columns, "target": dataset.target_column}
 
 @api_router.get("/iteration/{experiment_id}")
 async def get_experiment_iteration(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):

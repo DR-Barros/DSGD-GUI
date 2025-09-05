@@ -5,7 +5,7 @@ import StepButton from '@mui/joy/StepButton';
 import { useEffect, useState } from "react";
 import { fetchProtected } from "../../../api/client";
 import type { Iteration } from '../../../types/experiment';
-import { Button, Card, CardContent, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { Button, Card, CardContent} from "@mui/material";
 import {
   Chart as ChartJS,
   Title,
@@ -16,8 +16,9 @@ import {
 } from "chart.js";
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
 import { Chart } from "react-chartjs-2";
-import type { Rule, Rules } from "../../../types/rules";
+import type { Rules } from "../../../types/rules";
 import RuleView from "./RuleView";
+import Predict from "./Predict";
 
 ChartJS.register(
   Title,
@@ -34,9 +35,6 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
     const [activeStep, setActiveStep] = useState<0|1|2>(0);
     const [postTrainData, setPostTrainData] = useState<Iteration | null>(null);
     const [rules, setRules] = useState<Rules | null>(null);
-    const [sortedRules, setSortedRules] = useState<Rule[]>([]);
-    const [sortColumn, setSortColumn] = useState<number | "rule">("rule");
-    const [sortAsc, setSortAsc] = useState(true);
 
 
     useEffect(() => {
@@ -60,28 +58,9 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         if (status === 200) {
             console.log("Fetched rules:", data);
             setRules(data);
-            setSortedRules(data.rules);
         } else {
             console.error("Error fetching post-training rules");
         }
-    };
-
-    const handleSort = (col: number | "rule") => {
-        const asc = sortColumn === col ? !sortAsc : true;
-        setSortColumn(col);
-        setSortAsc(asc);
-
-        const sorted = [...sortedRules].sort((a, b) => {
-            if (col === "rule") {
-            return asc
-                ? a.rule.localeCompare(b.rule)
-                : b.rule.localeCompare(a.rule);
-            } else {
-            return asc ? a.mass[col] - b.mass[col] : b.mass[col] - a.mass[col];
-            }
-        });
-
-        setSortedRules(sorted);
     };
 
 
@@ -255,6 +234,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             </>}
             {activeStep === 2 &&
             <>
+                {id !== null && <Predict id={id} />}
             </>}
         </div>
     );
