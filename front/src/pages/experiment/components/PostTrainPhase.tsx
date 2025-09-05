@@ -16,6 +16,8 @@ import {
 } from "chart.js";
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
 import { Chart } from "react-chartjs-2";
+import type { Rule, Rules } from "../../../types/rules";
+import RuleView from "./RuleView";
 
 ChartJS.register(
   Title,
@@ -26,16 +28,6 @@ ChartJS.register(
   MatrixController,
   MatrixElement
 );
-
-interface Rule {
-    rule: string;
-    mass: number[];
-}
-
-interface Rules {
-    rules: Rule[];
-    classes: Record<string, number>;
-}
 
 export default function PostTrainPhase({ id, back }: { id: number | null, back: () => void }) {
     const { t } = useTranslation();
@@ -255,49 +247,9 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             </>}
             {activeStep === 1 &&
             <>
-                {rules ? (<>
-                    <h3>Rules</h3>
-                    <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                        <TableRow>
-                            <TableCell>
-                            <TableSortLabel
-                                active={sortColumn === "rule"}
-                                direction={sortColumn === "rule" && !sortAsc ? "desc" : "asc"}
-                                onClick={() => handleSort("rule")}
-                            >
-                                Rule
-                            </TableSortLabel>
-                            </TableCell>
-
-                            {rules.rules[0].mass.map((_, idx) => (
-                            <TableCell key={idx}>
-                                <TableSortLabel
-                                active={sortColumn === idx}
-                                direction={sortColumn === idx && !sortAsc ? "desc" : "asc"}
-                                onClick={() => handleSort(idx)}
-                                >
-                                {idxToClassName[idx] ?? t("experiment.uncertainty")}
-                                </TableSortLabel>
-                            </TableCell>
-                            ))}
-                        </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                        {sortedRules.map((rule, index) => (
-                            <TableRow key={index}>
-                            <TableCell>{rule.rule}</TableCell>
-                            {rule.mass.map((value, i) => (
-                                <TableCell key={i}>{value.toFixed(2)}</TableCell>
-                            ))}
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                    </TableContainer>
-                </>) : (
+                {rules ? (
+                    <RuleView rules={rules} />
+                ) : (
                     <p>{t("experiment.loadingRules")}</p>
                 )}
             </>}

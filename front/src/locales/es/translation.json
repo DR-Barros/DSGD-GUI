@@ -66,7 +66,11 @@
     "timeRemaining": "Tiempo estimado restante",
     "evaluating": "Evaluando",
     "metrics": "Métricas",
-    "predict": "Predecir"
+    "predict": "Predecir",
+    "allRules": "Todas las reglas",
+    "topRules": "Reglas principales",
+    "showTop": "Mostrar las mejores Reglas:",
+    "score": "Importancia"
   },
   "datasets": {
     "title": "Conjuntos de datos",
