@@ -407,7 +407,7 @@ class DSClassifierMultiQ(ClassifierMixin):
         cols = ["rule"]
         for i in range(len(pred)):
             builder += " Class %d: \t%.3f\n" % (i+1, pred[i])
-            cols.append("mass_class_" + str(i+1))
+            cols.append(str(i))
         # builder += " Uncertainty:\t%.3f\n\n" % pred[-1]
         cols.append("uncertainty")
 

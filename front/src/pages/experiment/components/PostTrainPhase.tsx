@@ -44,8 +44,8 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         }
     }, [id]);
 
-    const fetchPostTrainData = async (experimentId: number) => {
-        const { data, status } = await fetchProtected(`/train/iteration/${experimentId}`);
+    const fetchPostTrainData = async (iterationId: number) => {
+        const { data, status } = await fetchProtected(`/train/iteration/${iterationId}`);
         if (status === 200) {
             setPostTrainData(data);
         } else {
@@ -234,7 +234,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             </>}
             {activeStep === 2 &&
             <>
-                {id !== null && <Predict id={id} />}
+                {id !== null && <Predict iterationId={id} />}
             </>}
         </div>
     );

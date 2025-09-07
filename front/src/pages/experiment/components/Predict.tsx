@@ -1,22 +1,31 @@
-import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button } from "@mui/material";
-import { fetchProtected } from "../../../api/client";
+import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button, Modal } from "@mui/material";
+import { fetchProtected, postProtected } from "../../../api/client";
 import { useEffect, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 
 
-export default function Predict({ id }: { id: number | string | undefined }) {
+interface PredictData {
+    class: number;
+    probabilities: number[];
+    rules: any;
+}
+
+export default function Predict({ iterationId }: { iterationId: number | string | undefined }) {
+    const {id} = useParams();
+    const [status, setStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
     const [columns, setColumns] = useState<string[]>([]);
     const [target, setTarget] = useState<string>("");
-    const [data, setData] = useState<any[][]>([]);
+    const [labels, setLabels] = useState<Record<string, number>>({});
+    const [predictData, setData] = useState<any[][]>([]);
+    const [predictedResults, setPredictedResults] = useState<PredictData[]>([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [modalId, setModalId] = useState<number | null>(null);
     const { t } = useTranslation();
-
-    const handleUpload = async () => {
-        console.log("Uploading data for prediction:", data);
-    }
 
     const fetchPostTrainData = async (experimentId: number) => {
         const { data, status } = await fetchProtected(`/experiments/dataset/${experimentId}/columns`);
@@ -33,6 +42,12 @@ export default function Predict({ id }: { id: number | string | undefined }) {
             fetchPostTrainData(Number(id));
         }
     }, [id]);
+
+    useEffect(() => {
+        if (predictedResults.length > 0) {
+            setStatus("success");
+        }
+    }, [predictedResults]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -57,7 +72,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
         }
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
     }
 
@@ -66,10 +81,38 @@ export default function Predict({ id }: { id: number | string | undefined }) {
         setPage(0);
     }
 
+    const handlePredict = async () => {
+        if (!iterationId) {
+            console.error("No iteration ID provided for prediction");
+            return;
+        }
+        if (predictData.length === 0) {
+            console.error("No data available for prediction");
+            return;
+        }
+        const { data, status } = await postProtected(`/predict/${iterationId}`, { predictData });
+        if (status === 200) {
+            console.log("Prediction successful:", data);
+            setPredictedResults(data.predictions);
+            setLabels(data.labels || {});
+        } else {
+            console.error("Error during prediction");
+        }
+    }
+
+    const invertLabels = (labels: Record<string, number>) => {
+        const inverted: Record<number, string> = {};
+        Object.entries(labels).forEach(([key, value]) => {
+            inverted[value] = key;
+        });
+        return inverted;
+    };
 
     return (
         <div>
-            <h2>Predict Component - Experiment ID: {id}</h2>
+            <h2>Predict</h2>
+            {status == "idle" &&
+            <>
             <h3>Columns:</h3>
             <TableContainer component={Paper}>
                 <Table>
@@ -82,7 +125,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data
+                        {predictData
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((row, rowIndex) => {
                             const globalIndex = page * rowsPerPage + rowIndex; // índice real en `data`
@@ -95,7 +138,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
                                     value={cell}
                                     style={{ width: "100%" }}
                                     onChange={(e) => {
-                                        const newData = [...data];
+                                        const newData = [...predictData];
                                         newData[globalIndex][cellIndex] = e.target.value;
                                         setData(newData);
                                     }}
@@ -105,7 +148,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
                                 <TableCell>
                                 <button
                                     onClick={() => {
-                                    const newData = data.filter((_, idx) => idx !== globalIndex);
+                                    const newData = predictData.filter((_, idx) => idx !== globalIndex);
                                     setData(newData);
                                     }}
                                     style={{
@@ -127,7 +170,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
                             <TableCell colSpan={columns.length}>
                                 <TablePagination
                                     rowsPerPageOptions={[5, 10, 15]}
-                                    count={data.length}
+                                    count={predictData.length}
                                     rowsPerPage={rowsPerPage}
                                     page={page}
                                     onPageChange={handleChangePage}
@@ -140,7 +183,7 @@ export default function Predict({ id }: { id: number | string | undefined }) {
             </TableContainer>
             <button onClick={() => {
                 const newRow = columns.map(() => "");
-                setData([...data, newRow]);
+                setData([...predictData, newRow]);
             }}>
                 Add Row
             </button>
@@ -153,11 +196,144 @@ export default function Predict({ id }: { id: number | string | undefined }) {
             <Button
                 variant="contained"
                 color="primary"
-                onClick={handleUpload}
+                onClick={handlePredict}
                 style={{ marginLeft: "10px" }}
             >
                 {t("experiment.predict")}
             </Button>
+            </>
+            }
+            {status == "loading" && <p>Loading...</p>}
+            {status == "error" && <p>Error occurred. Please try again.</p>}
+            {status == "success" && 
+            <>
+                <h3>Predicted Results:</h3>
+                <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            {columns.map((col) => (
+                                <TableCell key={col}>{col}</TableCell>
+                            ))}
+                            <TableCell>Prediction</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {predictData
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((row, rowIndex) => {
+                            const globalIndex = page * rowsPerPage + rowIndex; // índice real en `data`
+                            return (
+                            <TableRow key={globalIndex}>
+                                {row.map((cell: any, cellIndex: number) => (
+                                <TableCell key={cellIndex}>
+                                    <p>{cell}</p>
+                                </TableCell>
+                                ))}
+                                <TableCell>
+                                    <p>{labels && Object.keys(labels).length > 0 ? invertLabels(labels)[predictedResults[globalIndex]?.class] : predictedResults[globalIndex]?.class}</p>
+                                </TableCell>
+                                <TableCell>
+                                <button
+                                    onClick={() => {
+                                        setModalId(globalIndex);
+                                        console.log("Rules for row", globalIndex, ":", predictedResults[globalIndex]?.rules);
+                                    }}
+                                >
+                                    <VisibilityIcon />
+                                </button>
+                                </TableCell>
+                            </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell colSpan={columns.length}>
+                                <TablePagination
+                                    rowsPerPageOptions={[5, 10, 15]}
+                                    count={predictData.length}
+                                    rowsPerPage={rowsPerPage}
+                                    page={page}
+                                    onPageChange={handleChangePage}
+                                    onRowsPerPageChange={handleChangeRowsPerPage}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    </TableFooter>
+                </Table>
+            </TableContainer>
+            <button onClick={() => setStatus("idle")}>New Prediction</button>
+            </>}
+            {predictData.length > 0 &&
+            <Modal
+                open={modalId !== null}
+                onClose={() => setModalId(null)}
+            >
+                <div style={{
+                    position: 'absolute' as 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: "90vw",
+                    maxWidth: "800px",
+                    maxHeight: "80vh",
+                    overflowY: "auto",
+                    backgroundColor: 'white',
+                    padding: '20px',
+                }}>
+                    <h1 style={{margin: 0}}>{t("row")} {modalId}</h1>
+                    <h2>
+                        <strong>{t("class")}:</strong>{" "}
+                        {modalId !== null ? predictedResults[modalId]?.class : ""}
+                        {labels && Object.keys(labels).length > 0
+                            ? ` (${invertLabels(labels)[predictedResults[modalId !== null ? modalId : 0]?.class]})`
+                            : ""}
+                    </h2>
+                    {columns.map((col, idx) => (
+                        <p key={idx}><strong>{col}:</strong> {predictData[modalId !== null ? modalId : 0][idx]}</p>
+                    ))}
+                    <p>
+                        <strong>{t("experiment.probabilities")}:</strong>{" "}
+                        {predictedResults[modalId !== null ? modalId : 0]?.probabilities
+                            .map((p: number) => p.toFixed(3))
+                            .join(", ")}
+                    </p>
+                    <h3>{t("experiment.rules")}:</h3>
+                    <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                        <TableRow>
+                            <TableCell>{t("experiment.rule")}</TableCell>
+                            {Object.keys(labels).map((clsKey) => (
+                            <TableCell key={clsKey}>
+                                {clsKey}
+                            </TableCell>
+                            ))}
+                            <TableCell>{t("experiment.uncertainty")}</TableCell>
+                        </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {predictedResults[modalId ?? 0]?.rules?.map(
+                            (rule: any, rIdx: number) => (
+                            <TableRow key={rIdx}>
+                                <TableCell>{rule.rule}</TableCell>
+                                {Object.keys(labels).map((clsKey) => (
+                                <TableCell key={clsKey}>
+                                    {rule[labels[clsKey]]?.toFixed(3)}
+                                </TableCell>
+                                ))}
+                                <TableCell>{rule.uncertainty.toFixed(3)}</TableCell>
+                            </TableRow>
+                            )
+                        )}
+                        </TableBody>
+                    </Table>
+                    </TableContainer>
+                </div>
+            </Modal>
+            }
         </div>
     );
 }
