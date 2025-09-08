@@ -154,7 +154,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         <thead>
             <tr>
             <th style={{ borderBottom: "1px solid #ccc", textAlign: "left", padding: "4px" }}>
-                Rule
+                {t("experiment.rule")}
             </th>
             {rulesArray[0]?.mass.map((_: number, mi: number) => (
                 <th
@@ -168,8 +168,8 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 {mi === rulesArray[0].mass.length - 1 ? t("experiment.uncertainty") : `${t("experiment.mass")} ${mi + 1}`}
                 </th>
             ))}
-            <th>
-                validez
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "center", padding: "4px" }}>
+                {t("experiment.valid")}
             </th>
             {editing && <th></th>}
             </tr>
@@ -193,6 +193,19 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                         updated[idx] = updatedArray;
                         return updated;
                     });
+                    }}
+                    label={item.labels}
+                    updateLabel={(newLabel: string) => {
+                        setEncodedRules((prev) => {
+                            const updated = { ...prev };
+                            const updatedArray = [...updated[idx]];
+                            updatedArray[i] = {
+                                ...updatedArray[i],
+                                labels: newLabel,
+                            };
+                            updated[idx] = updatedArray;
+                            return updated;
+                        });
                     }}
                     columns={Dataset?.columns || []}
                     idx={idx}
@@ -257,14 +270,16 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 {editing && (
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
                     <button onClick={() => {
-                    setEncodedRules((prev) => {
-                        const updated = { ...prev };
-                        const updatedArray = [...updated[idx]];
-                        const filtered = updatedArray.filter((_, ri) => ri !== i);
-                        updated[idx] = filtered;
-                        return updated;
-                    })}}>
-                        Delete
+                        setEncodedRules((prev) => {
+                            const updated = { ...prev };
+                            const updatedArray = [...updated[idx]];
+                            const filtered = updatedArray.filter((_, ri) => ri !== i);
+                            updated[idx] = filtered;
+                            return updated;
+                        })}}
+                        style={{ background: "none", border: "none", cursor: "pointer" }}
+                    >
+                    <DeleteIcon />
                     </button>
                 </td>
                 )}
@@ -290,6 +305,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     op: null,
                     right: 0,
                 }],
+                labels: "",
             };
 
             currentRules.push(newRule);

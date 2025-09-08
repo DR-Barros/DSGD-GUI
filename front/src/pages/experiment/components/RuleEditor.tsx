@@ -25,6 +25,8 @@ type RuleEditorProps = {
   columns: string[];
   idx: string;
   editing: boolean;
+  label: string;
+  updateLabel: (newLabel: string) => void;
 };
 
 /** 🔄 Renderiza recursivamente una expresión (puede ser simple o árbol) */
@@ -116,7 +118,7 @@ const ExpressionEditor: React.FC<{
     return <p>??</p>;
 };
 
-const RuleEditor: React.FC<RuleEditorProps> = ({ conditions, onChange, columns, idx, editing }) => {
+const RuleEditor: React.FC<RuleEditorProps> = ({ conditions, onChange, columns, idx, editing, label, updateLabel }) => {
     const {t} = useTranslation()
     const handleUpdate = (index: number, field: keyof Condition, value: Expression) => {
         const updated = [...conditions];
@@ -127,63 +129,74 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ conditions, onChange, columns, 
 
     return (
         <div>
+            <label>
+                {t("experiment.label")}: {""}
+                <input
+                    type="text"
+                    value={label}
+                    onChange={(e) => {
+                        e.preventDefault();
+                        updateLabel(e.target.value);
+                    }}
+                />
+            </label>
         {conditions.map((cond, ci) => (
             <div
-            key={ci}
-            style={{
-                display: "flex",
-                flexDirection: "row",
-                marginBottom: "0.5rem",
-                gap: "0.5rem",
-                alignItems: "center",
-            }}
-            >
-            {/* Left side */}
-            <ExpressionEditor
-                expr={cond.left}
-                onChange={(newExpr) => handleUpdate(ci, "left", newExpr)}
-                columns={columns}
-                idxs={idxs}
-                editing={editing}
-            />
+                key={ci}
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginBottom: "0.5rem",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                }}
+                >
+                {/* Left side */}
+                <ExpressionEditor
+                    expr={cond.left}
+                    onChange={(newExpr) => handleUpdate(ci, "left", newExpr)}
+                    columns={columns}
+                    idxs={idxs}
+                    editing={editing}
+                />
 
-            {/* Operator */}
-            {editing ? (
-            <select
-                value={cond.op}
-                onChange={(e) => handleUpdate(ci, "op", e.target.value)}
-            >
-                <option value="<=">{"<="}</option>
-                <option value=">=">{">="}</option>
-                <option value="<">{"<"}</option>
-                <option value=">">{">"}</option>
-                <option value="==">{"=="}</option>
-                <option value="!=">{"!="}</option>
-            </select>
-            ) : (
-            <span>{cond.op}</span>
-            )}
+                {/* Operator */}
+                {editing ? (
+                <select
+                    value={cond.op}
+                    onChange={(e) => handleUpdate(ci, "op", e.target.value)}
+                >
+                    <option value="<=">{"<="}</option>
+                    <option value=">=">{">="}</option>
+                    <option value="<">{"<"}</option>
+                    <option value=">">{">"}</option>
+                    <option value="==">{"=="}</option>
+                    <option value="!=">{"!="}</option>
+                </select>
+                ) : (
+                <span>{cond.op}</span>
+                )}
 
-            {/* Right side */}
-            <ExpressionEditor
-                expr={cond.right}
-                onChange={(newExpr) => handleUpdate(ci, "right", newExpr)}
-                columns={columns}
-                idxs={idxs}
-                editing={editing}
-            />
-            {/* si no es la ultima columna agregamos un and */}
-            {ci < conditions.length - 1 && (
-                <span>{t('and')}</span>
-            )}
-            {/* boton eliminar condición */}
-            {(editing && conditions.length > 1) &&
-            <button onClick={() =>{
-                const updated = conditions.filter((_, idx) => idx !== ci);
-                onChange(updated);
-            }}>
-                delete
-            </button>}
+                {/* Right side */}
+                <ExpressionEditor
+                    expr={cond.right}
+                    onChange={(newExpr) => handleUpdate(ci, "right", newExpr)}
+                    columns={columns}
+                    idxs={idxs}
+                    editing={editing}
+                />
+                {/* si no es la ultima columna agregamos un and */}
+                {ci < conditions.length - 1 && (
+                    <span>{t('and')}</span>
+                )}
+                {/* boton eliminar condición */}
+                {(editing && conditions.length > 1) &&
+                <button onClick={() =>{
+                    const updated = conditions.filter((_, idx) => idx !== ci);
+                    onChange(updated);
+                }}>
+                    delete
+                </button>}
             </div>
         ))}
         {editing &&
