@@ -14,11 +14,12 @@ type HistogramBin = {
 };
 
 type RuleItem = {
-  rule: any;
-  vars: any;
-  mass: number[];
-  rulesWithValues: any;
-  labels: any;
+    rule: any;
+    vars: any;
+    mass: number[];
+    rulesWithValues: any;
+    labels: any;
+    parsedRule: any;
 };
 
 interface RuleGroupProps {
@@ -181,19 +182,6 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px" }}>
                 {editing ? (
                 <RuleEditor
-                    conditions={item.rulesWithValues}
-                    onChange={(newConditions) => {
-                    setEncodedRules((prev) => {
-                        const updated = { ...prev };
-                        const updatedArray = [...updated[idx]];
-                        updatedArray[i] = {
-                        ...updatedArray[i],
-                        rulesWithValues: newConditions,
-                        };
-                        updated[idx] = updatedArray;
-                        return updated;
-                    });
-                    }}
                     label={item.labels}
                     updateLabel={(newLabel: string) => {
                         setEncodedRules((prev) => {
@@ -207,9 +195,19 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                             return updated;
                         });
                     }}
-                    columns={Dataset?.columns || []}
-                    idx={idx}
-                    editing={editing}
+                    rule={item.parsedRule}
+                    updateRule={(newRule: string) => {
+                        setEncodedRules((prev) => {
+                            const updated = { ...prev };
+                            const updatedArray = [...updated[idx]];
+                            updatedArray[i] = {
+                                ...updatedArray[i],
+                                parsedRule: newRule,
+                            };
+                            updated[idx] = updatedArray;
+                            return updated;
+                        });
+                    }}
                 />
                 ) : (
                     <p>
@@ -306,6 +304,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     right: 0,
                 }],
                 labels: "",
+                parsedRule: "",
             };
 
             currentRules.push(newRule);
