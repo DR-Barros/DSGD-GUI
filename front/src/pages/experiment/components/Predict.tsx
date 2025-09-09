@@ -18,7 +18,6 @@ export default function Predict({ iterationId }: { iterationId: number | string 
     const {id} = useParams();
     const [status, setStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
     const [columns, setColumns] = useState<string[]>([]);
-    const [target, setTarget] = useState<string>("");
     const [labels, setLabels] = useState<Record<string, number>>({});
     const [predictData, setData] = useState<any[][]>([]);
     const [predictedResults, setPredictedResults] = useState<PredictData[]>([]);
@@ -32,7 +31,6 @@ export default function Predict({ iterationId }: { iterationId: number | string 
         if (status === 200) {
             console.log("Fetched post-training data:", data);
             setColumns(data.columns.filter((col: string) => col !== data.target));
-            setTarget(data.target);
         } else {
             console.error("Error fetching post-training data");
         }

@@ -1,5 +1,4 @@
 import * as acorn from 'acorn';
-import { parse } from '@babel/parser';
 
 
 type condition = {

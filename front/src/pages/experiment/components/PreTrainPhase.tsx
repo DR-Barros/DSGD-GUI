@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import { postProtected } from '../../../api/client';
-import { indexValues, replaceVariables } from '../../../utils/parser';
+import { indexValues } from '../../../utils/parser';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
 import type { TrainingParams, RuleParams } from '../../../types/params';
