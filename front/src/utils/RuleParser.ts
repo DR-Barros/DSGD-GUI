@@ -70,11 +70,10 @@ function parseExpr(exprStr: string, columns: string[]): expression {
     columns.forEach((col, idx) => {
         let varName = `__var${idx}__`;
         varMap[varName] = col;
-        // Usar expresión regular para reemplazar solo coincidencias completas
-        let regex = new RegExp(`\\b${col}\\b`, 'g');
-        tempExpr = tempExpr.replace(regex, varName);
+        while (tempExpr.includes(col)) {
+            tempExpr = tempExpr.replace(col, varName);
+        }
     });
-    // parsear la expresión con acorn
     const ast = acorn.parse(tempExpr, { ecmaVersion: 6 }) as acorn.Node & { body: any[] };
     const firstStmt = ast.body[0];
     if (firstStmt && firstStmt.type === 'ExpressionStatement') {

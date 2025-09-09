@@ -23,6 +23,7 @@ export default function ResponsiveAppBar() {
     const menuItems = [
         { label: t("menu.datasets"), href: "/datasets" },
         { label: t("menu.experiments"), href: "/experiments" }
+        , { label: t("menu.documentation"), href: "/documentation" }
     ];
     const toggleDrawer = (open: boolean) => () => {
         setDrawerOpen(open);

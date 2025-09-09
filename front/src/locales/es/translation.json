@@ -27,7 +27,8 @@
   "and": "y",
   "menu": {
     "datasets": "Conjuntos de datos",
-    "experiments": "Experimentos"
+    "experiments": "Experimentos",
+    "documentation": "Documentación"
   },
   "experiments": {
     "title": "Experimentos",
@@ -116,6 +117,58 @@
         "upload_failed": "Error al subir archivos.",
         "target_column_required": "Por favor, selecciona una columna objetivo.",
         "name_required": "Por favor, ingresa un nombre para el conjunto de datos."
+      }
+    }
+  },
+  "rulesDocumentation": {
+    "title": "Documentación de Reglas",
+    "introduction": "Las reglas son expresiones que combinan variables, valores, operadores matemáticos y lógicos para definir condiciones sobre un dataset. Cada columna del dataset se puede usar como una variable en la expresión.",
+    "syntax": {
+      "title": "Sintaxis Permitida",
+      "variables": "Se usan los nombres de las columnas del dataset. Si contienen espacios, se mapearán automáticamente.",
+      "values": "Solo números (enteros o decimales). Strings no están permitidos.",
+      "mathOperators": "Operadores Matemáticos: +, -, *, /",
+      "comparisonOperators": "Operadores de Comparación: <, <=, >, >=, ==, !=",
+      "logicalOperators": "Operadores Lógicos: && (Y), || (O)",
+      "notes": "No se permiten comparaciones encadenadas, p.ej: a <= x < b",
+      "type": {
+        "variables": "Variables",
+        "values": "Valores",
+        "mathOperators": "Operadores Matemáticos",
+        "comparisonOperators": "Operadores de Comparación",
+        "logicalOperators": "Operadores Lógicos"
+      }
+    },
+    "examples": {
+      "title": "Ejemplos de Reglas",
+      "example1": "\"fixed acidity\" <= 6.34",
+      "example2": "\"fixed acidity\" <= 6.34 && \"residual sugar\" > 3",
+      "example3": "\"fixed acidity\" <= 6.34 || \"residual sugar\" > 3"
+    },
+    "errors": {
+      "title": "Errores Comunes",
+      "error": "Error",
+      "cause": "Causa",
+      "solution": "Solución",
+      "unknownIdentifier": {
+        "error": "Unknown identifier",
+        "cause": "Nombre de columna inexistente",
+        "solution": "Verifica que la columna exista"
+      },
+      "unsupportedOperator": {
+        "error": "Unsupported binary operator",
+        "cause": "Operador no permitido",
+        "solution": "Usar solo + - * / <= >= < > == !="
+      },
+      "chainedComparisons": {
+        "error": "Chained comparisons not supported",
+        "cause": "Comparación encadenada como a <= x < b",
+        "solution": "Separar en múltiples condiciones combinadas con &&"
+      },
+      "unknownNodeType": {
+        "error": "Unknown node type",
+        "cause": "Expresión inválida o incompleta",
+        "solution": "Revisar sintaxis y nombres de columnas"
       }
     }
   }

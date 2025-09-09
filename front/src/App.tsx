@@ -4,6 +4,7 @@ import Experiments from "./pages/experiments/Experiments";
 import Experiment from "./pages/experiment/Experiment";
 import Datasets from "./pages/dataset/Datasets";
 import UploadDatasets from "./pages/dataset/UploadDatasets";
+import Documentation from "./pages/documentation/Documentation";
 import "./i18n";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/datasets/upload" element={<UploadDatasets />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/experiment/:id" element={<Experiment />} />
+          <Route path="/documentation" element={<Documentation />} />
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>

@@ -27,7 +27,8 @@
   "and": "and",
   "menu": {
     "datasets": "Datasets",
-    "experiments": "Experiments"
+    "experiments": "Experiments",
+    "documentation": "Documentation"
   },
   "experiments": {
     "title": "Experiments",
@@ -116,6 +117,60 @@
         "upload_failed": "Failed to upload files.",
         "target_column_required": "Please select a target column.",
         "name_required": "Please enter a dataset name."
+      }
+    }
+  },
+  "documentation": {
+    "rulesDocumentation": {
+      "title": "Rules Documentation",
+      "introduction": "Rules are expressions combining variables, values, mathematical and logical operators to define conditions on a dataset. Each dataset column can be used as a variable in the expression.",
+      "syntax": {
+        "title": "Allowed Syntax",
+        "variables": "Dataset column names are used. If they contain spaces, they are automatically mapped.",
+        "values": "Only numbers (integers or decimals) are allowed. Strings are not permitted.",
+        "mathOperators": "Mathematical Operators: +, -, *, /",
+        "comparisonOperators": "Comparison Operators: <, <=, >, >=, ==, !=",
+        "logicalOperators": "Logical Operators: && (AND), || (OR)",
+        "notes": "Chained comparisons are not allowed, e.g.: a <= x < b",
+        "type": {
+          "variables": "Variables",
+          "values": "Values",
+          "mathOperators": "Mathematical Operators",
+          "comparisonOperators": "Comparison Operators",
+          "logicalOperators": "Logical Operators"
+        }
+      },
+      "examples": {
+        "title": "Rule Examples",
+        "example1": "\"fixed acidity\" <= 6.34",
+        "example2": "\"fixed acidity\" <= 6.34 && \"residual sugar\" > 3",
+        "example3": "\"fixed acidity\" <= 6.34 || \"residual sugar\" > 3"
+      },
+      "errors": {
+        "title": "Common Errors",
+        "error": "Error",
+        "cause": "Cause",
+        "solution": "Solution",
+        "unknownIdentifier": {
+          "error": "Unknown identifier",
+          "cause": "Nonexistent column name",
+          "solution": "Check that the column exists"
+        },
+        "unsupportedOperator": {
+          "error": "Unsupported binary operator",
+          "cause": "Operator not allowed",
+          "solution": "Use only + - * / <= >= < > == !="
+        },
+        "chainedComparisons": {
+          "error": "Chained comparisons not supported",
+          "cause": "Chained comparison like a <= x < b",
+          "solution": "Split into multiple conditions combined with &&"
+        },
+        "unknownNodeType": {
+          "error": "Unknown node type",
+          "cause": "Invalid or incomplete expression",
+          "solution": "Check syntax and column names"
+        }
       }
     }
   }
