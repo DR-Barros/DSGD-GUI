@@ -1,4 +1,6 @@
 import * as acorn from 'acorn';
+import { parse } from '@babel/parser';
+
 
 type condition = {
     left: expression;
@@ -62,17 +64,28 @@ function desParseExpr(expr: expression, vars: Record<string, any>): string {
     }
 }
 
-function parseExpr(exprStr: string): expression {
-    const ast = acorn.parse(exprStr, { ecmaVersion: 2020 }) as acorn.Node & { body: any[] };
+function parseExpr(exprStr: string, columns: string[]): expression {
+    // remplaza las columnas por variables temporales sin espacios
+    let varMap: Record<string, string> = {};
+    let tempExpr = exprStr;
+    columns.forEach((col, idx) => {
+        let varName = `__var${idx}__`;
+        varMap[varName] = col;
+        // Usar expresión regular para reemplazar solo coincidencias completas
+        let regex = new RegExp(`\\b${col}\\b`, 'g');
+        tempExpr = tempExpr.replace(regex, varName);
+    });
+    // parsear la expresión con acorn
+    const ast = acorn.parse(tempExpr, { ecmaVersion: 6 }) as acorn.Node & { body: any[] };
     const firstStmt = ast.body[0];
     if (firstStmt && firstStmt.type === 'ExpressionStatement') {
-        return parseNode(firstStmt.expression);
+        return parseNode(firstStmt.expression, varMap);
     } else {
         throw new Error('Input string is not a valid expression statement');
     }
 }
 
-function parseNode(node: any): expression {
+function parseNode(node: any, varMap: Record<string, string>): expression {
     try {
     switch (node.type) {
         case 'Literal':
@@ -90,9 +103,9 @@ function parseNode(node: any): expression {
                 throw new Error("Chained comparisons (like 'a <= x < b') are not supported");
             }
             return {
-                left: parseNode(node.left),
+                left: parseNode(node.left, varMap),
                 op: op,
-                right: parseNode(node.right)
+                right: parseNode(node.right, varMap)
             };
         case 'LogicalExpression':
             if (!['&&', '||'].includes(node.operator)) {
@@ -100,12 +113,16 @@ function parseNode(node: any): expression {
             }
             return {
                 op: transform[node.operator as keyof typeof transform] || node.operator,
-                values: [parseNode(node.left), parseNode(node.right)]
+                values: [parseNode(node.left, varMap), parseNode(node.right, varMap)]
             };
         case 'Identifier':
-            return node.name;
+            if (node.name in varMap) {
+                return varMap[node.name];
+            } else {
+                throw new Error(`Unknown identifier: ${node.name}`);
+            }
         case 'ArrayExpression':
-            return node.elements.map(parseNode);
+            return node.elements.map((e: any) => parseNode(e, varMap));
         default:
             throw new Error(`Unknown node type: ${node.type}`);
     }} catch (error) {

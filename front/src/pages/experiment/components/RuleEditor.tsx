@@ -3,14 +3,15 @@ import { useTranslation } from "react-i18next";
 import { parseExpr } from "../../../utils/RuleParser";
 
 type RuleEditorProps = {
-  label: string;
-  updateLabel: (newLabel: string) => void;
-  rule: any;
-  updateRule: (newRule: any) => void;
+    columns: string[];
+    label: string;
+    updateLabel: (newLabel: string) => void;
+    rule: any;
+    updateRule: (newRule: any) => void;
 };
 
-const RuleEditor: React.FC<RuleEditorProps> = ({ label, updateLabel, rule, updateRule }) => {
-    const {t} = useTranslation();
+const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, rule, updateRule }) => {
+    const { t } = useTranslation();
     const [ruleStr, setRuleStr] = React.useState("");
 
     React.useEffect(() => {
@@ -38,8 +39,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ label, updateLabel, rule, updat
                     onBlur={(e) => {
                         e.preventDefault();
                         try{
-                            let parsed = parseExpr(e.target.value);
-                            console.log("Parsed expression:", parsed);
+                            parseExpr(e.target.value, columns);
                             updateRule(e.target.value);
                         }catch (error) {
                             console.error("Error parsing expression:", error);

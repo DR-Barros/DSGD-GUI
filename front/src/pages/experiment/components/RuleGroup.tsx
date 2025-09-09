@@ -14,10 +14,7 @@ type HistogramBin = {
 };
 
 type RuleItem = {
-    rule: any;
-    vars: any;
     mass: number[];
-    rulesWithValues: any;
     labels: any;
     parsedRule: any;
 };
@@ -178,10 +175,10 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         <tbody>
             {rulesArray.map((item, i) => (
             <tr key={i}>
-                {/* Columna RuleEditor */}
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px" }}>
                 {editing ? (
                 <RuleEditor
+                    columns={idx.split("-").map(i=>i.trim())}
                     label={item.labels}
                     updateLabel={(newLabel: string) => {
                         setEncodedRules((prev) => {
@@ -295,14 +292,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
 
             // Nueva regla "vacía"
             const newRule: RuleItem = {
-                rule: null,
-                vars: null,
                 mass: new Array(rulesArray[0]?.mass.length || Dataset!.n_classes +1 || 2).fill(0), // ej: tantas columnas mass como las demás
-                rulesWithValues: [{
-                    left: idx,
-                    op: null,
-                    right: 0,
-                }],
                 labels: "",
                 parsedRule: "",
             };

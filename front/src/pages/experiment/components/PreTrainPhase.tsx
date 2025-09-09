@@ -43,7 +43,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         selectedColumns: Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : [],
         manualColumns: [],
     });
-    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any; labels: any; parsedRule: any }>>>({});
+    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{mass: any; labels: any; parsedRule: any }>>>({});
     const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
 
@@ -68,16 +68,16 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
         if (status === 200) {
             console.log("Generated rules:", data.rules);
-            /* for (let i = 0; i < data.rules.length; i++) {
+            for (let i = 0; i < data.rules.length; i++) {
                 console.log(`Rule ${i}:`, data.rules[i]);
                 let parsed = desParseExpr(data.rules[i][0], data.rules[i][1]);
                 console.log(`Parsed Rule ${i}:`, parsed);
-                let reparsed = parseExpr(parsed);
+                let reparsed = parseExpr(parsed, generateRuleParams.selectedColumns || []);
                 console.log(`Re-parsed Rule ${i}:`, reparsed);
-            } */
+            }
             console.log("Masses:", data.masses);
 
-            const updatedRules: Record<string, Array<{ rule: any; vars: any; mass: any; rulesWithValues: any; labels: any; parsedRule: any }>> = {
+            const updatedRules: Record<string, Array<{ mass: any; labels: any; parsedRule: any }>> = {
                 ...encodedRules
             };
 
@@ -86,10 +86,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 1: any; 
             }
             interface GroupedRule {
-                rule: any;
-                vars: any;
                 mass: any;
-                rulesWithValues: any;
                 labels: any;
                 parsedRule: any;
             }
@@ -102,18 +99,17 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 const vars: any = ruleEntry[1];
                 const mass: any = data.masses[index];
                 const labels: any = data.labels[index]
-                const rulesWithValues: any = replaceVariables(r, vars);
                 const indices: string[] = Array.from(indexValues(r, vars));
                 const parsedRule: any = desParseExpr(r, vars);
 
                 if (indices.length > 1) {
                     const joinedIdx: string = indices.join('-');
                     if (!newGroupedRules[joinedIdx]) newGroupedRules[joinedIdx] = [];
-                    newGroupedRules[joinedIdx].push({ rule: r, vars, mass, rulesWithValues, labels, parsedRule });
+                    newGroupedRules[joinedIdx].push({ mass, labels, parsedRule });
                 } else {
                     indices.forEach((idx: string) => {
                         if (!newGroupedRules[idx]) newGroupedRules[idx] = [];
-                        newGroupedRules[idx].push({ rule: r, vars, mass, rulesWithValues, labels, parsedRule });
+                        newGroupedRules[idx].push({ mass, labels, parsedRule });
                     });
                 }
             });
@@ -521,13 +517,10 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             color="primary"
                             style={{ marginTop: '20px' }}
                             onClick={() => {
-                                // Flatten all rule arrays and extract rulesWithValues
+                                // Flatten all rule arrays and extract parsedRule
                                 const allRulesWithValues: any[] = Object.values(encodedRules)
                                     .flat()
-                                    .map((rule: any) => parseExpr(rule.parsedRule));
-                                /* const allRulesWithValues: any[] = Object.values(encodedRules)
-                                    .flat()
-                                    .map((rule:any) => rule.rulesWithValues) */
+                                    .map((rule: any) => parseExpr(rule.parsedRule, Dataset?.columns || []));   
                                 const allMases: any [] = Object.values(encodedRules)
                                     .flat()
                                     .map((rule:any) => rule.mass)
