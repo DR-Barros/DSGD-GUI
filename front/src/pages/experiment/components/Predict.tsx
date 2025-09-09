@@ -108,11 +108,10 @@ export default function Predict({ iterationId }: { iterationId: number | string 
 
     return (
         <div>
-            <h2>Predict</h2>
+            <h2>{t("experiment.predict")}</h2>
             {status == "idle" &&
             <>
-            <h3>Columns:</h3>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ marginBottom: "50px" }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -179,18 +178,26 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                     </TableFooter>
                 </Table>
             </TableContainer>
-            <button onClick={() => {
-                const newRow = columns.map(() => "");
-                setData([...predictData, newRow]);
-            }}>
-                Add Row
-            </button>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-evenly"}}>
+            <Button 
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                    const newRow = columns.map(() => "");
+                    setData([...predictData, newRow]);
+                }}
+            >
+                {t("experiment.addRow")}
+            </Button>
+            <label style={{ marginRight: "10px", padding: "6px 12px", backgroundColor: "#1976d2", color: "white", borderRadius: "4px", cursor: "pointer" }}>
+                {t("experiment.uploadCSV")}
             <input
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                style={{ marginLeft: "10px" }}
+                style={{ display: "none" }}
             />
+            </label>
             <Button
                 variant="contained"
                 color="primary"
@@ -199,21 +206,22 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             >
                 {t("experiment.predict")}
             </Button>
+            </div>
             </>
             }
             {status == "loading" && <p>Loading...</p>}
             {status == "error" && <p>Error occurred. Please try again.</p>}
             {status == "success" && 
             <>
-                <h3>Predicted Results:</h3>
-                <TableContainer component={Paper}>
+                <h3>{t("experiment.predictedResults")}</h3>
+                <TableContainer component={Paper} sx={{ marginBottom: "50px" }}>
                 <Table>
                     <TableHead>
                         <TableRow>
                             {columns.map((col) => (
                                 <TableCell key={col}>{col}</TableCell>
                             ))}
-                            <TableCell>Prediction</TableCell>
+                            <TableCell>{t("experiment.prediction")}</TableCell>
                             <TableCell></TableCell>
                         </TableRow>
                     </TableHead>
@@ -262,7 +270,7 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                     </TableFooter>
                 </Table>
             </TableContainer>
-            <button onClick={() => setStatus("idle")}>New Prediction</button>
+            <button onClick={() => setStatus("idle")}>{t("experiment.newPrediction")}</button>
             </>}
             {predictData.length > 0 &&
             <Modal

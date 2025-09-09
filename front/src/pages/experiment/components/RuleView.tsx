@@ -152,7 +152,7 @@ export default function RuleView({
                 </div>
                 {Object.entries(classRules).map(([classIdx, rulesWithScores]) => (
                     <div key={classIdx} style={{ marginBottom: "20px" }}>
-                        <h4>{idxToClassName[Number(classIdx)]}</h4>
+                        <h4 style={{ marginTop: 0 }}>{idxToClassName[Number(classIdx)]}</h4>
                         <TableContainer component={Paper}>
                         <Table>
                             <TableHead>

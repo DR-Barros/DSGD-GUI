@@ -70,8 +70,8 @@ export default function ResponsiveAppBar() {
                             {item.label}
                         </Link>
                     ))}
-                <Button color="inherit" onClick={logout} sx={{ color: "white" }}>
-                    Logout
+                <Button color="inherit" onClick={logout} sx={{ color: "white", font: "inherit", fontWeight: "500", textTransform: "none" }}>
+                    {t("logout")}
                 </Button>
                 <Select
                     value={currentLang}
