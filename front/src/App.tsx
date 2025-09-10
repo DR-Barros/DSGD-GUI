@@ -21,6 +21,7 @@ function App() {
           <Route path="/datasets/upload" element={<UploadDatasets />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/experiment/:id" element={<Experiment />} />
+          <Route path="/experiment/:id/:iteration_id" element={<Experiment />} />
           <Route path="/documentation" element={<Documentation />} />
         </Route>
         <Route path="/login" element={<Login />} />

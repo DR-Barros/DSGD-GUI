@@ -1,6 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import DrawerMenu from "./components/DrawerMenu";
-
 import "./Experiment.css"
 import { useState, useEffect, useRef } from "react";
 import PreTrainPhase from "./components/PreTrainPhase";
@@ -21,6 +20,7 @@ export default function Experiment() {
     const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
     const [iterations, setIterations] = useState<number | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
+    const navigation = useNavigate();
 
     useEffect(() => {
         if (id) {
@@ -88,6 +88,7 @@ export default function Experiment() {
 
         ws.onopen = () => {
             console.log('WebSocket conectado');
+            navigation(`/experiment/${id}/${taskId}`);
             setPhase("train");
         };
 

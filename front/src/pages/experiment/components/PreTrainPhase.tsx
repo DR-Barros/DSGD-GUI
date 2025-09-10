@@ -6,11 +6,13 @@ import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
-import { postProtected } from '../../../api/client';
+import { fetchProtected, postProtected } from '../../../api/client';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
 import type { TrainingParams, RuleParams } from '../../../types/params';
+import type { GroupedRule } from '../../../types/rules';
 import { desParseExpr, parseExpr } from '../../../utils/RuleParser';
+import { useParams } from 'react-router-dom';
 
 interface PreTrainPhaseProps {
     datasetPreview: any[];
@@ -23,11 +25,6 @@ interface PreTrainPhaseProps {
 interface RuleEntry {
     0: any; 
     1: any; 
-}
-interface GroupedRule {
-    mass: any;
-    labels: any;
-    parsedRule: any;
 }
 
 export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId, startTraining }: PreTrainPhaseProps) {
@@ -55,6 +52,41 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
     const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
     const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
+    const {id, iteration_id} = useParams();
+
+    useEffect(() => {
+        if (iteration_id && id) {
+            handleRules(id, iteration_id);
+        } else {
+            console.log("No iteration_id or id provided");
+        }
+    }, [iteration_id]);
+
+    const handleRules = async (id: string, iteration_id: string): Promise<void> => {
+        // Aquí puedes implementar la lógica para manejar las reglas con los IDs proporcionados
+        console.log("Handling rules for experiment ID:", id, "and iteration ID:", iteration_id);
+        // Por ejemplo, podrías hacer una llamada a una API para obtener las reglas asociadas
+        const { data, status } = await fetchProtected(`/train/get-rules/${id}/${iteration_id}`);
+        if (status === 200) {
+            console.log("Fetched rules:", data);
+            const fetchedRules: Array<GroupedRule> = data.rules.map((rule: RuleEntry, index: number) => ({
+                mass: data.masses[index],
+                labels: data.labels[index],
+                parsedRule: desParseExpr(rule[0], rule[1])
+            }));
+            setEncodedRules(fetchedRules);
+            const dataParams: RuleParams = data.params;
+            console.log("Fetched rule params:", dataParams);
+            setParams(
+                {...params,
+                    ...dataParams
+                }
+            );
+
+        } else {
+            console.error("Error fetching rules:", data);
+        }
+    }
 
     useEffect(() => {
         console.log("Dataset changed, updating selectedColumns and manualColumns");

@@ -12,6 +12,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import { fetchProtected, downloadProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 250;
 
@@ -21,6 +22,7 @@ export default function DrawerMenu(
     const [mobileOpen, setMobileOpen] = useState(false);
     const [iterations, setIterations] = useState<Iteration[]>([]);
     const { t } = useTranslation();
+    const navigation = useNavigate();
 
     const handleIterations = async () => {
         const { data, status } = await fetchProtected(`/experiments/iteration/${id}`);
@@ -64,6 +66,7 @@ export default function DrawerMenu(
                             <PendingIcon style={{ color: "#1976d2" }} />
                         )}
                         <button onClick={() => {
+                            navigation(`/experiment/${id}/${item.id}`);
                             openIterations(item.id, item.training_status);
                             setMobileOpen(false);
                         }} style={{ background: "none", border: "none"}}> <ArrowForwardIcon style={{ color: "#1976d2" }} /> </button>

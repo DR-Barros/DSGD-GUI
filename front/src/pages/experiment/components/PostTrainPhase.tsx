@@ -19,6 +19,7 @@ import { Chart } from "react-chartjs-2";
 import type { Rules } from "../../../types/rules";
 import RuleView from "./RuleView";
 import Predict from "./Predict";
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
   Title,
@@ -35,6 +36,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
     const [activeStep, setActiveStep] = useState<0|1|2>(0);
     const [postTrainData, setPostTrainData] = useState<Iteration | null>(null);
     const [rules, setRules] = useState<Rules | null>(null);
+    const navigation = useNavigate();
 
 
     useEffect(() => {
@@ -218,9 +220,15 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             </div>
 
             {/* Botón abajo */}
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "20px" }}>
+            <Button variant="contained" color="primary" onClick={() => {
+                navigation(`/experiment/${postTrainData?.experiment_id}`);
+                back();
+            }}>
+                {t("postTrain.backToSetup")}
+            </Button>
             <Button variant="contained" color="primary" onClick={back}>
-                Back to Pre-Training
+                {t("postTrain.backwithSameSetup")}
             </Button>
             </div>
             </>}
