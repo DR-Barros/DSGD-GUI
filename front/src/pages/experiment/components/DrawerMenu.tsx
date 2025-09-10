@@ -7,8 +7,9 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import PendingIcon from '@mui/icons-material/Pending';
-import { fetchProtected } from '../../../api/client';
+import { fetchProtected, downloadProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +32,15 @@ export default function DrawerMenu(
             setIterations(data);
         }
     };
+
+    const handleDownload = (iterationId: number) => {
+        downloadProtected(`/experiments/${iterationId}/download`, `iteration_${iterationId}.zip`)
+        .catch((err) => {
+            console.error("Error en descarga:", err);
+            alert("No se pudo descargar el archivo");
+        });
+    };
+
 
     const toggleDrawer = (open: boolean) => () => {
         setMobileOpen(open);
@@ -58,7 +68,14 @@ export default function DrawerMenu(
                             setMobileOpen(false);
                         }} style={{ background: "none", border: "none"}}> <ArrowForwardIcon style={{ color: "#1976d2" }} /> </button>
                         </div>
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <p>acc: {item.accuracy?.toFixed(2)}</p>
+                        {item.training_status === "completed" && (
+                            <button onClick={() => handleDownload(item.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#1976d2" }}>
+                                <DownloadForOfflineIcon style={{ marginRight: "5px" }} />
+                            </button>
+                        )}
+                        </div>
                         <hr />
                     </div>
             ))}

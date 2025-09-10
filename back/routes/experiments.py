@@ -1,6 +1,9 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from typing import List
+import zipfile
+import io
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
@@ -118,3 +121,60 @@ async def get_experiment_iteration(iteration_id: int, db: Session = Depends(get_
         })
         print(f"Rule: {model.model.preds[i].caption}, Mass: {model.model._params[i]}")
     return {"rules": rules, "classes": iteration.label_encoder}
+
+
+@api_router.get("/{iteration_id}/download")
+async def download_experiment_iteration(iteration_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Experiment.user_id == current_user.id).first()
+    if not iteration:
+        raise HTTPException(status_code=404, detail="Iteration not found")
+    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == iteration.experiment_id, Experiment.user_id == current_user.id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found for this iteration")
+    path = iteration.model_path
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.write(path, arcname="model.bin")
+        metadata = {
+            "iteration_id": iteration.id,
+            "experiment_id": iteration.experiment_id,
+            "created_at": iteration.created_at.isoformat(),
+            "trained": iteration.trained,
+            "label_encoder": iteration.label_encoder,
+            "dataset": {
+                "id": dataset.id,
+                "name": dataset.name,
+                "columns": dataset.columns,
+                "target_column": dataset.target_column,
+                "n_rows": dataset.n_rows,
+                "n_classes": dataset.n_classes,
+                "columns_encoder": dataset.columns_encoder
+            },
+            "hyperparameters": {
+                "train_test_split": iteration.train_test_split,
+                "train_test_split_seed": iteration.train_test_split_seed,
+                "delete_nulls": iteration.delete_nulls,
+                "drop_duplicates": iteration.drop_duplicates,
+                "min_epochs": iteration.min_epochs,
+                "max_epochs": iteration.max_epochs,
+                "batch_size": iteration.batch_size,
+                "learning_rate": iteration.learning_rate,
+                "optimizer": iteration.optimizer,
+                "loss_function": iteration.loss_function,
+                "precompute_rules": iteration.precompute_rules,
+                "force_precompute": iteration.force_precompute
+            },
+            "metrics": {
+                "accuracy": iteration.accuracy,
+                "precision": iteration.precision,
+                "recall": iteration.recall,
+                "f1_score": iteration.f1_score,
+                "confusion_matrix": iteration.confusion_matrix,
+                "classification_report": iteration.classification_report,
+                "roc_auc": iteration.roc_auc
+            }
+        }
+        zip_file.writestr("metadata.json", json.dumps(metadata, indent=4))
+        
+    zip_buffer.seek(0)
+    return StreamingResponse(zip_buffer, media_type="application/x-zip-compressed", headers={"Content-Disposition": f"attachment; filename=iteration_{iteration_id}.zip"})

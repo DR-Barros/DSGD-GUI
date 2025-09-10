@@ -168,3 +168,53 @@ export async function postPublic(endpoint: string, body: any) {
 
   return res.json();
 }
+
+
+export async function downloadProtected(endpoint: string, filename: string) {
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (res.status === 401) {
+    const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (refreshRes.status === 200) {
+      const data = await refreshRes.json();
+      localStorage.setItem("jwt", data.access_token);
+
+      // Reintentar la descarga
+      const retryRes = await fetch(`${API_URL}${endpoint}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (retryRes.status === 200) {
+        const blob = await retryRes.blob();
+        triggerDownload(blob, filename);
+        return;
+      }
+    }
+    redirectToLogin();
+    throw new Error("No autorizado");
+  }
+
+  if (res.ok) {
+    const blob = await res.blob();
+    triggerDownload(blob, filename);
+  } else {
+    throw new Error("Error descargando archivo");
+  }
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
