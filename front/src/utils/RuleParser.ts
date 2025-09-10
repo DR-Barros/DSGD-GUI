@@ -88,6 +88,16 @@ function parseNode(node: any, varMap: Record<string, string>): expression {
     switch (node.type) {
         case 'Literal':
             return node.value;
+        case 'UnaryExpression':
+            if (node.operator === '-') {
+                if (node.argument.type === 'Literal' && typeof node.argument.value === 'number') {
+                    return -node.argument.value;
+                } else {
+                    throw new Error('Unary minus can only be applied to numeric literals');
+                }
+            } else {
+                throw new Error(`Unsupported unary operator: ${node.operator}`);
+            }
         case 'BinaryExpression':
             let op = node.operator;
             if (!['+', '-', '*', '/', '<=', '>=', '<', '>', '==', '!='].includes(op)) {
