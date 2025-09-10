@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
 import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import { postProtected } from '../../../api/client';
-import { indexValues } from '../../../utils/parser';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
 import type { TrainingParams, RuleParams } from '../../../types/params';
@@ -19,6 +18,16 @@ interface PreTrainPhaseProps {
     Dataset: Dataset | null;
     experimentId?: string;
     startTraining: (params: TrainingParams, rulesWithValues: any[], masses: any[], labels: any[]) => Promise<void>;
+} 
+
+interface RuleEntry {
+    0: any; 
+    1: any; 
+}
+interface GroupedRule {
+    mass: any;
+    labels: any;
+    parsedRule: any;
 }
 
 export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, experimentId, startTraining }: PreTrainPhaseProps) {
@@ -43,7 +52,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         selectedColumns: Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : [],
         manualColumns: [],
     });
-    const [encodedRules, setEncodedRules] = useState<Record<string, Array<{mass: any; labels: any; parsedRule: any }>>>({});
+    const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
     const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
 
@@ -77,49 +86,26 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             }
             console.log("Masses:", data.masses);
 
-            const updatedRules: Record<string, Array<{ mass: any; labels: any; parsedRule: any }>> = {
+            const updatedRules: Array<GroupedRule> = [
                 ...encodedRules
-            };
+            ];
 
-            interface RuleEntry {
-                0: any; 
-                1: any; 
-            }
-            interface GroupedRule {
-                mass: any;
-                labels: any;
-                parsedRule: any;
-            }
+            
 
-            const newGroupedRules: Record<string, GroupedRule[]> = {};
+            const newGroupedRules: GroupedRule[] = [];
 
             // Creamos un nuevo conjunto de reglas por índice
-            (data.rules as RuleEntry[]).forEach((ruleEntry: RuleEntry, index: number) => {
-                const r: any = ruleEntry[0];
-                const vars: any = ruleEntry[1];
-                const mass: any = data.masses[index];
-                const labels: any = data.labels[index]
-                const indices: string[] = Array.from(indexValues(r, vars));
-                const parsedRule: any = desParseExpr(r, vars);
-
-                if (indices.length > 1) {
-                    const joinedIdx: string = indices.join('-');
-                    if (!newGroupedRules[joinedIdx]) newGroupedRules[joinedIdx] = [];
-                    newGroupedRules[joinedIdx].push({ mass, labels, parsedRule });
-                } else {
-                    indices.forEach((idx: string) => {
-                        if (!newGroupedRules[idx]) newGroupedRules[idx] = [];
-                        newGroupedRules[idx].push({ mass, labels, parsedRule });
-                    });
-                }
+            (data.rules as RuleEntry[]).forEach((rule: RuleEntry, index: number) => {
+                const parsedRule = desParseExpr(rule[0], rule[1]);
+                newGroupedRules.push({
+                    mass: data.masses[index],
+                    labels: data.labels[index],
+                    parsedRule: parsedRule
+                });
             });
 
-            Object.keys(newGroupedRules).forEach(idx => {
-                updatedRules[idx] = newGroupedRules[idx];
-            });
-
-            console.log("Updated Grouped Rules:", updatedRules);
-            setEncodedRules(updatedRules);
+            console.log("Updated Grouped Rules:", newGroupedRules);
+            setEncodedRules([...updatedRules, ...newGroupedRules]);
         } else {
             console.error("Error generating rules:", data);
         }
@@ -343,26 +329,20 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     <Button variant='contained' onClick={() => setActiveStep(0)}>
                         {t("back")}
                     </Button>
-                    <Button variant='contained' onClick={() => setModalRuleOpen(true)}>
-                        {t("experiment.addManualRule")}
-                    </Button>
                     <Button variant='contained' onClick={() => setActiveStep(2)}>
                         {t("experiment.train")}
                     </Button>
                 </div>
                 <div>
-                    {/* mostramos las reglas */}
-                    {Object.entries(encodedRules).map(([idx, rulesArray]) => (
                     <RuleGroup
-                        key={idx}
-                        idx={idx}
-                        rulesArray={rulesArray}
+                        key={"all-rules"}
+                        idx={"all-rules"}
+                        rulesArray={encodedRules}
                         datasetStats={datasetStats}
                         Dataset={Dataset}
                         t={t}
                         setEncodedRules={setEncodedRules}
                     />
-                    ))}
                 </div>
                 <Modal
                     open={modalRuleOpen}

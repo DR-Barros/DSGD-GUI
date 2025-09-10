@@ -8,12 +8,12 @@ type RuleEditorProps = {
     updateLabel: (newLabel: string) => void;
     rule: any;
     updateRule: (newRule: any) => void;
+    setSnackbar: (snackbar: { open: boolean; message: string; type: "success" | "error" }) => void;
 };
 
-const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, rule, updateRule }) => {
+const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, rule, updateRule, setSnackbar }) => {
     const { t } = useTranslation();
     const [ruleStr, setRuleStr] = React.useState("");
-
     React.useEffect(() => {
         setRuleStr(rule);
     }, [rule]);
@@ -44,6 +44,10 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
                         }catch (error) {
                             console.error("Error parsing expression:", error);
                             setRuleStr(rule); // Revertir al valor anterior si hay error
+                            setSnackbar({ 
+                                open: true, 
+                                message: t("experiment.invalidRule") + ": " + (error instanceof Error ? error.message : String(error)),
+                                type: "error" });
                         }
                     }}
                 />

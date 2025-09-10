@@ -65,6 +65,7 @@ function desParseExpr(expr: expression, vars: Record<string, any>): string {
 
 function parseExpr(exprStr: string, columns: string[]): expression {
     // remplaza las columnas por variables temporales sin espacios
+    console.log("Parsing expression:", exprStr, "with columns:", columns);
     let varMap: Record<string, string> = {};
     let tempExpr = exprStr;
     columns.forEach((col, idx) => {

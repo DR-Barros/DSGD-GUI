@@ -5,7 +5,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Tooltip } from "@mui/material";
+import { Tooltip, Alert, Snackbar } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
 
 type HistogramBin = {
@@ -26,7 +26,7 @@ interface RuleGroupProps {
   Dataset: Dataset | null;
   t: (key: string) => string;
   setEncodedRules: React.Dispatch<
-    React.SetStateAction<Record<string, RuleItem[]>>
+    React.SetStateAction<RuleItem[]>
   >;
 }
 
@@ -40,6 +40,11 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
 }) => {
     const [viewStats, setViewStats] = React.useState(false);
     const [editing, setEditing] = React.useState<boolean>(false);
+    const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; type: "success" | "error" }>({
+        open: false,
+        message: "",
+        type: "success"
+    });
     useEffect(() => {
         console.log("Rendering RuleGroup for idx:", idx);
         console.log("Current rulesArray:", rulesArray);
@@ -58,28 +63,21 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <h3>Index: {idx}</h3>
+            <h3>{t("experiment.rules")}</h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button onClick={() => setViewStats(!viewStats)}>
                 <VisibilityIcon />
             </button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button onClick={() => setEditing(!editing)}>
                 {editing ? <EditOffIcon /> : <ModeEditIcon />}
-            </button>
-            <button onClick={() => setEncodedRules((prev) => {
-                const newRules = { ...prev };
-                delete newRules[idx];
-                return newRules;
-            })}>
-                <DeleteIcon />
             </button>
         </div>
         </div>
 
         {viewStats && (
         <div style={{display: "flex", flexDirection: "row", gap: "20px", overflowX: "auto" }}>      
-        {idx.split("-").map((i) => {
+        {Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column).map((i) => {
             const stats = datasetStats[0].find((s: any) => s.column == i);
             return stats ? (
             <div
@@ -137,7 +135,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 )}
             </div>
             ) : null;
-        })}
+        }) : (
+            <div>No dataset selected</div>
+        )}
         </div>
         )}
 
@@ -178,33 +178,26 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px" }}>
                 {editing ? (
                 <RuleEditor
-                    columns={idx.split("-").map(i=>i.trim())}
+                    columns={Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : []}
                     label={item.labels}
                     updateLabel={(newLabel: string) => {
                         setEncodedRules((prev) => {
-                            const updated = { ...prev };
-                            const updatedArray = [...updated[idx]];
-                            updatedArray[i] = {
-                                ...updatedArray[i],
-                                labels: newLabel,
-                            };
-                            updated[idx] = updatedArray;
-                            return updated;
+                        const updated = [...prev];
+                        const updatedItem = { ...updated[i], labels: newLabel };
+                        updated[i] = updatedItem;
+                        return updated;
                         });
                     }}
                     rule={item.parsedRule}
                     updateRule={(newRule: string) => {
                         setEncodedRules((prev) => {
-                            const updated = { ...prev };
-                            const updatedArray = [...updated[idx]];
-                            updatedArray[i] = {
-                                ...updatedArray[i],
-                                parsedRule: newRule,
-                            };
-                            updated[idx] = updatedArray;
-                            return updated;
+                        const updated = [...prev];
+                        const updatedItem = { ...updated[i], parsedRule: newRule };
+                        updated[i] = updatedItem;
+                        return updated;
                         });
                     }}
+                    setSnackbar={setSnackbar}
                 />
                 ) : (
                     <p>
@@ -228,19 +221,11 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     value={m}
                     onChange={(e) => {
                         const newValue = parseFloat(e.target.value);
-
                         setEncodedRules((prev) => {
-                        const updated = { ...prev };
-                        const updatedArray = [...updated[idx]];
-                        const updatedItem = { ...updatedArray[i] };
-
-                        const newMass = [...updatedItem.mass];
-                        newMass[mi] = isNaN(newValue) ? 0 : newValue;
-
-                        updatedItem.mass = newMass;
-                        updatedArray[i] = updatedItem;
-                        updated[idx] = updatedArray;
-
+                        const updated = [...prev];
+                        const updatedMass = [...updated[i].mass];
+                        updatedMass[mi] = isNaN(newValue) ? 0 : newValue;
+                        updated[i] = { ...updated[i], mass: updatedMass };
                         return updated;
                         });
                     }}
@@ -266,11 +251,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
                     <button onClick={() => {
                         setEncodedRules((prev) => {
-                            const updated = { ...prev };
-                            const updatedArray = [...updated[idx]];
-                            const filtered = updatedArray.filter((_, ri) => ri !== i);
-                            updated[idx] = filtered;
-                            return updated;
+                        const updated = [...prev];
+                        updated.splice(i, 1);
+                        return updated;
                         })}}
                         style={{ background: "none", border: "none", cursor: "pointer" }}
                     >
@@ -287,8 +270,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         <button
         onClick={() => {
             setEncodedRules((prev) => {
-            const updated = { ...prev };
-            const currentRules = updated[idx] ? [...updated[idx]] : [];
+            const updated = [...prev];
 
             // Nueva regla "vacía"
             const newRule: RuleItem = {
@@ -296,9 +278,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 labels: "",
                 parsedRule: "",
             };
-
-            currentRules.push(newRule);
-            updated[idx] = currentRules;
+            updated.push(newRule);
             return updated;
             });
         }}
@@ -315,6 +295,23 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         {t("experiment.addRule")}
         </button>
         )}
+        <Snackbar
+            open={snackbar.open}
+            autoHideDuration={5000}
+            onClose={(_, reason) => {
+                if (reason === "clickaway") return;
+                setSnackbar({ open: false, message: "", type: "success" });
+            }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+            <Alert
+                onClose={() => setSnackbar({ open: false, message: "", type: "success" })}
+                severity={snackbar.type}
+                sx={{ width: "100%" }}
+            >
+                {snackbar.message}
+            </Alert>
+        </Snackbar>
         </div>
     );
 };
