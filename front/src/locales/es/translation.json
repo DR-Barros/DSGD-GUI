@@ -126,6 +126,10 @@
       }
     }
   },
+  "postTrain": {
+    "backToSetup": "Volver a Entrenar",
+    "backwithSameSetup": "Volver a Entrenar con la misma configuración"
+  },
   "rulesDocumentation": {
     "title": "Documentación de Reglas",
     "introduction": "Las reglas son expresiones que combinan variables, valores, operadores matemáticos y lógicos para definir condiciones sobre un dataset. Cada columna del dataset se puede usar como una variable en la expresión.",

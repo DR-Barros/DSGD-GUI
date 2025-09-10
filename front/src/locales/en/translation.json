@@ -126,6 +126,10 @@
       }
     }
   },
+  "postTrain": {
+    "backToSetup": "Back to Train",
+    "backwithSameSetup": "Back to Train with Same Setup"
+  },
   "documentation": {
     "rulesDocumentation": {
       "title": "Rules Documentation",
