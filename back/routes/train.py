@@ -102,10 +102,12 @@ def generate_rules(
         rules = cr.model.preds
         masses = cr.model._params
         masses = [m.tolist() for m in masses]  # Convertir a float para JSON serializable
-        #a las masas la squiero con solo 3 decimales
+        #redondear masses a 3 decimales
         for i in range(len(masses)):
             mass = masses[i]
             mass = [round(m, 3) for m in mass]
+            # la ultima masa se ajusta para que todas sumen 1
+            mass[-1] = round(1 - sum(mass[:-1]), 3)
             masses[i] = mass
 
         encoded_rules = []
