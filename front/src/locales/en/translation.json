@@ -82,7 +82,9 @@
     "allRules": "All Rules",
     "topRules": "Top Rules",
     "showTop": "Show Top Rules:",  
-    "score": "Importance"
+    "score": "Importance",
+    "validRule": "The masses sum to 1",
+    "invalidRule": "The masses do not sum to 1, if sent random masses will be calculated, current sum: "
   },
   "datasets": {
     "title": "Datasets",

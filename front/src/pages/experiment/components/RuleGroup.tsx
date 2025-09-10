@@ -243,7 +243,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 ))}
                 {/* valido si las masas suman 1 */}
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
-                    <Tooltip title={Math.abs(item.mass.reduce((a, b) => a + b, 0)) }>
+                    <Tooltip title={Math.abs(item.mass.reduce((a, b) => a + b, 0)) == 1 ? t("experiment.validRule") : t("experiment.invalidRule") + Math.abs(item.mass.reduce((a, b) => a + b, 0))}>
                         <p>{Math.abs(item.mass.reduce((a, b) => a + b, 0)) == 1 ? "✅" : "❌"}</p>
                     </Tooltip>
                 </td>

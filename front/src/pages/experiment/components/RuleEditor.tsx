@@ -20,7 +20,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
-            <label>
+            <label style={{ display: "flex", flexDirection: "column" }}>
                 {t("experiment.label")}: {""}
                 <input
                     type="text"
@@ -31,7 +31,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
                     }}
                 />
             </label>
-            <label>
+            <label style={{ display: "flex", flexDirection: "column" }}>
                 {t("experiment.rule")}: {""}
                 <textarea
                     value={ruleStr}

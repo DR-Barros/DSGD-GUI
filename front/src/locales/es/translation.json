@@ -82,7 +82,9 @@
     "allRules": "Todas las reglas",
     "topRules": "Reglas principales",
     "showTop": "Mostrar las mejores Reglas:",
-    "score": "Importancia"
+    "score": "Importancia",
+    "validRule": "Las masas suman 1",
+    "invalidRule": "Las masas no suman 1, si se envian se calcularan masas aleatorias, suma actual: "
   },
   "datasets": {
     "title": "Conjuntos de datos",
