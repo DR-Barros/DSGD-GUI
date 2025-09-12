@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
-import { Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
+import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, Snackbar, TextField } from '@mui/material';
 import { fetchProtected, postProtected } from '../../../api/client';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
@@ -53,6 +53,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
     const [modalRuleOpen, setModalRuleOpen] = useState(false);
     const { t } = useTranslation();
     const {id, iteration_id} = useParams();
+    const [snackbar, setSnackbar] = useState<{open: boolean, message: String, type: 'error' | 'info' | 'success' | 'warning'}>({open: false, message: '', type: 'info'});
 
     useEffect(() => {
         if (iteration_id && id) {
@@ -530,6 +531,15 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             style={{ marginTop: '20px' }}
                             onClick={() => {
                                 // Flatten all rule arrays and extract parsedRule
+                                if (encodedRules.length === 0) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: t("experiment.noRules"),
+                                        type: 'error'
+                                    });
+                                    return;
+                                }
+                                try {
                                 const allRulesWithValues: any[] = Object.values(encodedRules)
                                     .flat()
                                     .map((rule: any) => parseExpr(rule.parsedRule, Dataset?.columns || []));   
@@ -540,8 +550,16 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     .flat()
                                     .map((rule:any) => rule.labels)
                                 startTraining(params, allRulesWithValues, allMases, allLabels)
-                            }}
-                        >
+                            } catch (error) {
+                                setSnackbar({
+                                    open: true,
+                                    message: t("experiment.errorMessage") +
+                                        (error instanceof Error ? error.message : String(error)),
+                                    type: 'error'
+                                });
+                            }
+                        }}
+                    >
                             {t("experiment.train")}
                         </Button>
                         </div>
@@ -557,6 +575,19 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 </div>
             </>}
             </div>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+                <Alert
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    severity={snackbar.type}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

@@ -84,7 +84,9 @@
     "showTop": "Show Top Rules:",  
     "score": "Importance",
     "validRule": "The masses sum to 1",
-    "invalidRule": "The masses do not sum to 1, if sent random masses will be calculated, current sum: "
+    "invalidRule": "The masses do not sum to 1, if sent random masses will be calculated, current sum: ",
+    "noRules": "No rules defined",
+    "errorMessage": "Error starting training. Check the rules."
   },
   "datasets": {
     "title": "Datasets",

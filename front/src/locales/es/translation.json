@@ -84,7 +84,9 @@
     "showTop": "Mostrar las mejores Reglas:",
     "score": "Importancia",
     "validRule": "Las masas suman 1",
-    "invalidRule": "Las masas no suman 1, si se envian se calcularan masas aleatorias, suma actual: "
+    "invalidRule": "Las masas no suman 1, si se envian se calcularan masas aleatorias, suma actual: ",
+    "noRules": "No hay reglas definidas",
+    "errorMessage": "Error al iniciar el entrenamiento. Revisa las reglas."
   },
   "datasets": {
     "title": "Conjuntos de datos",
