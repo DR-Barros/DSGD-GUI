@@ -223,7 +223,9 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "20px" }}>
             <Button variant="contained" color="primary" onClick={() => {
                 navigation(`/experiment/${postTrainData?.experiment_id}`);
-                back();
+                setTimeout(() => {
+                    back();
+                }, 10);
             }}>
                 {t("postTrain.backToSetup")}
             </Button>

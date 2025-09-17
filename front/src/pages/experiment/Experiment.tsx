@@ -134,7 +134,12 @@ export default function Experiment() {
                     }
                     else if (status === "completed") setPhase("posttrain");
                 }}
-                train={() => setPhase("pretrain")} 
+                train={() => {
+                    navigation(`/experiment/${id}`);
+                    setTimeout(() => {
+                        setPhase("pretrain");
+                    }, 10);
+                }}
             />
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
