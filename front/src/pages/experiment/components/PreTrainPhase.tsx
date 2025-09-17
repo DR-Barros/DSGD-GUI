@@ -5,10 +5,11 @@ import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
-import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, CircularProgress, Select, Snackbar, TextField } from '@mui/material';
+import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, CircularProgress, Select, Snackbar, TextField, Tooltip } from '@mui/material';
 import { fetchProtected, postProtected } from '../../../api/client';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import type { TrainingParams, RuleParams } from '../../../types/params';
 import type { GroupedRule } from '../../../types/rules';
 import { desParseExpr, parseExpr } from '../../../utils/RuleParser';
@@ -39,7 +40,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         minEpochs: 10,
         batchSize: 4000,
         lossFunction: "MSE",
-        optimFunction: "Adam",
+        optimFunction: "adam",
         learningRate: 0.005
     });
     const [generateRuleParams, setGenerateRuleParams] = useState<RuleParams>({
@@ -227,7 +228,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     </div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
-                    <h3>{t("experiment.cleaningSettings")}</h3>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <h3 style={{ margin: 0 }}>{t("experiment.cleaningSettings")}</h3>
+                        <Tooltip title={t("experiment.cleaningInfo")}>
+                        <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                        </Tooltip>
+                    </div>
                     <label>
                         {t("experiment.dropNulls")}
                         <input
@@ -496,7 +502,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     onChange={(e) => setParams({ ...params, optimFunction: e.target.value })}
                                     style={{ width: '150px' }}
                                 >
-                                    <MenuItem value="Adam">Adam</MenuItem>
+                                    <MenuItem value="adam">Adam</MenuItem>
                                     <MenuItem value="sgd">SGD</MenuItem>
                                 </Select>
                             }

@@ -130,13 +130,13 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             type: "category" as const,
             labels,
             offset: true,
-            title: { display: true, text: "Predicted" }
+            title: { display: true, text: t("experiment.prediction") }
         },
         y: {
             type: "category" as const,
             labels,
             offset: true,
-            title: { display: true, text: "True" }
+            title: { display: true, text: t("experiment.trueLabel") }
         }
         }
     };
@@ -212,7 +212,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             {cm && (
                 <Card style={{ flex: 1, minWidth: "250px" }}>
                 <CardContent>
-                    <h3 className="text-lg font-semibold mb-2">Confusion Matrix</h3>
+                    <h3>{t("experiment.confusionMatrix")}</h3>
                     <Chart type="matrix" data={data} options={options} />
                 </CardContent>
                 </Card>

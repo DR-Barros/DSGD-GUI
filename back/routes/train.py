@@ -267,6 +267,14 @@ async def train_model_post(
         label_to_num,
         db,
     ), task_id))
+    settings.TASKS_PROGRESS[task_id] = json.dumps({
+        "epoch": 0,
+        "loss": 0,
+        "max": max_epochs,
+        "status": "Task enqueued",
+        "time": 0,
+        "eta": 0
+        })
     return {"task_id": task_id, "status": "Task enqueued"}
 
 

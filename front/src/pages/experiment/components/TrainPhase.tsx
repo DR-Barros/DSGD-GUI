@@ -31,6 +31,11 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
                         <>
                         <p>{t("experiment.evaluating")}</p>
                         </>
+                    ) : trainingMsg.status === "Task enqueued" ? (
+                        <>     
+                            <CircularProgress />                
+                            <p>{t("experiment.queued")}</p>
+                        </>
                     ) : (
                         <>
                         <p>{t("experiment.epoch")}: {trainingMsg.epoch} / {trainingMsg.max}</p>
