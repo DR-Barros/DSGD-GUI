@@ -105,6 +105,7 @@
     "max": "Máx",
     "mean": "Promedio",
     "upload_new": "Subir nuevo conjunto de datos",
+    "encoding": "Codificación",
     "upload": {
       "title": "Subir conjuntos de datos",
       "submit": "Subir",

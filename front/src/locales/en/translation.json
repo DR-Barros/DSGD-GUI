@@ -105,6 +105,7 @@
     "max": "Max",
     "mean": "Mean",
     "upload_new": "Upload New Dataset",
+    "encoding": "Encoding",
     "upload": {
       "title": "Upload Datasets",
       "submit": "Upload",

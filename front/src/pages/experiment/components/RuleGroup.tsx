@@ -24,23 +24,25 @@ type RuleItem = {
 };
 
 interface RuleGroupProps {
-  idx: string;
-  rulesArray: RuleItem[];
-  datasetStats: any[];
-  Dataset: Dataset | null;
-  t: (key: string) => string;
-  setEncodedRules: React.Dispatch<
-    React.SetStateAction<RuleItem[]>
-  >;
+    idx: string;
+    rulesArray: RuleItem[];
+    datasetStats: any[];
+    Dataset: Dataset | null;
+    t: (key: string) => string;
+    setEncodedRules: React.Dispatch<
+        React.SetStateAction<RuleItem[]>
+    >;
+    columnsEncoder: Record<string, Record<string, number>>;
 }
 
 const RuleGroup: React.FC<RuleGroupProps> = ({
-  idx,
-  rulesArray,
-  datasetStats,
-  Dataset,
-  t,
-  setEncodedRules,
+    idx,
+    rulesArray,
+    datasetStats,
+    Dataset,
+    t,
+    setEncodedRules,
+    columnsEncoder
 }) => {
     const [viewStats, setViewStats] = React.useState(false);
     const [editing, setEditing] = React.useState<boolean>(false);
@@ -137,6 +139,17 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     )}
                 </>
                 )}
+                {/* si la columna esta en columnsEncoder mostramos la info */}
+                {columnsEncoder[i] ? (
+                <div style={{ marginTop: 4 }}>
+                    <p style={{ margin: 0, lineHeight: 1.3 }}>{t("datasets.encoding")}</p>
+                    <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                    {Object.entries(columnsEncoder[i]).map(([key, val]) => (
+                        <li key={key} style={{ fontSize: "1em" }}>{`${key}: ${val}`}</li>
+                    ))}
+                    </ul>
+                </div>
+                ) : null}
             </div>
             ) : null;
         }) : (

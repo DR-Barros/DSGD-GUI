@@ -50,6 +50,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         manualColumns: [],
     });
     const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
+    const [columnsEncoder, setColumnsEncoder] = useState<Record<string, Record<string, number>>>({});
     const [loadingRules, setLoadingRules] = useState(false);
     const { t } = useTranslation();
     const {id, iteration_id} = useParams();
@@ -116,13 +117,13 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
             if (status === 200) {
                 console.log("Generated rules:", data.rules);
-                for (let i = 0; i < data.rules.length; i++) {
+                /* for (let i = 0; i < data.rules.length; i++) {
                     console.log(`Rule ${i}:`, data.rules[i]);
                     let parsed = desParseExpr(data.rules[i][0], data.rules[i][1]);
                     console.log(`Parsed Rule ${i}:`, parsed);
                     let reparsed = parseExpr(parsed, generateRuleParams.selectedColumns || []);
                     console.log(`Re-parsed Rule ${i}:`, reparsed);
-                }
+                } */
                 console.log("Masses:", data.masses);
 
                 const updatedRules: Array<GroupedRule> = [
@@ -145,6 +146,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
                 console.log("Updated Grouped Rules:", newGroupedRules);
                 setEncodedRules([...updatedRules, ...newGroupedRules]);
+                setColumnsEncoder(data.columnsEncoder || {});
             } else {
                 console.error("Error generating rules:", data);
             }
@@ -391,6 +393,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         Dataset={Dataset}
                         t={t}
                         setEncodedRules={setEncodedRules}
+                        columnsEncoder={columnsEncoder}
                     />
                 </div>
             </>}
