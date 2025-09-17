@@ -15,7 +15,9 @@
 }
 
 .upload-datasets-container .file-upload-label {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
     cursor: pointer;
     background-color: #2563EB;

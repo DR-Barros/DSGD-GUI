@@ -84,9 +84,14 @@
     "showTop": "Show Top Rules:",  
     "score": "Importance",
     "validRule": "The masses sum to 1",
-    "invalidRule": "The masses do not sum to 1, if sent random masses will be calculated, current sum: ",
+    "invalidRule": "Invalid rule: ",
+    "invalidExpression": "Invalid expression",
     "noRules": "No rules defined",
-    "errorMessage": "Error starting training. Check the rules."
+    "errorMessage": "Error starting training. Check the rules.",
+    "uploadCSV": "Upload CSV for new prediction",
+    "predictingInProgress": "Predicting in progress...",
+    "tryAgain": "Try Again",
+    "errorPredictingMessage": "Error during prediction. Please try again."
   },
   "datasets": {
     "title": "Datasets",
@@ -130,7 +135,10 @@
   },
   "postTrain": {
     "backToSetup": "Back to Train",
-    "backwithSameSetup": "Back to Train with Same Setup"
+    "backwithSameSetup": "Back to Train with Same Setup",
+    "metrics": "Go to Metrics",
+    "rules": "Go to Rules",
+    "predict": "Go to Predict"
   },
   "documentation": {
     "rulesDocumentation": {

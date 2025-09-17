@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
-import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, Modal, Select, Snackbar, TextField } from '@mui/material';
+import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, CircularProgress, Select, Snackbar, TextField } from '@mui/material';
 import { fetchProtected, postProtected } from '../../../api/client';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
@@ -50,7 +50,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         manualColumns: [],
     });
     const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
-    const [modalRuleOpen, setModalRuleOpen] = useState(false);
+    const [loadingRules, setLoadingRules] = useState(false);
     const { t } = useTranslation();
     const {id, iteration_id} = useParams();
     const [snackbar, setSnackbar] = useState<{open: boolean, message: String, type: 'error' | 'info' | 'success' | 'warning'}>({open: false, message: '', type: 'info'});
@@ -101,46 +101,57 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
     }, [Dataset]);
 
     const handleGenerateRules = async () => {
-        const { data, status } = await postProtected(`/train/generate-rules/${experimentId}`, {
-            singleRule: generateRuleParams.singleRule,
-            multipleRule: generateRuleParams.multipleRules,
-            breakRules: generateRuleParams.breakRules,
-            selectedColumns: generateRuleParams.selectedColumns
-        });
-
-        if (status === 200) {
-            console.log("Generated rules:", data.rules);
-            for (let i = 0; i < data.rules.length; i++) {
-                console.log(`Rule ${i}:`, data.rules[i]);
-                let parsed = desParseExpr(data.rules[i][0], data.rules[i][1]);
-                console.log(`Parsed Rule ${i}:`, parsed);
-                let reparsed = parseExpr(parsed, generateRuleParams.selectedColumns || []);
-                console.log(`Re-parsed Rule ${i}:`, reparsed);
-            }
-            console.log("Masses:", data.masses);
-
-            const updatedRules: Array<GroupedRule> = [
-                ...encodedRules
-            ];
-
-            
-
-            const newGroupedRules: GroupedRule[] = [];
-
-            // Creamos un nuevo conjunto de reglas por índice
-            (data.rules as RuleEntry[]).forEach((rule: RuleEntry, index: number) => {
-                const parsedRule = desParseExpr(rule[0], rule[1]);
-                newGroupedRules.push({
-                    mass: data.masses[index],
-                    labels: data.labels[index],
-                    parsedRule: parsedRule
-                });
+        if (!experimentId) {
+            setSnackbar({ open: true, message: t("experiment.errorMessage"), type: "error" });
+            return;
+        }
+        setLoadingRules(true);
+        try {
+            const { data, status } = await postProtected(`/train/generate-rules/${experimentId}`, {
+                singleRule: generateRuleParams.singleRule,
+                multipleRule: generateRuleParams.multipleRules,
+                breakRules: generateRuleParams.breakRules,
+                selectedColumns: generateRuleParams.selectedColumns
             });
 
-            console.log("Updated Grouped Rules:", newGroupedRules);
-            setEncodedRules([...updatedRules, ...newGroupedRules]);
-        } else {
-            console.error("Error generating rules:", data);
+            if (status === 200) {
+                console.log("Generated rules:", data.rules);
+                for (let i = 0; i < data.rules.length; i++) {
+                    console.log(`Rule ${i}:`, data.rules[i]);
+                    let parsed = desParseExpr(data.rules[i][0], data.rules[i][1]);
+                    console.log(`Parsed Rule ${i}:`, parsed);
+                    let reparsed = parseExpr(parsed, generateRuleParams.selectedColumns || []);
+                    console.log(`Re-parsed Rule ${i}:`, reparsed);
+                }
+                console.log("Masses:", data.masses);
+
+                const updatedRules: Array<GroupedRule> = [
+                    ...encodedRules
+                ];
+
+                
+
+                const newGroupedRules: GroupedRule[] = [];
+
+                // Creamos un nuevo conjunto de reglas por índice
+                (data.rules as RuleEntry[]).forEach((rule: RuleEntry, index: number) => {
+                    const parsedRule = desParseExpr(rule[0], rule[1]);
+                    newGroupedRules.push({
+                        mass: data.masses[index],
+                        labels: data.labels[index],
+                        parsedRule: parsedRule
+                    });
+                });
+
+                console.log("Updated Grouped Rules:", newGroupedRules);
+                setEncodedRules([...updatedRules, ...newGroupedRules]);
+            } else {
+                console.error("Error generating rules:", data);
+            }
+            setLoadingRules(false);
+        } catch (error) {
+            setSnackbar({ open: true, message: t("experiment.errorMessage") + (error instanceof Error ? error.message : String(error)), type: "error" });
+            setLoadingRules(false);
         }
     };
 
@@ -352,7 +363,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             }}
                         />
                         <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
-                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleGenerateRules}>
+                        <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleGenerateRules} disabled={loadingRules}>
                             {t("experiment.generateRules")}
                         </Button>
                         </div>
@@ -366,6 +377,11 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         {t("experiment.train")}
                     </Button>
                 </div>
+                {loadingRules && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px' }}>
+                        <CircularProgress />
+                    </div>
+                )}
                 <div>
                     <RuleGroup
                         key={"all-rules"}
@@ -377,46 +393,6 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         setEncodedRules={setEncodedRules}
                     />
                 </div>
-                <Modal
-                    open={modalRuleOpen}
-                    onClose={() => setModalRuleOpen(false)}
-                >
-                    <div style={{ backgroundColor: 'white', padding: '20px', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <FormControlLabel
-                            control={
-                                <Select
-                                    multiple
-                                    value={generateRuleParams.manualColumns}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, manualColumns: e.target.value as string[] })}
-                                    renderValue={(selected) => (selected as string[]).join(', ')}
-                                    style={{ minWidth: '200px' }}
-                                >
-                                    {Dataset?.columns
-                                        .filter((col) => col !== Dataset.target_column)
-                                        .map((col) => (
-                                            <MenuItem key={col} value={col}>
-                                                {col}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            }
-                            label={t("experiment.selectColumns")}
-                            labelPlacement='start'
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        />
-                        <button onClick={() => {
-                            setModalRuleOpen(false);
-                            //creamos el idx a crear
-                            let idx = generateRuleParams.manualColumns?.join('-') || '';
-                            setEncodedRules(prev => ({...prev, [idx]: []}))
-                        }}>Crear</button>
-                    </div>
-                </Modal>
             </>}
             {activeStep === 2 && <>
                 <Card sx={{marginBottom: 10, marginTop: 10}}>

@@ -153,7 +153,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
     }
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "16px", position: "relative", minHeight: "calc(80vh- 40px)" }}>
             <Stepper sx={{ width: '100%', maxWidth: 600, margin: '20px auto' }}>
                 <Step key={0}>
                     <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : ''}>{t('experiment.metrics')}</StepButton>
@@ -244,6 +244,17 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             <>
                 {id !== null && <Predict iterationId={id} />}
             </>}
+            <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "auto" }}>
+            {activeStep != 0 && <Button variant="contained" color="primary" onClick={() => setActiveStep(0)}>
+                {t("postTrain.metrics")}
+            </Button>}
+            {activeStep != 1 && <Button variant="contained" color="primary" onClick={() => setActiveStep(1)}>
+                {t("postTrain.rules")}
+            </Button>}
+            {activeStep != 2 && <Button variant="contained" color="primary" onClick={() => setActiveStep(2)}>
+                {t("postTrain.predict")}
+            </Button>}
+            </div>
         </div>
     );
 }

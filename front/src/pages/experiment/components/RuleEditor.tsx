@@ -20,8 +20,8 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
-            <label style={{ display: "flex", flexDirection: "column" }}>
-                {t("experiment.label")}: {""}
+            <label style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <p style={{ margin: 0, fontWeight: "bold" }}>{t("experiment.label")}: {""}</p>
                 <input
                     type="text"
                     value={label}
@@ -29,10 +29,17 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
                         e.preventDefault();
                         updateLabel(e.target.value);
                     }}
+                    style={{ 
+                        marginLeft: "10px",
+                        flex: 1,
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        padding: "10px",
+                    }}
                 />
             </label>
-            <label style={{ display: "flex", flexDirection: "column" }}>
-                {t("experiment.rule")}: {""}
+            <label style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <p style={{ margin: 0, fontWeight: "bold" }}>{t("experiment.rule")}: {""}</p>
                 <textarea
                     value={ruleStr}
                     onChange={(e) => setRuleStr(e.target.value)}
@@ -40,15 +47,25 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ columns, label, updateLabel, ru
                         e.preventDefault();
                         try{
                             parseExpr(e.target.value, columns);
-                            updateRule(e.target.value);
+                            
                         }catch (error) {
                             console.error("Error parsing expression:", error);
-                            setRuleStr(rule); // Revertir al valor anterior si hay error
                             setSnackbar({ 
                                 open: true, 
                                 message: t("experiment.invalidRule") + ": " + (error instanceof Error ? error.message : String(error)),
                                 type: "error" });
                         }
+                        updateRule(e.target.value);
+                    }}
+                    style={{ 
+                        marginLeft: "10px",
+                        flex: 1,
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        padding: "10px",
+                        fontFamily: "monospace",
+                        fontSize: "14px",
+                        resize: "vertical",
                     }}
                 />
             </label>

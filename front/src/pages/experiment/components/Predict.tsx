@@ -1,4 +1,4 @@
-import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button, Modal } from "@mui/material";
+import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button, Modal, CircularProgress } from "@mui/material";
 import { fetchProtected, postProtected } from "../../../api/client";
 import { useEffect, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,6 +24,7 @@ export default function Predict({ iterationId }: { iterationId: number | string 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [modalId, setModalId] = useState<number | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string>("");
     const { t } = useTranslation();
 
     const fetchPostTrainData = async (experimentId: number) => {
@@ -88,13 +89,23 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             console.error("No data available for prediction");
             return;
         }
-        const { data, status } = await postProtected(`/predict/${iterationId}`, { predictData });
-        if (status === 200) {
-            console.log("Prediction successful:", data);
-            setPredictedResults(data.predictions);
-            setLabels(data.labels || {});
-        } else {
-            console.error("Error during prediction");
+        setStatus("loading");
+        try {
+            const { data, status } = await postProtected(`/predict/${iterationId}`, { predictData });
+            if (status === 200) {
+                console.log("Prediction successful:", data);
+                setPredictedResults(data.predictions);
+                setLabels(data.labels || {});
+                setErrorMessage("");
+            } else {
+                console.error("Error during prediction");
+                setErrorMessage(data.detail || "Unknown error");
+                setStatus("error");
+                
+            }
+        } catch (error) {
+            console.error("Error during prediction:", error);
+            setStatus("error");
         }
     }
 
@@ -209,8 +220,15 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             </div>
             </>
             }
-            {status == "loading" && <p>Loading...</p>}
-            {status == "error" && <p>Error occurred. Please try again.</p>}
+            {status == "loading" && <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "200px" }}>
+                <CircularProgress />
+                <p>{t("experiment.predictingInProgress")}</p>
+            </div>}
+            {status == "error" && <>
+                <p>{t("experiment.errorPredictingMessage")}</p>
+                {errorMessage && <p><strong>Error: </strong>{errorMessage}</p>}
+                <button onClick={() => setStatus("idle")}>{t("experiment.tryAgain")}</button>
+            </>}
             {status == "success" && 
             <>
                 <h3>{t("experiment.predictedResults")}</h3>

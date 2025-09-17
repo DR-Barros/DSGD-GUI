@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData | null }) {
+    const [lastTimestamp, setLastTimestamp] = useState<number>(0);
     const [time, setTime] = useState<number>(0);
     const { t } = useTranslation();
     
@@ -14,6 +15,13 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (trainingMsg && trainingMsg.time !== lastTimestamp) {
+            setLastTimestamp(trainingMsg.time);
+            setTime(trainingMsg.time);
+        }
+    }, [trainingMsg]);
 
     return (
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>

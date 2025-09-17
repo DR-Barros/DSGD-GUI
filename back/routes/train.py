@@ -77,6 +77,7 @@ def generate_rules(
             else:
                 return HTTPException(status_code=400, detail="Unsupported file type")
         dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+        columnEncoder = dataset.columns_encoder # dict para pasar las columnas categoricas a numeros
         if not dataset:
             raise HTTPException(status_code=404, detail="Dataset not found")
         print("Selected columns:", selectedColumns)
@@ -126,7 +127,7 @@ def generate_rules(
             for key in keys:
                 value = vars.get(key, None)
                 vars[key] = selectedColumns[value] if value is not None and value < len(selectedColumns) else value
-        return sanitize_json({"rules": encoded_rules, "masses": masses, "labels": labels})
+        return sanitize_json({"rules": encoded_rules, "masses": masses, "labels": labels, "columnsEncoder": columnEncoder})
     except Exception as e:
         print("Error generating rules:", e)
         raise HTTPException(status_code=500, detail="Error generating rules")
@@ -271,14 +272,26 @@ async def train_model_post(
 
 
 @api_router.websocket("/ws/{task_id}")
-async def websocket_endpoint(websocket: WebSocket, task_id: str):
+async def websocket_endpoint(websocket: WebSocket, task_id: str, db: Session = Depends(get_db)):
     await websocket.accept()
     try:
         while True:
             # Enviar estado actual
             status = settings.TASKS_PROGRESS.get(task_id, "Task not found or finished")
+            #manejar caso en que no haya estado y task queue este vacia
+            if status == "Task not found or finished" and settings.TASK_QUEUE.empty():
+                status = "Error: Task not found"
+                #actualizamos el estado en la base de datos
+                iteration = db.query(Iteration).filter(Iteration.id == int(task_id)).first()
+                if iteration:
+                    iteration.training_status = "error"
+                    iteration.training_end_time = datetime.now()
+                    iteration.training_message = status
+                    db.commit()
             await websocket.send_text(status)
             if status.startswith("Training finished") or status.startswith("Error"):
+                if task_id in settings.TASKS_PROGRESS:
+                    del settings.TASKS_PROGRESS[task_id]
                 break
             await asyncio.sleep(1)
         await websocket.close() 

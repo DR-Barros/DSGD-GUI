@@ -84,9 +84,14 @@
     "showTop": "Mostrar las mejores Reglas:",
     "score": "Importancia",
     "validRule": "Las masas suman 1",
-    "invalidRule": "Las masas no suman 1, si se envian se calcularan masas aleatorias, suma actual: ",
+    "invalidRule": "Regla invalida: ",
+    "invalidExpression": "Expresión inválida",
     "noRules": "No hay reglas definidas",
-    "errorMessage": "Error al iniciar el entrenamiento. Revisa las reglas."
+    "errorMessage": "Error al iniciar el entrenamiento. Revisa las reglas.",
+    "uploadCSV": "Subir CSV para nueva predicción",
+    "predictingInProgress": "Predicción en progreso...",
+    "tryAgain": "Intentar de nuevo",
+    "errorPredictingMessage": "Error durante la predicción. Por favor, inténtalo de nuevo."
   },
   "datasets": {
     "title": "Conjuntos de datos",
@@ -130,7 +135,10 @@
   },
   "postTrain": {
     "backToSetup": "Volver a Entrenar",
-    "backwithSameSetup": "Volver a Entrenar con la misma configuración"
+    "backwithSameSetup": "Volver a Entrenar con la misma configuración",
+    "metrics": "Ir a Métricas",
+    "rules": "Ir a Reglas",
+    "predict": "Ir a Predecir"
   },
   "rulesDocumentation": {
     "title": "Documentación de Reglas",

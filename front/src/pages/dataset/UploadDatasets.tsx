@@ -8,16 +8,16 @@ import {
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import { postProtected } from "../../api/client";
-
+import UploadIcon from '@mui/icons-material/Upload';
+import "./UploadDatasets.css"
+import DatasetsView from "../../components/DatasetsView";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type HistogramBin = {
     bin: string;
     count: number;
 };
 
-import "./UploadDatasets.css"
-import DatasetsView from "../../components/DatasetsView";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export default function UploadDatasets() {
     const { t } = useTranslation();
@@ -342,16 +342,26 @@ export default function UploadDatasets() {
             <h1>{t("datasets.upload.title")}</h1>
             {uploadPhase === 0 ? (
                 <form onSubmit={handleSubmit} className="upload-form">
-                    <select value={nFiles} onChange={(e) => setNFiles(Number(e.target.value) as 1 | 2)}>
+                    <select 
+                        value={nFiles} 
+                        onChange={(e) => setNFiles(Number(e.target.value) as 1 | 2)}
+                        style={{
+                            height: "40px", 
+                            borderRadius: "10px", 
+                            border: "1px solid #ccc",
+                            padding: "0 10px",
+                        }}
+                    >
                         <option value={1}>{t("datasets.upload.single_file")}</option>
                         <option value={2}>{t("datasets.upload.multiple_files")}</option>
                     </select>
-                    <label>
+                    <label style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
                         <input type="checkbox" checked={hasHeader} onChange={(e) => setHasHeader(e.target.checked)} />
-                        {t("datasets.upload.file_header")}
+                        <p style={{ margin: 0 }}>{t("datasets.upload.file_header")}</p>
                     </label>
                 <label className="file-upload-label">
                     <span>{nFiles === 1 ? t("datasets.upload.select_file") : t("datasets.upload.select_train_file")}</span>
+                    <UploadIcon style={{ marginLeft: "10px", height: "24px", width: "24px" }} />
                     <input
                         type="file"
                         onChange={handleFileChange}
@@ -363,6 +373,7 @@ export default function UploadDatasets() {
                 {nFiles === 2 && (
                 <label className="file-upload-label">
                     <span>{t("datasets.upload.select_test_file")}</span>
+                    <UploadIcon style={{ marginLeft: "10px", height: "24px", width: "24px" }} />
                     <input
                         type="file"
                         onChange={handleFileChangeTest}
@@ -397,9 +408,19 @@ export default function UploadDatasets() {
             ) : (
                 <>
                     <div>
-                        <label>
-                            {t("datasets.upload.select_class")}
-                            <select value={targetColumn ? targetColumn : ""} onChange={(e) => setTargetColumn(e.target.value)}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <p style={{fontSize: "18px"}}>{t("datasets.upload.select_class")}</p>
+                            <select 
+                                value={targetColumn ? targetColumn : ""} 
+                                onChange={(e) => setTargetColumn(e.target.value)}
+                                style={{ 
+                                    marginLeft: "10px", 
+                                    height: "40px",
+                                    borderRadius: "10px", 
+                                    border: "1px solid #ccc",
+                                    padding: "0 10px",
+                                }}
+                            >
                                 {Object.keys(parsedData[0]?.[0] || {}).map((col) => (
                                     <option key={col} value={col}>{col}</option>
                                 ))}

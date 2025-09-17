@@ -7,6 +7,10 @@ import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip, Alert, Snackbar } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
+import { parseExpr } from "../../../utils/RuleParser";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import ErrorIcon from "@mui/icons-material/Error";
 
 type HistogramBin = {
   bin: string | number;
@@ -142,6 +146,11 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         )}
 
         {/* Reglas */}
+        <div
+            style={{
+                overflowX: "scroll",
+            }}
+        >
         <table
         style={{
             width: "100%",
@@ -161,15 +170,16 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     borderBottom: "1px solid #ccc",
                     textAlign: "center",
                     padding: "4px",
+                    width: "100px",
                 }}
                 >
                 {mi === rulesArray[0].mass.length - 1 ? t("experiment.uncertainty") : `${t("experiment.mass")} ${mi + 1}`}
                 </th>
             ))}
-            <th style={{ borderBottom: "1px solid #ccc", textAlign: "center", padding: "4px" }}>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "center", padding: "4px", width: "50px" }}>
                 {t("experiment.valid")}
             </th>
-            {editing && <th></th>}
+            {editing && <th style={{ width: "50px", borderBottom: "1px solid #ccc" }}></th>}
             </tr>
         </thead>
         <tbody>
@@ -234,6 +244,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                         padding: "2px 4px",
                         fontSize: "0.8rem",
                         textAlign: "right",
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        height: "30px",
                     }}
                     />
                     ) : (
@@ -241,12 +254,50 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     )}
                 </td>
                 ))}
-                {/* valido si las masas suman 1 */}
-                <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
-                    <Tooltip title={Math.abs(item.mass.reduce((a, b) => a + b, 0)) == 1 ? t("experiment.validRule") : t("experiment.invalidRule") + Math.abs(item.mass.reduce((a, b) => a + b, 0))}>
-                        <p>{Math.abs(item.mass.reduce((a, b) => a + b, 0)) == 1 ? "✅" : "❌"}</p>
+                {/* válido si las masas suman 1 Y la expresión es parseable */}
+                <td
+                style={{
+                    borderBottom: "1px solid #eee",
+                    padding: "4px",
+                    textAlign: "center",
+                }}
+                >
+                {(() => {
+                    const sum = item.mass.reduce((a, b) => a + b, 0);
+                    const massSumValid = Math.abs(sum - 1) < 1e-6; // tolerancia pequeña
+                    let exprValid = true;
+
+                    try {
+                    parseExpr(item.parsedRule, Dataset ? Dataset.columns : []);
+                    } catch (err) {
+                    exprValid = false;
+                    }
+
+                    let icon, tooltip;
+
+                    if (massSumValid && exprValid) {
+                    icon = <CheckCircleIcon color="success" />;
+                    tooltip = t("experiment.validRule");
+                    } else if (!massSumValid && exprValid) {
+                    icon = <WarningAmberIcon color="warning" />;
+                    tooltip =
+                        t("experiment.invalidRule") +
+                        " (sum=" +
+                        sum.toFixed(6) +
+                        ")";
+                    } else {
+                    icon = <ErrorIcon color="error" />;
+                    tooltip = t("experiment.invalidExpression");
+                    }
+
+                    return (
+                    <Tooltip title={tooltip} arrow>
+                        <span>{icon}</span>
                     </Tooltip>
+                    );
+                })()}
                 </td>
+
                 {editing && (
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
                     <button onClick={() => {
@@ -265,6 +316,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             ))}
         </tbody>
         </table>
+        </div>
         {/* Botón para agregar nueva regla */}
         {editing && (
         <button
