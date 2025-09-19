@@ -1,16 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Bar } from "react-chartjs-2";
 import RuleEditor from "./RuleEditor"; // Ajusta la importación según corresponda
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Tooltip, Alert, Snackbar } from "@mui/material";
+import { Alert, Snackbar, TablePagination } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
-import { parseExpr } from "../../../utils/RuleParser";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import ErrorIcon from "@mui/icons-material/Error";
+import ValidateRule from "./ValidateRule";
 
 type HistogramBin = {
   bin: string | number;
@@ -51,10 +48,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         message: "",
         type: "success"
     });
-    useEffect(() => {
-        console.log("Rendering RuleGroup for idx:", idx);
-        console.log("Current rulesArray:", rulesArray);
-    }, [idx]);
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const rowsOptions = [5, 10, 25];
 
     return (
         <div
@@ -196,8 +192,12 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             </tr>
         </thead>
         <tbody>
-            {rulesArray.map((item, i) => (
-            <tr key={i}>
+            {rulesArray
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((item, i) => {
+            const itemId = page * rowsPerPage + i;  // índice absoluto en rulesArray
+            return (
+            <tr key={itemId}>
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px" }}>
                 {editing ? (
                 <RuleEditor
@@ -206,8 +206,8 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     updateLabel={(newLabel: string) => {
                         setEncodedRules((prev) => {
                         const updated = [...prev];
-                        const updatedItem = { ...updated[i], labels: newLabel };
-                        updated[i] = updatedItem;
+                        const updatedItem = { ...updated[itemId], labels: newLabel };
+                        updated[itemId] = updatedItem;
                         return updated;
                         });
                     }}
@@ -215,8 +215,8 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     updateRule={(newRule: string) => {
                         setEncodedRules((prev) => {
                         const updated = [...prev];
-                        const updatedItem = { ...updated[i], parsedRule: newRule };
-                        updated[i] = updatedItem;
+                        const updatedItem = { ...updated[itemId], parsedRule: newRule };
+                        updated[itemId] = updatedItem;
                         return updated;
                         });
                     }}
@@ -246,9 +246,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                         const newValue = parseFloat(e.target.value);
                         setEncodedRules((prev) => {
                         const updated = [...prev];
-                        const updatedMass = [...updated[i].mass];
+                        const updatedMass = [...updated[itemId].mass];
                         updatedMass[mi] = isNaN(newValue) ? 0 : newValue;
-                        updated[i] = { ...updated[i], mass: updatedMass };
+                        updated[itemId] = { ...updated[itemId], mass: updatedMass };
                         return updated;
                         });
                     }}
@@ -268,55 +268,19 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 </td>
                 ))}
                 {/* válido si las masas suman 1 Y la expresión es parseable */}
-                <td
-                style={{
-                    borderBottom: "1px solid #eee",
-                    padding: "4px",
-                    textAlign: "center",
-                }}
-                >
-                {(() => {
-                    const sum = item.mass.reduce((a, b) => a + b, 0);
-                    const massSumValid = Math.abs(sum - 1) < 1e-6; // tolerancia pequeña
-                    let exprValid = true;
-
-                    try {
-                    parseExpr(item.parsedRule, Dataset ? Dataset.columns : []);
-                    } catch (err) {
-                    exprValid = false;
-                    }
-
-                    let icon, tooltip;
-
-                    if (massSumValid && exprValid) {
-                    icon = <CheckCircleIcon color="success" />;
-                    tooltip = t("experiment.validRule");
-                    } else if (!massSumValid && exprValid) {
-                    icon = <WarningAmberIcon color="warning" />;
-                    tooltip =
-                        t("experiment.invalidRule") +
-                        " (sum=" +
-                        sum.toFixed(6) +
-                        ")";
-                    } else {
-                    icon = <ErrorIcon color="error" />;
-                    tooltip = t("experiment.invalidExpression");
-                    }
-
-                    return (
-                    <Tooltip title={tooltip} arrow>
-                        <span>{icon}</span>
-                    </Tooltip>
-                    );
-                })()}
-                </td>
-
+                <ValidateRule
+                    rule={item.parsedRule}
+                    mass={item.mass}
+                    columns={Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : []}
+                    id={idx}
+                    t={t}
+                />
                 {editing && (
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>
                     <button onClick={() => {
                         setEncodedRules((prev) => {
                         const updated = [...prev];
-                        updated.splice(i, 1);
+                        updated.splice(itemId, 1);
                         return updated;
                         })}}
                         style={{ background: "none", border: "none", cursor: "pointer" }}
@@ -326,7 +290,8 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 </td>
                 )}
             </tr>
-            ))}
+            );
+            })}
         </tbody>
         </table>
         </div>
@@ -377,6 +342,18 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 {snackbar.message}
             </Alert>
         </Snackbar>
+        <TablePagination
+            rowsPerPageOptions={rowsOptions}
+            component="div"
+            count={rulesArray.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+            }}
+        />
         </div>
     );
 };
