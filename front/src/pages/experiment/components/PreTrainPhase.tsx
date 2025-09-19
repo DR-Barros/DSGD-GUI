@@ -271,6 +271,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             flex: 1,
                         }))}
                         targetColumn={Dataset!.target_column}
+                        columns_encoder={Dataset!.columns_encoder}
                 />
                 )}
                 {(datasetPreview.length > 1 && datasetStats.length > 1) && (
@@ -392,14 +393,13 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 )}
                 <div>
                     <RuleGroup
-                        key={"all-rules"}
-                        idx={"all-rules"}
+                        idx={id ? id : "all-rules"}
                         rulesArray={encodedRules}
                         datasetStats={datasetStats}
                         Dataset={Dataset}
                         t={t}
                         setEncodedRules={setEncodedRules}
-                        columnsEncoder={columnsEncoder}
+                        columnsEncoder={Dataset?.columns_encoder || {}}
                     />
                 </div>
             </>}

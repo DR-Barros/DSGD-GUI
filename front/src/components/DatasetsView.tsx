@@ -31,10 +31,11 @@ interface Dataset {
     rows: any[];
     columns: GridColDef[];
     targetColumn: string | null;
+    columns_encoder?: Record<string, Record<any, number>> | null;
 }
 
 export default function DatasetsView(
-    { summaryStats, rows, columns, targetColumn }: Dataset,
+    { summaryStats, rows, columns, targetColumn, columns_encoder = null }: Dataset,
 ) {
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
@@ -42,6 +43,7 @@ export default function DatasetsView(
     const [tempPage, setTempPage] = useState<string>(String(currentPage));
     const rowsOptions = [5, 10, 15, 20, 25];
     
+    console.log({columns_encoder});
     return (
         <>
             <TableContainer component={Paper}>
@@ -68,6 +70,7 @@ export default function DatasetsView(
                             <span>{col.headerName}</span>
                             {(() => {
                                 const stats = summaryStats.find((s) => s.column === col.field);
+                                console.log(col.field, columns_encoder?.[col.field], stats);
                                 return stats ? (
                                 <div
                                     style={{
@@ -121,6 +124,18 @@ export default function DatasetsView(
                                             </div>
                                         )}
                                     </>
+                                    )}
+                                    {columns_encoder && columns_encoder[col.field] && (
+                                        <div>
+                                            <p style={{ margin: 0, lineHeight: 1.3 }}>{t("datasets.encoding")}</p>
+                                            <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                                                {Object.keys(columns_encoder[col.field]).map((key) =>
+                                                    <li key={key}>
+                                                        {key}: {columns_encoder[col.field][key]}
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
                                     )}
                                 </div>
                                 ) : null;

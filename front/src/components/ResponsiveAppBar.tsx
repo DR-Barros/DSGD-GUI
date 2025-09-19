@@ -104,9 +104,9 @@ export default function ResponsiveAppBar() {
         </AppBar>
 
         {/* Drawer para pantallas pequeñas */}
-        <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)} sx={{zIndex: 1400}}>
             <Box
-            sx={{ width: 250 }}
+            sx={{ width: 200, padding: 2, backgroundColor: "#f5f5f5", height: "100%" }}
             role="presentation"
             onClick={toggleDrawer(false)}
             onKeyDown={toggleDrawer(false)}
@@ -128,7 +128,7 @@ export default function ResponsiveAppBar() {
                         </Link>
                     </ListItem>
                 ))}
-                <Button color="inherit" onClick={logout}>
+                <Button color="inherit" onClick={logout} sx={{ color: "black", font: "inherit", fontWeight: "500", textTransform: "none", padding: 0, marginBottom: 2, marginTop: 2 }}>
                     Logout
                 </Button>
                 <Select
