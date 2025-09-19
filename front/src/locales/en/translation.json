@@ -95,7 +95,9 @@
     "uploadCSV": "Upload CSV for new prediction",
     "predictingInProgress": "Predicting in progress...",
     "tryAgain": "Try Again",
-    "errorPredictingMessage": "Error during prediction. Please try again."
+    "errorPredictingMessage": "Error during prediction. Please try again.",
+    "confirmDeleteIteration": "Are you sure you want to delete this iteration? This action cannot be undone.",
+    "errorDeletingIteration": "Error deleting iteration."
   },
   "datasets": {
     "title": "Datasets",

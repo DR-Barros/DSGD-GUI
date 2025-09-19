@@ -9,7 +9,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import PendingIcon from '@mui/icons-material/Pending';
-import { fetchProtected, downloadProtected } from '../../../api/client';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { fetchProtected, downloadProtected, deleteProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +42,19 @@ export default function DrawerMenu(
             console.error("Error en descarga:", err);
             alert("No se pudo descargar el archivo");
         });
+    };
+
+    const handleDelete = async (iterationId: string) => {
+        if (window.confirm(t('experiment.confirmDeleteIteration'))) {
+            try {
+                await deleteProtected(`/experiments/iteration/${iterationId}`);
+            } catch (error) {
+                console.error("Error deleting iteration:", error);
+                alert(t('experiment.errorDeletingIteration'));
+            } finally {
+                handleIterations();
+            }
+        }
     };
 
 
@@ -78,6 +92,9 @@ export default function DrawerMenu(
                                 <DownloadForOfflineIcon style={{ marginRight: "5px" }} />
                             </button>
                         )}
+                            <button onClick={() => handleDelete(item.id.toString())} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#d32f2f" }}>
+                                <DeleteIcon style={{ marginRight: "5px" }} />
+                            </button>
                         </div>
                         <hr />
                     </div>

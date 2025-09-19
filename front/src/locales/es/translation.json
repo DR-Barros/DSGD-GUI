@@ -95,7 +95,9 @@
     "uploadCSV": "Subir CSV para nueva predicción",
     "predictingInProgress": "Predicción en progreso...",
     "tryAgain": "Intentar de nuevo",
-    "errorPredictingMessage": "Error durante la predicción. Por favor, inténtalo de nuevo."
+    "errorPredictingMessage": "Error durante la predicción. Por favor, inténtalo de nuevo.",
+    "confirmDeleteIteration": "¿Estás seguro de que deseas eliminar esta iteración? Esta acción no se puede deshacer.",
+    "errorDeletingIteration": "Error al eliminar la iteración."
   },
   "datasets": {
     "title": "Conjuntos de datos",

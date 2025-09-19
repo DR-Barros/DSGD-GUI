@@ -110,12 +110,9 @@ export async function putProtected(endpoint: string, body: any) {
 }
 
 export async function deleteProtected(endpoint: string) {
-  const token = localStorage.getItem("jwt");
   const res = await fetch(`${API_URL}${endpoint}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: "include",
   });
   if (res.status === 401) {
     const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
@@ -123,14 +120,9 @@ export async function deleteProtected(endpoint: string) {
       credentials: "include", // Necesario para enviar la cookie HttpOnly
     });
     if (refreshRes.status === 200) {
-      const data = await refreshRes.json();
-      localStorage.setItem("jwt", data.access_token);
-      // Reintentar la solicitud original
       const retryRes = await fetch(`${API_URL}${endpoint}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${data.access_token}`,
-        },
+        credentials: "include",
       });
       if (retryRes.status === 200) {
         return retryRes.json();
