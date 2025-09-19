@@ -131,6 +131,47 @@ def generate_rules(
     except Exception as e:
         print("Error generating rules:", e)
         raise HTTPException(status_code=500, detail="Error generating rules")
+    
+
+@api_router.post("/coverage-rule/{experiment_id}")
+def coverage_rules(
+    experiment_id: int,
+    rule: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie)
+):
+    try:
+        dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
+        if not dataset_files:
+            raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
+        for dataset_file in dataset_files:
+            if dataset_file.dataset_type == DatasetType.TESTING:
+                continue
+            if dataset_file.type_file == FileType.CSV:
+                X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
+            elif dataset_file.type_file == FileType.EXCEL:
+                X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
+            elif dataset_file.type_file == FileType.PARQUET:
+                X = pd.read_parquet(dataset_file.file_path)
+            else:
+                return HTTPException(status_code=400, detail="Unsupported file type")
+        dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+        columnEncoder = dataset.columns_encoder # dict para pasar las columnas categoricas a numeros
+        if not dataset:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+        #aplicamos columnEncoder
+        for key, column_encoder in columnEncoder.items():
+            if key in X.columns:
+                X[key] = X[key].replace(column_encoder)
+        ds_parser = DSParser.DSParser()
+        fn = ds_parser.json_to_lambda(rule["rule"], X.columns.tolist())
+        print("Evaluating coverage with function:", fn)
+        #calculamos el numero de filas que cumplen la regla
+        coverage = X.apply(fn, axis=1).sum()
+        return {"coverage": int(coverage), "total": len(X), "percentage": round(coverage / len(X) * 100, 2)}
+    except Exception as e:
+        print("Error calculating coverage:", e)
+        raise HTTPException(status_code=500, detail="Error calculating coverage")
 
 
 @api_router.post("/train-model/{experiment_id}")
