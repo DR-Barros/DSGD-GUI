@@ -41,6 +41,15 @@ async def get_experiments(db: Session = Depends(get_db), current_user: User = De
     experiments = db.query(Experiment).filter(Experiment.user_id == current_user.id).options(joinedload(Experiment.datasets)).all()
     return experiments
 
+@api_router.delete("/{experiment_id}")
+async def delete_experiment(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    experiment = db.query(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    db.delete(experiment)
+    db.commit()
+    return {"detail": "Experiment deleted"}
+
 
 @api_router.get("/dataset/{experiment_id}")
 async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
@@ -104,6 +113,17 @@ async def get_experiment_dataset_columns(experiment_id: int, db: Session = Depen
 async def get_experiment_iteration(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
     iterations = db.query(Iteration).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).order_by(Iteration.created_at.desc()).all()
     return iterations
+
+
+@api_router.delete("/iteration/{iteration_id}")
+async def delete_experiment_iteration(iteration_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
+    iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Experiment.user_id == current_user.id).first()
+    if not iteration:
+        raise HTTPException(status_code=404, detail="Iteration not found")
+    db.delete(iteration)
+    db.commit()
+    return {"detail": "Iteration deleted"}
+
 
 
 @api_router.get("/iteration/rules/{iteration_id}")

@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
 from models.iteration import Iteration
 from dsmodels import classifier, DSParser
@@ -90,12 +90,14 @@ def train_model(
         f1 = f1_score(y_test, y_pred, average='weighted')
         confusion = confusion_matrix(y_test, y_pred)
         report = classification_report(y_test, y_pred, output_dict=True)
+        #roc = roc_auc_score(y_test, ds.predict_proba(X_test_np), multi_class='ovr')
         iteration.accuracy = acc
         iteration.precision = precision
         iteration.recall = recall
         iteration.f1_score = f1
         iteration.confusion_matrix = confusion.tolist()
         iteration.classification_report = report
+        #iteration.roc_auc = roc
         db.commit()
         print(acc)
         print(precision)
