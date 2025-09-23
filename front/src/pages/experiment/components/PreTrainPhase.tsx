@@ -51,7 +51,6 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         manualColumns: [],
     });
     const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
-    const [columnsEncoder, setColumnsEncoder] = useState<Record<string, Record<string, number>>>({});
     const [loadingRules, setLoadingRules] = useState(false);
     const { t } = useTranslation();
     const {id, iteration_id} = useParams();
@@ -147,7 +146,6 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
                 console.log("Updated Grouped Rules:", newGroupedRules);
                 setEncodedRules([...updatedRules, ...newGroupedRules]);
-                setColumnsEncoder(data.columnsEncoder || {});
             } else {
                 console.error("Error generating rules:", data);
             }

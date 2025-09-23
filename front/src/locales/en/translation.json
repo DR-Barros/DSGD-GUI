@@ -97,7 +97,13 @@
     "tryAgain": "Try Again",
     "errorPredictingMessage": "Error during prediction. Please try again.",
     "confirmDeleteIteration": "Are you sure you want to delete this iteration? This action cannot be undone.",
-    "errorDeletingIteration": "Error deleting iteration."
+    "errorDeletingIteration": "Error deleting iteration.",
+    "uploadModel": "Upload Trained Model",
+    "labelEncoder": "Label Encoder",
+    "labelEncoderTooltip": "Provide a mapping of classes to numbers (e.g. {'class1': 0, 'class2': 1}). If the classes are already numbers, enter a mapping of each class to itself, e.g. {'0': 0, '1': 1}.",
+    "upload": "Upload",
+    "errorUploadingModel": "Error uploading model.",
+    "modelUploadedSuccessfully": "Model uploaded successfully."
   },
   "datasets": {
     "title": "Datasets",

@@ -276,6 +276,7 @@ async def train_model_post(
         model_path = "",
         train_test_split = test_size,
         train_test_split_seed = split_seed,
+        shuffle = shuffle,
         delete_nulls = drop_na,
         drop_duplicates = drop_duplicates,
         min_epochs = min_epochs,

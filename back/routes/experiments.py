@@ -4,6 +4,7 @@ from typing import List
 import zipfile
 import io
 from fastapi.responses import StreamingResponse
+from sklearn.model_selection import train_test_split
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
@@ -11,10 +12,13 @@ from models.dataset_file import FileType, DatasetType
 from schemas.experiment import ExperimentOut
 from .auth import get_current_user_from_cookie
 from datetime import datetime
-from dsmodels import classifier
+from dsmodels import classifier, DSParser
 from core.config import settings
 import pandas as pd
 import numpy as np
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report, roc_auc_score
+import os
+
 
 api_router = APIRouter()
 @api_router.post("/")
@@ -198,3 +202,155 @@ async def download_experiment_iteration(iteration_id: int, db: Session = Depends
         
     zip_buffer.seek(0)
     return StreamingResponse(zip_buffer, media_type="application/x-zip-compressed", headers={"Content-Disposition": f"attachment; filename=iteration_{iteration_id}.zip"})
+
+
+@api_router.post("/{experiment_id}/upload")
+async def upload_experiment_iteration(
+    experiment_id: int,
+    file: UploadFile = File(...),
+    label_encoder: str = Form(...),
+    test_size: float = Form(0.2),
+    split_seed: int = Form(42),
+    shuffle: bool = Form(True),
+    drop_nulls: bool = Form(False),
+    drop_duplicates: bool = Form(False),
+    min_epochs: int = Form(10),
+    max_epochs: int = Form(50),
+    batch_size: int = Form(32),
+    learning_rate: float = Form(0.001),
+    optimizer: str = Form("adam"),
+    loss_function: str = Form("cross_entropy"),
+    precompute_rules: bool = Form(True),
+    force_precompute: bool = Form(True),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie)
+):
+    label_encoder = json.loads(label_encoder)
+    if label_encoder is None or not isinstance(label_encoder, dict) or len(label_encoder) == 0:
+        raise HTTPException(status_code=400, detail="Invalid label encoder")
+    experiment = db.query(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    dataset = db.query(Datasets).filter(Datasets.id == experiment.dataset_id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    #recibe el bin del modelo y un json con label encoder
+    if not file.filename.endswith(".bin"):
+        raise HTTPException(status_code=400, detail="Only .bin files are supported")
+    dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
+    if not dataset_files:
+        raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
+    datasets = []
+    for dataset_file in dataset_files:
+        if dataset_file.type_file == FileType.CSV:
+            X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
+        elif dataset_file.type_file == FileType.EXCEL:
+            X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
+        elif dataset_file.type_file == FileType.PARQUET:
+            X = pd.read_parquet(dataset_file.file_path)
+        else:
+            return HTTPException(status_code=400, detail="Unsupported file type")
+        datasets.append({
+            "data": X,
+            "header": dataset_file.header,
+            "dataset_type": dataset_file.dataset_type
+        })
+    if len(datasets) == 1:
+        X = datasets[0]["data"]
+        X.columns = X.columns.map(str)
+        X = X[dataset.columns]
+        if drop_nulls:
+            X = X.dropna()
+        if drop_duplicates:
+            X = X.drop_duplicates()
+        y = X[dataset.target_column]
+        X = X.drop(columns=[dataset.target_column])
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X.columns:
+                X[key] = X[key].replace(column_encoder)
+        _, X_test, _, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
+    elif len(datasets) == 2:
+        X_test = datasets[1]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[0]["data"]
+        X_test.columns = X_test.columns.map(str)
+        if drop_nulls:
+            X_test = X_test.dropna()
+        if drop_duplicates:
+            X_test = X_test.drop_duplicates()
+        y_test = X_test[dataset.target_column]
+        X_test = X_test.drop(columns=[dataset.target_column])
+        for key, column_encoder in dataset.columns_encoder.items():
+            if key in X_test.columns:
+                X_test[key] = X_test[key].replace(column_encoder)
+    else:
+        return HTTPException(status_code=400, detail="More than 2 dataset files found")
+    
+    contents = await file.read()
+    model_path = f"{settings.MODELS_FOLDER}/uploaded_model_{experiment_id}_{int(datetime.now().timestamp())}.bin"
+    with open(model_path, "wb") as f:
+        f.write(contents)
+    try:
+        pass
+        ds = classifier.DSClassifierMultiQ(
+            num_classes=dataset.n_classes,
+            lr=learning_rate,
+            max_iter=max_epochs,
+            min_iter=min_epochs,
+            batch_size=batch_size,
+            lossfn=loss_function,
+            optim=optimizer,
+            debug_mode=True,
+            device=settings.DEVICE
+        )
+        parser = DSParser.DSParser()
+        ds.model.load_rules_bin(model_path)
+        for rule in ds.model.preds:
+            parser.lambda_rule_to_json(rule.ld, X_test.columns.tolist())
+        print("Model loaded successfully")
+        X_test_np = X_test.to_numpy()
+        y_test = y_test.map(label_encoder)
+        y_pred = ds.predict(X_test_np)
+        acc = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+        confusion = confusion_matrix(y_test, y_pred)
+        report = classification_report(y_test, y_pred, output_dict=True)
+        print(f"Uploaded model accuracy: {acc}, precision: {precision}, recall: {recall}, f1: {f1}")
+    except Exception as e:
+        #eliminar el modelo guardado
+        os.remove(model_path)
+        raise HTTPException(status_code=400, detail=f"Error loading model: {str(e)}")
+    new_iteration = Iteration(
+        experiment_id=experiment_id,
+        model_path=model_path,
+        created_at=datetime.now(),
+        trained=True,
+        label_encoder=label_encoder,
+        train_test_split=test_size,
+        train_test_split_seed=split_seed,
+        shuffle=shuffle,
+        delete_nulls=drop_nulls,
+        drop_duplicates=drop_duplicates,
+        min_epochs=min_epochs,
+        max_epochs=max_epochs,
+        batch_size=batch_size,
+        learning_rate=learning_rate,
+        optimizer=optimizer,
+        loss_function=loss_function,
+        precompute_rules=precompute_rules,
+        force_precompute=force_precompute,
+        accuracy=acc,
+        precision=precision,
+        recall=recall,
+        f1_score=f1,
+        confusion_matrix=confusion.tolist(),
+        classification_report=report,
+        training_status="completed",
+        training_message="Model uploaded successfully",
+        training_start_time=datetime.now(),
+        training_end_time=datetime.now()
+    )
+    db.add(new_iteration)
+    db.commit()
+    db.refresh(new_iteration)
+    return new_iteration

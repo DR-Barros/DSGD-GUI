@@ -14,6 +14,7 @@ class Iteration(Base):
     # Hyperparameters for datasets
     train_test_split = Column(Float, nullable=True)
     train_test_split_seed = Column(Integer, nullable=True)
+    shuffle = Column(Boolean, default=False)
     delete_nulls = Column(Boolean, default=False)
     drop_duplicates = Column(Boolean, default=False)
     # Hyperparameters for training

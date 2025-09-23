@@ -97,7 +97,13 @@
     "tryAgain": "Intentar de nuevo",
     "errorPredictingMessage": "Error durante la predicción. Por favor, inténtalo de nuevo.",
     "confirmDeleteIteration": "¿Estás seguro de que deseas eliminar esta iteración? Esta acción no se puede deshacer.",
-    "errorDeletingIteration": "Error al eliminar la iteración."
+    "errorDeletingIteration": "Error al eliminar la iteración.",
+    "uploadModel": "Subir modelo entrenado",
+    "labelEncoder": "Codificador de etiquetas",
+    "labelEncoderTooltip": "Proporciona un mapeo de las clases a números (ej: {'clase1': 0, 'clase2': 1}). Si las clases ya son números, ingresa un mapeo de cada clase a sí misma, por ejemplo: {'0': 0, '1': 1}.",
+    "upload": "Subir",
+    "errorUploadingModel": "Error al subir el modelo.",
+    "modelUploadedSuccessfully": "Modelo subido exitosamente."
   },
   "datasets": {
     "title": "Conjuntos de datos",
