@@ -154,7 +154,9 @@
     "backwithSameSetup": "Volver a Entrenar con la misma configuración",
     "metrics": "Ir a Métricas",
     "rules": "Ir a Reglas",
-    "predict": "Ir a Predecir"
+    "predict": "Ir a Predecir",
+    "viewMetrics": "Ver Métricas",
+    "compareMetrics": "Comparar Métricas"
   },
   "rulesDocumentation": {
     "title": "Documentación de Reglas",

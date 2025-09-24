@@ -185,10 +185,10 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
             {activeStep === 0 &&
             <>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
-                <Button sx={{ borderRadius: "10px 0 0 10px" }} variant={compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(false)}>
+                <Button sx={{ borderRadius: "10px 0 0 10px", width: "200px", maxWidth: "45%" }} variant={compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(false)}>
                     {t("postTrain.viewMetrics")}
                 </Button>
-                <Button sx={{ borderRadius: "0 10px 10px 0" }} variant={!compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(true)}>
+                <Button sx={{ borderRadius: "0 10px 10px 0", width: "200px", maxWidth: "45%" }} variant={!compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(true)}>
                     {t("postTrain.compareMetrics")}
                 </Button>
                 </div>
@@ -274,18 +274,18 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                                     {
                                         data: metrics.map(m => (m as any)[metric].toFixed(3)),
                                         backgroundColor: metrics.map((_, i) => {
-                                        // paleta simple con colores cíclicos
                                         const colors = [
-                                            "rgba(52, 71, 94, 0.7)",   // azul grisáceo oscuro
-                                            "rgba(96, 125, 139, 0.7)", // gris azulado
-                                            "rgba(38, 166, 154, 0.7)", // verde petróleo
-                                            "rgba(100, 181, 246, 0.7)",// azul claro sobrio
-                                            "rgba(120, 144, 156, 0.7)",// gris acero
-                                            "rgba(67, 160, 71, 0.7)",  // verde ingenieril
-                                            "rgba(117, 117, 117, 0.7)",// gris medio
-                                            "rgba(33, 150, 243, 0.7)", // azul estándar
+                                            "rgba(52, 152, 219, 0.7)",
+                                            "rgba(46, 204, 113, 0.7)",  
+                                            "rgba(142, 68, 173, 0.7)",
+                                            "rgba(52, 73, 94, 0.7)",    
+                                            "rgba(22, 160, 133, 0.7)",
+                                            "rgba(41, 128, 185, 0.7)",
+                                            "rgba(26, 188, 156, 0.7)",
+                                            "rgba(39, 174, 96, 0.7)",
+                                            "rgba(155, 89, 182, 0.7)",
                                         ];
-                                        return colors[i % colors.length]; // rota entre los colores
+                                        return colors[i % colors.length];
                                         }),
                                     },
                                 ]
@@ -304,6 +304,11 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                                                 return `${label}: ${value}`;
                                             }
                                         }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: false,
                                     }
                                 }
                             }}

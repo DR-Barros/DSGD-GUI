@@ -154,7 +154,9 @@
     "backwithSameSetup": "Back to Train with Same Setup",
     "metrics": "Go to Metrics",
     "rules": "Go to Rules",
-    "predict": "Go to Predict"
+    "predict": "Go to Predict",
+    "viewMetrics": "View Metrics",
+    "compareMetrics": "Compare Metrics"
   },
   "documentation": {
     "rulesDocumentation": {
