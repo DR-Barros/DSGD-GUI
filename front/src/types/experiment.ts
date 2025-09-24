@@ -39,3 +39,12 @@ export type Iteration = {
   training_start_time: string | null;
   classification_report: Record<string, any> | null;
 };
+
+export type Metrics = {
+    accuracy: number;
+    precision: number;
+    recall: number;
+    f1Score: number;
+    iteration_id: number;
+    created_at: string;
+}

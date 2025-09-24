@@ -152,7 +152,7 @@ export default function Experiment() {
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} sendStopTraining={sendStopTraining} />}
-                {phase === "posttrain" && <PostTrainPhase id={iterations} back={() => setPhase("pretrain")} />}
+                {phase === "posttrain" && <PostTrainPhase iterationId={iterations} back={() => setPhase("pretrain")} />}
             </div>
         </div>
     );

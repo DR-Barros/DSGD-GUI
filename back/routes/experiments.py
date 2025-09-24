@@ -354,3 +354,25 @@ async def upload_experiment_iteration(
     db.commit()
     db.refresh(new_iteration)
     return new_iteration
+
+
+@api_router.get("/{experiment_id}/metrics")
+async def get_experiment_metrics(
+    experiment_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie)
+    ):
+    iterations = db.query(Iteration).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
+    if not iterations:
+        raise HTTPException(status_code=404, detail="Metrics not found")
+    metrics = [
+        {
+            "iteration_id": iteration.id,
+            "created_at": iteration.created_at,
+            "accuracy": iteration.accuracy,
+            "precision": iteration.precision,
+            "recall": iteration.recall,
+            "f1_score": iteration.f1_score
+        } for iteration in iterations
+    ]
+    return metrics

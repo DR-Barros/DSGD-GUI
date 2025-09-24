@@ -15,11 +15,12 @@ import {
   CategoryScale
 } from "chart.js";
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
-import { Chart } from "react-chartjs-2";
+import { Chart, Bar } from "react-chartjs-2";
 import type { Rules } from "../../../types/rules";
 import RuleView from "./RuleView";
 import Predict from "./Predict";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import type { Metrics } from "../../../types/experiment";
 
 ChartJS.register(
   Title,
@@ -31,20 +32,24 @@ ChartJS.register(
   MatrixElement
 );
 
-export default function PostTrainPhase({ id, back }: { id: number | null, back: () => void }) {
+export default function PostTrainPhase({ iterationId, back }: { iterationId: number | null, back: () => void }) {
+    const { id } = useParams();
     const { t } = useTranslation();
     const [activeStep, setActiveStep] = useState<0|1|2>(0);
+    const [compareMode, setCompareMode] = useState(false);
     const [postTrainData, setPostTrainData] = useState<Iteration | null>(null);
+    const [metrics, setMetrics] = useState<Metrics[] | null>(null);
     const [rules, setRules] = useState<Rules | null>(null);
     const navigation = useNavigate();
 
 
     useEffect(() => {
-        if (id) {
-            fetchPostTrainData(id);
-            fetchRules(id);
+        if (iterationId) {
+            fetchPostTrainData(iterationId);
+            fetchRules(iterationId);
+            fetchMetrics();
         }
-    }, [id]);
+    }, [iterationId]);
 
     const fetchPostTrainData = async (iterationId: number) => {
         const { data, status } = await fetchProtected(`/train/iteration/${iterationId}`);
@@ -65,6 +70,17 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
         }
     };
 
+    const fetchMetrics = async () => {
+        if (id) {
+            const { data, status } = await fetchProtected(`/experiments/${id}/metrics`);
+            if (status === 200) {
+                console.log("Fetched metrics:", data);
+                setMetrics(data);
+            } else {
+                console.error("Error fetching metrics");
+            }
+        }
+    };
 
     if (!postTrainData) {
         return <p>{t("postTrain.loading")}</p>;
@@ -168,71 +184,138 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             {/* Cards en fila */}
             {activeStep === 0 &&
             <>
-            <div style={{ display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap" }}>
-            {postTrainData && (
-                <Card style={{ flex: 1, minWidth: "250px" }}>
-                <CardContent>
-                    <h3>{t("experiment.metrics")}</h3>
-                    <ul>
-                    <li>Accuracy: {postTrainData.accuracy?.toFixed(2) ?? "—"}</li>
-                    <li>Precision: {postTrainData.precision?.toFixed(2) ?? "—"}</li>
-                    <li>Recall: {postTrainData.recall?.toFixed(2) ?? "—"}</li>
-                    <li>F1 Score: {postTrainData.f1_score?.toFixed(2) ?? "—"}</li>
-                    <li>ROC AUC: {postTrainData.roc_auc?.toFixed(2) ?? "—"}</li>
-                    </ul>
-                    {/* Tabla por clase */}
-                    <table>
-                        <thead>
-                        <tr >
-                            <th >Class</th>
-                            <th >Precision</th>
-                            <th >Recall</th>
-                            <th >F1 Score</th>
-                            <th >Support</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {Object.keys(postTrainData.classification_report ?? {})
-                            .filter((k) => !isNaN(Number(k))) // solo claves numéricas (clases)
-                            .map((cls) => (
-                            <tr key={cls}>
-                                <td >{inverseLabelMap[Number(cls)] ?? cls}</td>
-                                <td >{postTrainData.classification_report?.[cls].precision.toFixed(2)}</td>
-                                <td >{postTrainData.classification_report?.[cls].recall.toFixed(2)}</td>
-                                <td >{postTrainData.classification_report?.[cls]["f1-score"].toFixed(2)}</td>
-                                <td >{postTrainData.classification_report?.[cls].support}</td>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+                <Button sx={{ borderRadius: "10px 0 0 10px" }} variant={compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(false)}>
+                    {t("postTrain.viewMetrics")}
+                </Button>
+                <Button sx={{ borderRadius: "0 10px 10px 0" }} variant={!compareMode ? "outlined" : "contained"} color="primary" onClick={() => setCompareMode(true)}>
+                    {t("postTrain.compareMetrics")}
+                </Button>
+                </div>
+                {!compareMode &&
+                <>
+                <div style={{ display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap" }}>
+                {postTrainData && (
+                    <Card style={{ flex: 1, minWidth: "250px" }}>
+                    <CardContent>
+                        <h3>{t("experiment.metrics")}</h3>
+                        <ul>
+                        <li>Accuracy: {postTrainData.accuracy?.toFixed(2) ?? "—"}</li>
+                        <li>Precision: {postTrainData.precision?.toFixed(2) ?? "—"}</li>
+                        <li>Recall: {postTrainData.recall?.toFixed(2) ?? "—"}</li>
+                        <li>F1 Score: {postTrainData.f1_score?.toFixed(2) ?? "—"}</li>
+                        <li>ROC AUC: {postTrainData.roc_auc?.toFixed(2) ?? "—"}</li>
+                        </ul>
+                        {/* Tabla por clase */}
+                        <table>
+                            <thead>
+                            <tr >
+                                <th >Class</th>
+                                <th >Precision</th>
+                                <th >Recall</th>
+                                <th >F1 Score</th>
+                                <th >Support</th>
                             </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </CardContent>
-                </Card>
-            )}
+                            </thead>
+                            <tbody>
+                            {Object.keys(postTrainData.classification_report ?? {})
+                                .filter((k) => !isNaN(Number(k))) // solo claves numéricas (clases)
+                                .map((cls) => (
+                                <tr key={cls}>
+                                    <td >{inverseLabelMap[Number(cls)] ?? cls}</td>
+                                    <td >{postTrainData.classification_report?.[cls].precision.toFixed(2)}</td>
+                                    <td >{postTrainData.classification_report?.[cls].recall.toFixed(2)}</td>
+                                    <td >{postTrainData.classification_report?.[cls]["f1-score"].toFixed(2)}</td>
+                                    <td >{postTrainData.classification_report?.[cls].support}</td>
+                                </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </CardContent>
+                    </Card>
+                )}
 
-            {cm && (
-                <Card style={{ flex: 1, minWidth: "250px" }}>
-                <CardContent>
-                    <h3>{t("experiment.confusionMatrix")}</h3>
-                    <Chart type="matrix" data={data} options={options} />
-                </CardContent>
-                </Card>
-            )}
-            </div>
+                {cm && (
+                    <Card style={{ flex: 1, minWidth: "250px" }}>
+                    <CardContent>
+                        <h3>{t("experiment.confusionMatrix")}</h3>
+                        <Chart type="matrix" data={data} options={options} />
+                    </CardContent>
+                    </Card>
+                )}
+                </div>
 
-            {/* Botón abajo */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "20px" }}>
-            <Button variant="contained" color="primary" onClick={() => {
-                navigation(`/experiment/${postTrainData?.experiment_id}`);
-                setTimeout(() => {
-                    back();
-                }, 10);
-            }}>
-                {t("postTrain.backToSetup")}
-            </Button>
-            <Button variant="contained" color="primary" onClick={back}>
-                {t("postTrain.backwithSameSetup")}
-            </Button>
-            </div>
+                {/* Botón abajo */}
+                <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "20px" }}>
+                <Button variant="contained" color="primary" onClick={() => {
+                    navigation(`/experiment/${postTrainData?.experiment_id}`);
+                    setTimeout(() => {
+                        back();
+                    }, 10);
+                }}>
+                    {t("postTrain.backToSetup")}
+                </Button>
+                <Button variant="contained" color="primary" onClick={back}>
+                    {t("postTrain.backwithSameSetup")}
+                </Button>
+                </div>
+                </>}
+                { compareMode && 
+                <>
+                {metrics ? (
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {Object.keys(metrics[0]).filter(k => k !== 'iteration_id' && k !== 'created_at').map(metric => (
+                        <div key={metric} style={{ marginBottom: '30px', width: '100%', maxWidth: 400, margin: '0 auto' }}>
+                        <h3 style={{ textTransform: 'capitalize' }}>{metric.replace(/([A-Z])/g, ' $1')}</h3>
+                        <Bar
+                            data={{
+                                labels: metrics.map(m => `It: ${m.iteration_id}`),
+                                datasets: [
+                                    {
+                                        data: metrics.map(m => (m as any)[metric].toFixed(3)),
+                                        backgroundColor: metrics.map((_, i) => {
+                                        // paleta simple con colores cíclicos
+                                        const colors = [
+                                            "rgba(52, 71, 94, 0.7)",   // azul grisáceo oscuro
+                                            "rgba(96, 125, 139, 0.7)", // gris azulado
+                                            "rgba(38, 166, 154, 0.7)", // verde petróleo
+                                            "rgba(100, 181, 246, 0.7)",// azul claro sobrio
+                                            "rgba(120, 144, 156, 0.7)",// gris acero
+                                            "rgba(67, 160, 71, 0.7)",  // verde ingenieril
+                                            "rgba(117, 117, 117, 0.7)",// gris medio
+                                            "rgba(33, 150, 243, 0.7)", // azul estándar
+                                        ];
+                                        return colors[i % colors.length]; // rota entre los colores
+                                        }),
+                                    },
+                                ]
+                            }}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: false,
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (context) => {
+                                                const label = context.dataset.label || '';
+                                                const value = context.raw || 0;
+                                                return `${label}: ${value}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }}
+                        />
+                        </div>
+                    ))}
+                    </div>
+                ) : (
+                    <p>{t("experiment.loadingMetrics")}</p>
+                )}
+                </>
+                }
             </>}
             {activeStep === 1 &&
             <>
@@ -244,7 +327,7 @@ export default function PostTrainPhase({ id, back }: { id: number | null, back: 
             </>}
             {activeStep === 2 &&
             <>
-                {id !== null && <Predict iterationId={id} />}
+                {iterationId !== null && <Predict iterationId={iterationId} />}
             </>}
             <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "auto" }}>
             {activeStep != 0 && <Button variant="contained" color="primary" onClick={() => setActiveStep(0)}>
