@@ -1,9 +1,9 @@
-import { CircularProgress, LinearProgress } from "@mui/material";
+import { Button, CircularProgress, LinearProgress } from "@mui/material";
 import type { MessageData } from "../../../types/train";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
-export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData | null }) {
+export default function TrainPhase({ trainingMsg, sendStopTraining }: { trainingMsg: MessageData | null, sendStopTraining: () => void }) {
     const [lastTimestamp, setLastTimestamp] = useState<number>(0);
     const [time, setTime] = useState<number>(0);
     const { t } = useTranslation();
@@ -36,6 +36,10 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
                             <CircularProgress />                
                             <p>{t("experiment.queued")}</p>
                         </>
+                    ) : trainingMsg.status === "Training stopped by user" ? (
+                        <>
+                            <p>{t("experiment.stopped")}</p>
+                        </>
                     ) : (
                         <>
                         <p>{t("experiment.epoch")}: {trainingMsg.epoch} / {trainingMsg.max}</p>
@@ -47,6 +51,14 @@ export default function TrainPhase({ trainingMsg }: { trainingMsg: MessageData |
                             <p>{t("experiment.timeRemaining")}: 00:00</p>
                         )}
                         <LinearProgress variant="determinate" value={(time / trainingMsg.eta) * 100} style={{ maxWidth: "500px", marginTop: 16 }} />
+                        <Button onClick={() => {
+                            // chequeamos que el usuario quiera detener el entrenamiento
+                            if (window.confirm(t("experiment.confirmStopTraining"))) {
+                                sendStopTraining()
+                            }
+                        }} style={{ marginTop: 16 }} variant="contained" color="primary">
+                            {t("experiment.stopTraining")}
+                        </Button>
                     </>
                     )}
                 </div>

@@ -67,6 +67,13 @@ def train_model(
         db.commit()
 
         for msg in ds.fit(X_train_np, y_train, add_single_rules=False, single_rules_breaks=3, add_mult_rules=False, column_names=columns, print_every_epochs=1, print_final_model=False):
+            previous_msg = settings.TASKS_PROGRESS.get(tasks_id, "")
+            if previous_msg== '{"status": "Training stopped by user"}':
+                print("Training stopped by user")
+                iteration.training_status = "stopped"
+                iteration.training_end_time = datetime.now()
+                db.commit()
+                break
             settings.TASKS_PROGRESS[tasks_id] = msg
             iteration.training_message = msg
             db.commit()

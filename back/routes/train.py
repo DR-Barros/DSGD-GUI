@@ -326,6 +326,15 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, db: Session = D
     await websocket.accept()
     try:
         while True:
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=1.0)
+                if data == "stop":
+                    data = {
+                        "status": "Training stopped by user"
+                    }
+                    settings.TASKS_PROGRESS[task_id] = json.dumps(data)
+            except asyncio.TimeoutError:
+                pass
             # Enviar estado actual
             status = settings.TASKS_PROGRESS.get(task_id, "Task not found or finished")
             #manejar caso en que no haya estado y task queue este vacia

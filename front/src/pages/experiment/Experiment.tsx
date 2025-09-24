@@ -113,6 +113,14 @@ export default function Experiment() {
         };
     };
 
+    const sendStopTraining = () => {
+        if (wsRef.current) {
+            wsRef.current.send("stop");
+        } else {
+            console.error("WebSocket no está conectado");
+        }
+    };
+
     useEffect(() => {
         return () => {
             if (wsRef.current) {
@@ -143,7 +151,7 @@ export default function Experiment() {
             />
             <div className="experiment-container">
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
-                {phase === "train" && <TrainPhase trainingMsg={trainingMsg} />}
+                {phase === "train" && <TrainPhase trainingMsg={trainingMsg} sendStopTraining={sendStopTraining} />}
                 {phase === "posttrain" && <PostTrainPhase id={iterations} back={() => setPhase("pretrain")} />}
             </div>
         </div>
