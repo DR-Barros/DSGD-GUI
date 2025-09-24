@@ -74,7 +74,7 @@
     "timeElapsed": "Time Elapsed",
     "timeRemaining": "Estimated Time Remaining",
     "queued": "There are multiple tasks in the queue. When the current task completes, this one will begin.",
-    "stopped": "Training stopped by user",
+    "stopped": "Training stopped by user. When the current iteration finishes, training will stop.",
     "stopTraining": "Stop Training",
     "confirmStopTraining": "Are you sure you want to stop the training?",
     "evaluating": "Evaluating",

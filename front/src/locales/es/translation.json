@@ -74,7 +74,7 @@
     "timeElapsed": "Tiempo transcurrido",
     "timeRemaining": "Tiempo estimado restante",
     "queued": "Hay varias tareas en cola. Cuando se complete la tarea actual, esta comenzará.",
-    "stopped": "Entrenamiento detenido por el usuario",
+    "stopped": "Entrenamiento detenido por el usuario. Cuando termine la iteración actual, el entrenamiento se detendrá.",
     "stopTraining": "Detener entrenamiento",
     "confirmStopTraining": "¿Estás seguro de que deseas detener el entrenamiento?",
     "evaluating": "Evaluando",
