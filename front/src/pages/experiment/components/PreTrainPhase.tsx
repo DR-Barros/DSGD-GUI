@@ -166,13 +166,13 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         <div>
             <Stepper sx={{ width: '100%', maxWidth: 600, margin: '20px auto' }}>
                 <Step key={0}>
-                    <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : ''}>{t('experiment.dataset')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : 'no-active'}>{t('experiment.dataset')}</StepButton>
                 </Step>
                 <Step key={1}>
-                    <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : ''}>{t('experiment.rules')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : 'no-active'}>{t('experiment.rules')}</StepButton>
                 </Step>
                 <Step key={2}>
-                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : ''}>{t('experiment.train')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : 'no-active'}>{t('experiment.train')}</StepButton>
                 </Step>
             </Stepper>
             <div>
@@ -181,7 +181,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     <CardContent sx={{ display: "flex", flexDirection: "row", gap: "16px" }}>
                     {datasetPreview.length === 1 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
-                    <h3>{t("experiment.splitSettings")}</h3>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <h3 style={{ margin: 0 }}>{t("experiment.splitSettings")}</h3>
+                    <Tooltip title={t("experiment.cleaningInfo")}>
+                        <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                    </Tooltip>
+                    </div>
                     <label>
                         {t("experiment.testSize")}
                         <input
@@ -296,7 +301,17 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, singleRule: e.target.checked })}
                                 />
                             }
-                            label={t("experiment.singleRule")}
+                            label={
+                                <>
+                                <span>{t("experiment.singleRule")}</span>
+                                <Tooltip title={<>
+                                    <p>{t("experiment.singleRuleInfo")}</p>
+                                    <p>{t("experiment.singleRuleExample")}</p>
+                                </>}>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                                </>
+                            }
                             sx={{
                                 display: "flex",
                                 justifyContent: "center",
@@ -361,7 +376,16 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, multipleRules: e.target.checked })}
                                 />
                             }
-                            label={t("experiment.multipleRules")}
+                            label={
+                            <>
+                            <span>{t("experiment.multipleRules")}</span>
+                            <Tooltip title={<>
+                                <p>{t("experiment.multipleRulesInfo")}</p>
+                                <p>{t("experiment.multipleRulesExample")}</p>
+                            </>}>
+                                <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                            </Tooltip>
+                            </>}
                             sx={{
                                 display: "flex",
                                 justifyContent: "center",

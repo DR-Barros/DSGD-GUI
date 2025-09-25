@@ -1,7 +1,8 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
-import RuleEditor from "./RuleEditor"; // Ajusta la importación según corresponda
+import RuleEditor from "./RuleEditor";
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -68,8 +69,17 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             <h3>{t("experiment.rules")}</h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {editing && (
+            <button
+                onClick={() => {
+                    setEncodedRules([]);
+                }}
+            >
+                <DeleteIcon />
+            </button>
+            )}
             <button onClick={() => setViewStats(!viewStats)}>
-                <VisibilityIcon />
+                {viewStats ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </button>
             <button onClick={() => setEditing(!editing)}>
                 {editing ? <EditOffIcon /> : <ModeEditIcon />}

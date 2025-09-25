@@ -73,7 +73,10 @@ const ValidateRule = ({ rule, mass, columns, id, t }: ValidateRuleProps) => {
             tooltip = t("experiment.invalidExpression");
             }
             return (
-            <Tooltip title={tooltip} arrow>
+            <Tooltip title={<>
+            <p>{tooltip}</p>
+            <p>{t("experiment.coverage")}: {coverage !== null ? coverage.toFixed(1) + "%" : "N/A"}</p>
+            </>} arrow>
                 <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {icon}
                     {coverage !== null && (<span style={{ marginLeft: "8px" }}>{coverage.toFixed(1)}%</span>)}

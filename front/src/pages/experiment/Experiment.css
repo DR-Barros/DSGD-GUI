@@ -10,6 +10,18 @@
 }
 
 .experiment-container .active {
-    color: #3B82F6;
+    color: black;
     font-weight: bold;
+    cursor: default;
+}
+
+.experiment-container .no-active {
+    color: #3B82F6;
+    font-weight: normal;
+}
+
+.experiment-container .no-active:hover {
+    color: #174ca0;
+    font-weight: bold;
+    cursor: pointer;
 }
