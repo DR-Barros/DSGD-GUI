@@ -86,6 +86,14 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
                     })
             else:
                 histogram = None
+                if uniques.size <= 10:
+                    histogram = []
+                    value_counts = df[col].value_counts()
+                    for val, count in value_counts.items():
+                        histogram.append({
+                            "bin": str(val),
+                            "count": int(count)
+                        })
             
             stats.append({
                 "column": str(col),

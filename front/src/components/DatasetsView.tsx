@@ -78,10 +78,12 @@ export default function DatasetsView(
                                     color: "#666",
                                     maxHeight: "150px",
                                     overflowY: "auto",
+                                    scrollbarWidth: "thin",
+                                    scrollbarColor: "#ccc transparent",
                                     }}
                                 >
                                     <p style={{ margin: 0, lineHeight: 1.3 }}>
-                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
+                                    {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent.toFixed(2)}%)
                                     </p>
                                     <p style={{ margin: 0, lineHeight: 1.3 }}>
                                     {t("datasets.unique")}: {stats.uniqueCount}
@@ -97,44 +99,44 @@ export default function DatasetsView(
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
                                         {t("datasets.mean")}: {Number(stats.mean).toFixed(2)}
                                         </p>
-                                        {stats.histogram && stats.histogram.length > 0 && (
-                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
-                                                <Bar
-                                                    data={{
-                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
-                                                        datasets: [
-                                                            {
-                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
-                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
-                                                            },
-                                                        ],
-                                                    }}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: {
-                                                            legend: { display: false },
-                                                        },
-                                                        scales: {
-                                                            x: { ticks: { display: false } },
-                                                            y: { ticks: { display: false } },
-                                                        },
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
                                     </>
                                     )}
                                     {columns_encoder && columns_encoder[col.field] && (
                                         <div>
                                             <p style={{ margin: 0, lineHeight: 1.3 }}>{t("datasets.encoding")}</p>
-                                            <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                                            <ul style={{ margin: 0, paddingLeft: "20px", maxHeight: "75px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#ccc transparent" }}>
                                                 {Object.keys(columns_encoder[col.field]).map((key) =>
-                                                    <li key={key}>
+                                                    <li key={key} style={{ margin: 0, lineHeight: 1.3 }}>
                                                         {key}: {columns_encoder[col.field][key]}
                                                     </li>
                                                 )}
                                             </ul>
+                                        </div>
+                                    )}
+                                    {stats.histogram && stats.histogram.length > 0 && (
+                                        <div style={{ width: "100px", height: "75px", marginTop: 4 }}>
+                                            <Bar
+                                                data={{
+                                                    labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                                                    datasets: [
+                                                        {
+                                                            data: stats.histogram.map((h: HistogramBin) => h.count),
+                                                            backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                                        },
+                                                    ],
+                                                }}
+                                                options={{
+                                                    responsive: true,
+                                                    maintainAspectRatio: false,
+                                                    plugins: {
+                                                        legend: { display: false },
+                                                    },
+                                                    scales: {
+                                                        x: { ticks: { display: false } },
+                                                        y: { ticks: { display: false } },
+                                                    },
+                                                }}
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -181,7 +183,7 @@ export default function DatasetsView(
                                     <p style={{ margin: 0, lineHeight: 1.3 }}>
                                     {t("datasets.unique")}: {stats.uniqueCount}
                                     </p>
-                                    {stats.min !== undefined && (
+                                    {(stats.min !== undefined && stats.min !== null) && (
                                     <>
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
                                         {t("datasets.min")}: {stats.min}
@@ -192,33 +194,33 @@ export default function DatasetsView(
                                         <p style={{ margin: 0, lineHeight: 1.3 }}>
                                         {t("datasets.mean")}: {stats.mean}
                                         </p>
-                                        {stats.histogram && stats.histogram.length > 0 && (
-                                            <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
-                                                <Bar
-                                                    data={{
-                                                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
-                                                        datasets: [
-                                                            {
-                                                                data: stats.histogram.map((h: HistogramBin) => h.count),
-                                                                backgroundColor: "rgba(75, 192, 192, 0.6)",
-                                                            },
-                                                        ],
-                                                    }}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: {
-                                                            legend: { display: false },
-                                                        },
-                                                        scales: {
-                                                            x: { ticks: { display: false } },
-                                                            y: { ticks: { display: false } },
-                                                        },
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
                                     </>
+                                    )}
+                                    {stats.histogram && stats.histogram.length > 0 && (
+                                        <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
+                                            <Bar
+                                                data={{
+                                                    labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                                                    datasets: [
+                                                        {
+                                                            data: stats.histogram.map((h: HistogramBin) => h.count),
+                                                            backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                                        },
+                                                    ],
+                                                }}
+                                                options={{
+                                                    responsive: true,
+                                                    maintainAspectRatio: false,
+                                                    plugins: {
+                                                        legend: { display: false },
+                                                    },
+                                                    scales: {
+                                                        x: { ticks: { display: false } },
+                                                        y: { ticks: { display: false } },
+                                                    },
+                                                }}
+                                            />
+                                        </div>
                                     )}
                                 </div>
                                 ) : null;

@@ -88,7 +88,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
         </div>
 
         {viewStats && (
-        <div style={{display: "flex", flexDirection: "row", gap: "20px", overflowX: "auto" }}>      
+        <div style={{display: "flex", flexDirection: "row", gap: "20px", overflowX: "scroll" }}>      
         {Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column).map((i) => {
             const stats = datasetStats[0].find((s: any) => s.column == i);
             return stats ? (
@@ -97,11 +97,12 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 style={{
                 fontSize: 10,
                 color: "#666",
+                maxHeight: "200px",
                 }}
             >
                 <h4 style={{ margin: "5px 0" }}>{i}</h4>
                 <p style={{ margin: 0, lineHeight: 1.3 }}>
-                {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent})
+                {t("datasets.nulls")}: {stats.nulls} ({stats.nullPercent.toFixed(2)}%)
                 </p>
                 <p style={{ margin: 0, lineHeight: 1.3 }}>
                 {t("datasets.unique")}: {stats.uniqueCount}
@@ -117,45 +118,45 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     <p style={{ margin: 0, lineHeight: 1.3 }}>
                     {t("datasets.mean")}: {Number(stats.mean).toFixed(2)}
                     </p>
-                    {stats.histogram && stats.histogram.length > 0 && (
-                    <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
-                        <Bar
-                        data={{
-                            labels: stats.histogram.map((h: HistogramBin) => h.bin),
-                            datasets: [
-                            {
-                                data: stats.histogram.map(
-                                (h: HistogramBin) => h.count
-                                ),
-                                backgroundColor: "rgba(75, 192, 192, 0.6)",
-                            },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                            x: { ticks: { display: false } },
-                            y: { ticks: { display: false } },
-                            },
-                        }}
-                        />
-                    </div>
-                    )}
                 </>
                 )}
-                {/* si la columna esta en columnsEncoder mostramos la info */}
                 {columnsEncoder[i] ? (
                 <div style={{ marginTop: 4 }}>
                     <p style={{ margin: 0, lineHeight: 1.3 }}>{t("datasets.encoding")}</p>
-                    <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                    <ul style={{ margin: 0, paddingLeft: "20px", height: stats.histogram && stats.histogram.length > 0 ? "50px" : "100px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#ccc transparent" }}>
                     {Object.entries(columnsEncoder[i]).map(([key, val]) => (
-                        <li key={key} style={{ fontSize: "1em" }}>{`${key}: ${val}`}</li>
+                        <li key={key} style={{ margin: 0, lineHeight: 1.3 }}>{`${key}: ${val}`}</li>
                     ))}
                     </ul>
                 </div>
                 ) : null}
+                {stats.histogram && stats.histogram.length > 0 && (
+                <div style={{ width: "100px", height: "80px", marginTop: 4 }}>
+                    <Bar
+                    data={{
+                        labels: stats.histogram.map((h: HistogramBin) => h.bin),
+                        datasets: [
+                        {
+                            data: stats.histogram.map(
+                            (h: HistogramBin) => h.count
+                            ),
+                            backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        },
+                        ],
+                    }}
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                        x: { ticks: { display: false } },
+                        y: { ticks: { display: false } },
+                        },
+                    }}
+                    />
+                </div>
+                )}
+                {/* si la columna esta en columnsEncoder mostramos la info */}
             </div>
             ) : null;
         }) : (
