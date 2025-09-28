@@ -128,7 +128,7 @@ export default function RuleView({
                 <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
                     {t("experiment.showTop")}
                 <Autocomplete
-                    options={[5, 10, 15, 20]}
+                    options={[3, 5, 10, 15, 20]}
                     value={topRules}
                     onChange={(_, value: string | number | null) => {
                         if (typeof value === "number" && value) {
@@ -138,6 +138,12 @@ export default function RuleView({
                             if (!isNaN(parsed)) {
                                 setTopRules(parsed);
                             }
+                        }
+                    }}
+                    onInputChange={(_, value) => {
+                        const parsed = parseInt(value, 10);
+                        if (!isNaN(parsed)) {
+                        setTopRules(parsed);
                         }
                     }}
                     getOptionLabel={(option) => option.toString()}

@@ -355,6 +355,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                 .filter((col) => col !== Dataset.target_column)
                                 .map((col) => (
                                     <MenuItem key={col} value={col}>
+                                        <input type="checkbox" checked={generateRuleParams.selectedColumns.indexOf(col) > -1} readOnly />   
                                         {col}
                                     </MenuItem>
                                 ))}
