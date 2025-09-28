@@ -34,7 +34,8 @@
     "title": "Experiments",
     "add_experiment": "Add New Experiment",
     "name": "Experiment Name",
-    "select_dataset": "Select Dataset"
+    "select_dataset": "Select Dataset",
+    "addExperiment": "Create Experiment"
   },
   "experiment":{
     "dataset": "Dataset",
@@ -116,6 +117,7 @@
   },
   "datasets": {
     "title": "Datasets",
+    "addDataset": "Add Dataset",
     "dataset": "Dataset",
     "train_dataset": "Train Dataset",
     "test_dataset": "Test Dataset",

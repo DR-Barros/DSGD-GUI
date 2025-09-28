@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemText, ListItemIcon, Divider, Fab, Button, Modal, Select, MenuItem } from "@mui/material";
+import { List, ListItem, ListItemText, ListItemIcon, Divider, Fab, Button, Modal, Select, MenuItem, Tooltip } from "@mui/material";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from "react-i18next";
 import AddIcon from '@mui/icons-material/Add';
@@ -151,6 +151,7 @@ export default function Datasets() {
                     ))}
                 </Select>
             </div>
+        <Tooltip title={t("datasets.addDataset")} placement="top">
         <Fab color="primary" aria-label="add" style={{
             position: "absolute",
             bottom: 16,
@@ -160,6 +161,7 @@ export default function Datasets() {
         >
             <AddIcon />
         </Fab>
+        </Tooltip>
         <Modal
             open={Boolean(selectedDataset)}
             onClose={() => {

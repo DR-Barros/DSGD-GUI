@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemText, ListItemIcon, Divider, Select, MenuItem, Button } from "@mui/material";
+import { List, ListItem, ListItemText, ListItemIcon, Divider, Select, MenuItem, Button, Tooltip } from "@mui/material";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useTranslation } from "react-i18next";
 import AddIcon from '@mui/icons-material/Add';
@@ -128,15 +128,17 @@ export default function Experiments() {
                 ))}
             </Select>
         </div>
-        <Fab color="primary" aria-label="add" style={{
-            position: "absolute",
-            bottom: 16,
-            right: 16
-        }}
-            onClick={handleAddExperiment}
-        >
-            <AddIcon />
-        </Fab>
+        <Tooltip title={t("experiments.addExperiment")} placement="top">
+            <Fab color="primary" aria-label="add" style={{
+                position: "absolute",
+                bottom: 16,
+                right: 16
+            }}
+                onClick={handleAddExperiment}
+            >
+                <AddIcon />
+            </Fab>
+        </Tooltip>
         <ModalExperiment open={modalOpen} onClose={() => setModalOpen(false)} reload={fetchExperiments} />
     </div>
 );

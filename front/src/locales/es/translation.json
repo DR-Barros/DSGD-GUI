@@ -34,7 +34,8 @@
     "title": "Experimentos",
     "add_experiment": "Agregar nuevo experimento",
     "name": "Nombre del experimento",
-    "select_dataset": "Seleccionar conjunto de datos"
+    "select_dataset": "Seleccionar conjunto de datos",
+    "addExperiment": "Crear Experimento"
   },
   "experiment":{
     "dataset": "Conjunto de datos",
@@ -116,6 +117,7 @@
   },
   "datasets": {
     "title": "Conjuntos de datos",
+    "addDataset": "Agregar conjunto de datos",
     "dataset": "Conjunto de datos",
     "train_dataset": "Conjunto de entrenamiento",
     "test_dataset": "Conjunto de prueba",
