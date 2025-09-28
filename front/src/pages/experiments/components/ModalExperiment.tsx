@@ -74,10 +74,12 @@ export default function ModalExperiment(
                 boxShadow: 24
             }}>
                 <h2>{t("experiments.add_experiment")}</h2>
-
+                <label htmlFor="dataset-select">{t("experiments.select_dataset")}</label>
                 <Select
                     value={selectedDataset || ""}
                     onChange={(e) => setSelectedDataset(e.target.value as number)}
+                    id="dataset-select"
+                    fullWidth
                 >
                     <MenuItem value="" onClick={() => navigate("/datasets/upload", { state: {
                         from: "experiments", modal: true, experimentName: experimentName
