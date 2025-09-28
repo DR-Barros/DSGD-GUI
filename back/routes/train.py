@@ -119,7 +119,18 @@ def generate_rules(
             vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
             lambda_fn = ds_parser.lambda_rule_to_json(rule.ld, vars)
             encoded_rules.append(lambda_fn)
-            labels.append(rule.caption)
+            #manejamos los labels para que aquellos en que la regla se haya aplicado label encoder se vea el valor original
+            index = False
+            for key, column_encoder in dataset.columns_encoder.items():
+                if key in rule.caption:
+                    #separamos en signo igual
+                    parts = rule.caption.split("=")
+                    if len(parts) == 2:
+                        labels.append(f"{parts[0]} = {list(column_encoder.keys())[list(column_encoder.values()).index(int(float(parts[1].strip())))]}")
+                        index = True
+                    break
+            if not index:
+                labels.append(rule.caption)
         for rule, vars in encoded_rules:
             keys = ds_parser.json_index(rule, vars)
             #elimina duplicados
