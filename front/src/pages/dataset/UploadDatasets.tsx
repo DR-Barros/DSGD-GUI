@@ -300,7 +300,7 @@ export default function UploadDatasets() {
                     return {
                         column: col,
                         nulls: nullCount,
-                        nullPercent: ((nullCount / parsedData.length) * 100).toFixed(1) + "%",
+                        nullPercent: ((nullCount / parsedData.length) * 100),
                         uniqueCount: uniqueVals.size,
                         ...numericSummary,
                     };
