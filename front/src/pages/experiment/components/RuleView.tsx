@@ -10,7 +10,8 @@ import {
     Paper,
     TableSortLabel,
     Autocomplete,
-    TextField
+    TextField,
+    Button
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -74,13 +75,13 @@ export default function RuleView({
 
     return (
         <>
-            <div style={{ display: "flex", gap: "10px", marginBottom: "10px", justifyContent: "center" }}>
-                <button onClick={() => setStateRule("all")}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+                <Button sx={{ borderRadius: "10px 0 0 10px", width: "200px", maxWidth: "45%" }} variant={stateRule == "all" ? "contained" : "outlined"} color="primary" onClick={() => setStateRule("all")}>
                     {t("experiment.allRules")}
-                </button>
-                <button onClick={() => setStateRule("top")}>
+                </Button>
+                <Button sx={{ borderRadius: "0 10px 10px 0", width: "200px", maxWidth: "45%" }} variant={stateRule == "top" ? "contained" : "outlined"} color="primary" onClick={() => setStateRule("top")}>
                     {t("experiment.topRules")}
-                </button>
+                </Button>
             </div>
             {stateRule === "all" ? (
             <TableContainer component={Paper}>

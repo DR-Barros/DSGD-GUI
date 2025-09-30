@@ -38,6 +38,7 @@
     "addExperiment": "Create Experiment"
   },
   "experiment":{
+    "openIterations": "Open Iterations Menu",
     "dataset": "Dataset",
     "rules": "Rules",
     "rule": "Rule",

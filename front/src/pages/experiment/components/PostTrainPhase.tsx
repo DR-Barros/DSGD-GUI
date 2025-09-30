@@ -252,10 +252,16 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                     setTimeout(() => {
                         back();
                     }, 10);
+                }} style={{
+                    width: 300,
+                    maxWidth: '90%',
                 }}>
                     {t("postTrain.backToSetup")}
                 </Button>
-                <Button variant="contained" color="primary" onClick={back}>
+                <Button variant="contained" color="primary" onClick={back} style={{
+                    width: 300,
+                    maxWidth: '90%',
+                }}>
                     {t("postTrain.backwithSameSetup")}
                 </Button>
                 </div>

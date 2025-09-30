@@ -255,7 +255,7 @@ export default function DrawerMenu(
                     </Box>
                 </Modal>
             </Drawer>
-
+            <Tooltip title={t('experiment.openIterations')} arrow>
             <Fab
                 aria-label="menu"
                 onClick={toggleDrawer(true)}
@@ -270,6 +270,7 @@ export default function DrawerMenu(
             >
                 <MenuIcon />
             </Fab>
+            </Tooltip>
         </>
     );
 }
