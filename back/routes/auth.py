@@ -7,6 +7,7 @@ from schemas.user import UserCreate, UserLogin, UserRead
 from auth.hashing import hash_password, verify_password
 from auth.jwt_handler import create_access_token, create_refresh_token, get_current_user_from_refresh_token, get_current_user
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from typing import Optional
 
 api_router = APIRouter()
 
@@ -58,7 +59,7 @@ def refresh_token(request: Request, db: Session = Depends(get_db)):
 
 
 def get_current_user_from_cookie(
-    access_token: str | None = Cookie(default=None),
+    access_token: Optional[str] = Cookie(default=None),
     db: Session = Depends(get_db)
 ) -> User:
     if not access_token:
