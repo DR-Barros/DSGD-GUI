@@ -38,6 +38,7 @@
     "addExperiment": "Create Experiment"
   },
   "experiment":{
+    "openIterations": "Open Iterations Menu",
     "dataset": "Dataset",
     "rules": "Rules",
     "rule": "Rule",
@@ -166,57 +167,60 @@
     "viewMetrics": "View Metrics",
     "compareMetrics": "Compare Metrics"
   },
-  "documentation": {
-    "rulesDocumentation": {
-      "title": "Rules Documentation",
-      "introduction": "Rules are expressions combining variables, values, mathematical and logical operators to define conditions on a dataset. Each dataset column can be used as a variable in the expression.",
-      "syntax": {
-        "title": "Allowed Syntax",
-        "variables": "Dataset column names are used. If they contain spaces, they are automatically mapped.",
-        "values": "Only numbers (integers or decimals) are allowed. Strings are not permitted.",
-        "mathOperators": "Mathematical Operators: +, -, *, /",
-        "comparisonOperators": "Comparison Operators: <, <=, >, >=, ==, !=",
-        "logicalOperators": "Logical Operators: && (AND), || (OR)",
-        "notes": "Chained comparisons are not allowed, e.g.: a <= x < b",
-        "type": {
-          "variables": "Variables",
-          "values": "Values",
-          "mathOperators": "Mathematical Operators",
-          "comparisonOperators": "Comparison Operators",
-          "logicalOperators": "Logical Operators"
-        }
+  "rulesDocumentation": {
+    "title": "Rules Documentation",
+    "introduction": "Rules are expressions that combine variables, values, mathematical operators, and logical operators to define conditions on a dataset. Each column in the dataset can be used as a variable in the expression.",
+    "syntax": {
+      "title": "Allowed Syntax",
+      "variables": "The names of the dataset columns are used. If they contain spaces, they will be automatically mapped.",
+      "values": "Only numbers (integers or decimals) are allowed. Strings are not permitted.",
+      "mathOperators": "Mathematical Operators: +, -, *, /",
+      "comparisonOperators": "Comparison Operators: <, <=, >, >=, ==, !=",
+      "logicalOperators": "Logical Operators: && (AND), || (OR)",
+      "notes": "Chained comparisons are not allowed, e.g.: a <= x < b",
+      "type": {
+        "variables": "Variables",
+        "values": "Values",
+        "mathOperators": "Mathematical Operators",
+        "comparisonOperators": "Comparison Operators",
+        "logicalOperators": "Logical Operators"
+      }
+    },
+    "examples": {
+      "title": "Examples of Rules",
+      "example1": "\"fixed acidity\" <= 6.34",
+      "example2": "\"fixed acidity\" <= 6.34 && \"residual sugar\" > 3",
+      "example3": "\"fixed acidity\" <= 6.34 || \"residual sugar\" > 3"
+    },
+    "warnings": {
+      "title": "Warning Icons",
+      "warning1": "The rule is invalid, the model cannot be trained.",
+      "warning2": "the rule has some issues like masses not summing to 1, but the model can be trained with it."
+    },
+    "errors": {
+      "title": "Common Errors",
+      "error": "Error",
+      "cause": "Cause",
+      "solution": "Solution",
+      "unknownIdentifier": {
+        "error": "Unknown identifier",
+        "cause": "Non-existent column name",
+        "solution": "Check that the column exists and is spelled correctly"
       },
-      "examples": {
-        "title": "Rule Examples",
-        "example1": "\"fixed acidity\" <= 6.34",
-        "example2": "\"fixed acidity\" <= 6.34 && \"residual sugar\" > 3",
-        "example3": "\"fixed acidity\" <= 6.34 || \"residual sugar\" > 3"
+      "unsupportedOperator": {
+        "error": "Unsupported binary operator",
+        "cause": "Unsupported operator",
+        "solution": "Use only + - * / <= >= < > == !="
       },
-      "errors": {
-        "title": "Common Errors",
-        "error": "Error",
-        "cause": "Cause",
-        "solution": "Solution",
-        "unknownIdentifier": {
-          "error": "Unknown identifier",
-          "cause": "Nonexistent column name",
-          "solution": "Check that the column exists"
-        },
-        "unsupportedOperator": {
-          "error": "Unsupported binary operator",
-          "cause": "Operator not allowed",
-          "solution": "Use only + - * / <= >= < > == !="
-        },
-        "chainedComparisons": {
-          "error": "Chained comparisons not supported",
-          "cause": "Chained comparison like a <= x < b",
-          "solution": "Split into multiple conditions combined with &&"
-        },
-        "unknownNodeType": {
-          "error": "Unknown node type",
-          "cause": "Invalid or incomplete expression",
-          "solution": "Check syntax and column names"
-        }
+      "chainedComparisons": {
+        "error": "Chained comparisons not supported",
+        "cause": "Chained comparison like a <= x < b",
+        "solution": "Separate into multiple conditions combined with &&"
+      },
+      "unknownNodeType": {
+        "error": "Unknown node type",
+        "cause": "Invalid or incomplete expression",
+        "solution": "Check syntax and column names"
       }
     }
   }

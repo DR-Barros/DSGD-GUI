@@ -114,6 +114,9 @@ def generate_rules(
         encoded_rules = []
         labels = []
         for rule in rules:
+            coverage = X.apply(rule.ld, axis=1).sum()
+            if coverage == 0:
+                continue # Saltar reglas que no cubren ningun caso
             vars = rule.ld.__defaults__
             #pasamos los valores np.float a float
             vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
@@ -176,7 +179,6 @@ def coverage_rules(
                 X[key] = X[key].replace(column_encoder)
         ds_parser = DSParser.DSParser()
         fn = ds_parser.json_to_lambda(rule["rule"], X.columns.tolist())
-        print("Evaluating coverage with function:", fn)
         #calculamos el numero de filas que cumplen la regla
         coverage = X.apply(fn, axis=1).sum()
         return {"coverage": int(coverage), "total": len(X), "percentage": round(coverage / len(X) * 100, 2)}

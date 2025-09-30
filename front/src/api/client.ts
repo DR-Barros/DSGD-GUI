@@ -1,6 +1,6 @@
 // src/api/client.js
 const URL = import.meta.env.PROD ? '/' : 'http://localhost:8000/';
-export const API_URL: string = `${URL}api`;
+export const API_URL: string = `${URL}dsgd/api`;
 
 function redirectToLogin() {
   window.location.href = '/login';

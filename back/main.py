@@ -9,7 +9,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(routes.api_router, prefix="/api")
+app.include_router(routes.api_router, prefix="/dsgd/api")
 
 origins = [
     "http://localhost:5173",
