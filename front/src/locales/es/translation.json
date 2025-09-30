@@ -192,6 +192,11 @@
       "example2": "\"fixed acidity\" <= 6.34 && \"residual sugar\" > 3",
       "example3": "\"fixed acidity\" <= 6.34 || \"residual sugar\" > 3"
     },
+    "warnings": {
+      "title": "Iconos de Advertencias",
+      "warning1": "La regla es invalida, no se va a poder entrenar el modelo.",
+      "warning2": "la regla tiene algunos problemas como que las masas no suman 1, pero se puede entrenar el modelo con ella."
+    },
     "errors": {
       "title": "Errores Comunes",
       "error": "Error",
