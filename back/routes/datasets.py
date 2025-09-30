@@ -58,6 +58,14 @@ async def preview_dataset(
                     })
             else:
                 histogram = None
+                if uniques.size <= 10:
+                    histogram = []
+                    value_counts = df[col].value_counts()
+                    for val, count in value_counts.items():
+                        histogram.append({
+                            "bin": str(val),
+                            "count": int(count)
+                        })
             
             stats.append({
                 "column": str(col),
@@ -71,6 +79,7 @@ async def preview_dataset(
                 "histogram": histogram
             })
         min_rows = min(n_rows, 1000)
+        df = df.where(pd.notnull(df), None)
         dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
 
     return dataset_data
