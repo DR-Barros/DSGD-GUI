@@ -9,7 +9,7 @@ import type { TrainingParams } from "../../types/params";
 import type { MessageData } from "../../types/train";
 import TrainPhase from "./components/TrainPhase";
 import PostTrainPhase from "./components/PostTrainPhase";
-
+import { API_WS_URL, API_URL } from "../../api/client";
 
 export default function Experiment() {
     const {id} = useParams();
@@ -50,7 +50,7 @@ export default function Experiment() {
                 labels: labels
             };
             // 1️⃣ Hacer POST para encolar el entrenamiento
-            const response = await fetch(`http://localhost:8000/api/train/train-model/${id}`, {
+            const response = await fetch(`${API_URL}/train/train-model/${id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ export default function Experiment() {
         if (wsRef.current) {
             wsRef.current.close();
         }
-        const ws = new WebSocket(`ws://localhost:8000/api/train/ws/${taskId}`);
+        const ws = new WebSocket(`${API_WS_URL}/train/ws/${taskId}`);
         wsRef.current = ws;
 
         ws.onopen = () => {
