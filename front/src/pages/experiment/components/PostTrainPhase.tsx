@@ -61,7 +61,7 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
     };
 
     const fetchRules = async (iterationId: number) => {
-        const { data, status } = await fetchProtected(`/experiments/iteration/rules/${iterationId}`);
+        const { data, status } = await fetchProtected(`/rules/iteration/${iterationId}`);
         if (status === 200) {
             console.log("Fetched rules:", data);
             setRules(data);

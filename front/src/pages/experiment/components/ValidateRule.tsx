@@ -23,7 +23,7 @@ const ValidateRule = ({ rule, mass, columns, id, t }: ValidateRuleProps) => {
         try {
             setCoverage(null);
             const expr = parseExpr(rule, columns);
-            const { data, status } = await postProtected(`/train/coverage-rule/${id}`, { rule: expr });
+            const { data, status } = await postProtected(`/rules/coverage/${id}`, { rule: expr });
             if (status === 200) {
                 setCoverage(data.percentage);
             }

@@ -68,7 +68,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         // Aquí puedes implementar la lógica para manejar las reglas con los IDs proporcionados
         console.log("Handling rules for experiment ID:", id, "and iteration ID:", iteration_id);
         // Por ejemplo, podrías hacer una llamada a una API para obtener las reglas asociadas
-        const { data, status } = await fetchProtected(`/train/get-rules/${id}/${iteration_id}`);
+        const { data, status } = await fetchProtected(`/experiments/result/${id}/${iteration_id}`);
         if (status === 200) {
             console.log("Fetched rules:", data);
             const fetchedRules: Array<GroupedRule> = data.rules.map((rule: RuleEntry, index: number) => ({
@@ -108,7 +108,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         }
         setLoadingRules(true);
         try {
-            const { data, status } = await postProtected(`/train/generate-rules/${experimentId}`, {
+            const { data, status } = await postProtected(`/rules/generate/${experimentId}`, {
                 singleRule: generateRuleParams.singleRule,
                 multipleRule: generateRuleParams.multipleRules,
                 breakRules: generateRuleParams.breakRules,

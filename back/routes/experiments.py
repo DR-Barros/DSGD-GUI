@@ -6,6 +6,7 @@ import io
 from fastapi.responses import StreamingResponse
 from sklearn.model_selection import train_test_split
 from sqlalchemy.orm import Session, joinedload
+from utils.sanitize import sanitize_json
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
 from models.dataset_file import FileType, DatasetType
@@ -138,24 +139,6 @@ async def delete_experiment_iteration(iteration_id: int, db: Session = Depends(g
     db.delete(iteration)
     db.commit()
     return {"detail": "Iteration deleted"}
-
-
-
-@api_router.get("/iteration/rules/{iteration_id}")
-async def get_experiment_iteration(iteration_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
-    iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Experiment.user_id == current_user.id).first()
-    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == iteration.experiment_id, Experiment.user_id == current_user.id).first()
-    path = iteration.model_path
-    model = classifier.DSClassifierMultiQ(dataset.n_classes)
-    model.model.load_rules_bin(path)
-    rules = []
-    for i in range(len(model.model.preds)):
-        rules.append({
-            "rule": model.model.preds[i].caption,
-            "mass": model.model._params[i].detach().tolist()
-        })
-        print(f"Rule: {model.model.preds[i].caption}, Mass: {model.model._params[i]}")
-    return {"rules": rules, "classes": iteration.label_encoder}
 
 
 @api_router.get("/{iteration_id}/download")
@@ -387,3 +370,69 @@ async def get_experiment_metrics(
         } for iteration in iterations
     ]
     return metrics
+
+
+@api_router.get("/result/{experiment_id}/{iteration_id}")
+async def get_results(
+    experiment_id: int,
+    iteration_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie)
+):
+    iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Iteration.experiment_id == experiment_id).first()
+    if not iteration:
+        raise HTTPException(status_code=404, detail="Iteration not found")
+    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    ds_parser = DSParser.DSParser()
+    cr = classifier.DSClassifierMultiQ(dataset.n_classes)
+    cr.model.load_rules_bin(iteration.model_path)
+    columns = [x for x in dataset.columns if x != dataset.target_column]
+    rules = cr.model.preds
+    masses = cr.model._params
+    masses = [m.tolist() for m in masses]  # Convertir a float para JSON serializable
+    #redondear masses a 3 decimales
+    for i in range(len(masses)):
+        mass = masses[i]
+        mass = [round(m, 3) for m in mass]
+        # la ultima masa se ajusta para que todas sumen 1
+        mass[-1] = round(1 - sum(mass[:-1]), 3)
+        masses[i] = mass
+
+    encoded_rules = []
+    labels = []
+    for rule in rules:
+        vars = rule.ld.__defaults__
+        #pasamos los valores np.float a float
+        print("Vars before:", vars)
+        if vars is not None:
+            vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
+        lambda_fn = ds_parser.lambda_rule_to_json(rule.ld, vars)
+        encoded_rules.append(lambda_fn)
+        labels.append(rule.caption)
+    for rule, vars in encoded_rules:
+        keys = ds_parser.json_index(rule, vars)
+        #elimina duplicados
+        keys = list(set(keys))
+        for key in keys:
+            value = vars.get(key, None)
+            vars[key] = columns[value] if value is not None and value < len(columns) else value
+    return sanitize_json({
+        "rules": encoded_rules, 
+        "masses": masses, 
+        "labels": labels,
+        "params": {
+            "minEpochs": iteration.min_epochs,
+            "maxEpochs": iteration.max_epochs,
+            "batchSize": iteration.batch_size,
+            "lossFunction": iteration.loss_function,
+            "optimFunction": iteration.optimizer,
+            "learningRate": iteration.learning_rate,
+            "testSize": iteration.train_test_split,
+            "splitSeed": iteration.train_test_split_seed,
+            "dropDuplicates": iteration.drop_duplicates,
+            "dropNulls": iteration.delete_nulls,
+            "shuffle": True
+        }
+    })
