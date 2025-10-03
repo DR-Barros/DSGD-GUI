@@ -69,7 +69,7 @@ export default function Datasets() {
             {datasets
             .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
             .map((exp, index) => (
-            <div key={index}>
+            <div key={index} className="dataset-item">
                 <ListItem>
                 <ListItemText 
                 primary={
@@ -84,7 +84,7 @@ export default function Datasets() {
                         <p>{t("rows")}: {exp.n_rows}</p>
                     </div>
                 } />
-                <ListItemIcon>
+                <ListItemIcon className="dataset-item-preview-icon">
                     <Button onClick={() => handlePreviewDataset(exp.id)}>
                         <VisibilityIcon color="primary" />
                     </Button>
