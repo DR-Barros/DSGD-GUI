@@ -367,7 +367,7 @@ async def get_experiment_metrics(
             "precision": iteration.precision,
             "recall": iteration.recall,
             "f1_score": iteration.f1_score
-        } for iteration in iterations
+        } for iteration in iterations if iteration.accuracy is not None and iteration.precision is not None and iteration.recall is not None and iteration.f1_score is not None
     ]
     return metrics
 
