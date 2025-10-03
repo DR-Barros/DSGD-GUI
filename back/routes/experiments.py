@@ -43,7 +43,7 @@ async def create_experiment(
 
 @api_router.get("/", response_model=List[ExperimentOut])
 async def get_experiments(db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):
-    experiments = db.query(Experiment).filter(Experiment.user_id == current_user.id).options(joinedload(Experiment.datasets)).all()
+    experiments = db.query(Experiment).filter(Experiment.user_id == current_user.id).options(joinedload(Experiment.datasets)).order_by(Experiment.created_at.desc()).all()
     return experiments
 
 @api_router.delete("/{experiment_id}")
