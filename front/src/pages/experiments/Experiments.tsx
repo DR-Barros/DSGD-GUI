@@ -58,13 +58,15 @@ export default function Experiments() {
                     } 
                     secondary={
                         <p style={{ margin: 0 }}>
-                            Dataset: {exp.datasets.name}
+                            {t("experiments.dataset")}: {exp.datasets.name}<span style={{ marginLeft: "15px" }}></span> | <span style={{ marginLeft: "15px" }}>{t("experiments.createdAt")}: {new Date(exp.created_at).toLocaleDateString()}</span>
                         </p>
                     } />
                 <ListItemIcon>
+                    <Tooltip title={t("experiments.goToExperiment")} placement="top">
                     <Button onClick={() => navigate(`/experiment/${exp.id}`)}>
                         <ArrowForwardIcon color="primary" />
                     </Button>
+                    </Tooltip>
                 </ListItemIcon>
                 </ListItem>
                 <Divider />
@@ -96,7 +98,7 @@ export default function Experiments() {
                     );
                     }
                 }}
-                style={{ width: 75, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
+                style={{ width: 50, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
                 />
                 <p> / {Math.ceil((experiments.length || 0) / rowsPerPage)}</p>
             </div>

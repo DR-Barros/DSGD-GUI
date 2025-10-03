@@ -35,7 +35,10 @@
     "add_experiment": "Add New Experiment",
     "name": "Experiment Name",
     "select_dataset": "Select Dataset",
-    "addExperiment": "Create Experiment"
+    "addExperiment": "Create Experiment",
+    "dataset": "Dataset",
+    "createdAt": "Created at",
+    "goToExperiment": "Go to Experiment"
   },
   "experiment":{
     "openIterations": "Open Iterations Menu",

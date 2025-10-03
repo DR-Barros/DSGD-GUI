@@ -119,7 +119,7 @@ export default function Datasets() {
                         );
                         }
                     }}
-                    style={{ width: 75, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
+                    style={{ width: 50, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
                     />
                     <p> / {Math.ceil((datasets.length || 0) / rowsPerPage)}</p>
                 </div>

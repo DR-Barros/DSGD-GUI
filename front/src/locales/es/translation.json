@@ -35,7 +35,10 @@
     "add_experiment": "Agregar nuevo experimento",
     "name": "Nombre del experimento",
     "select_dataset": "Seleccionar conjunto de datos",
-    "addExperiment": "Crear Experimento"
+    "addExperiment": "Crear Experimento",
+    "dataset": "Conjunto de datos",
+    "createdAt": "Creado el",
+    "goToExperiment": "Ir al Experimento"
   },
   "experiment":{
     "openIterations": "Abrir Menu de Iteraciones",

@@ -25,3 +25,9 @@
     font-weight: bold;
     cursor: pointer;
 }
+
+@media (max-width: 600px) {
+    .experiment-container {
+        margin-top: 75px;
+    }
+}
