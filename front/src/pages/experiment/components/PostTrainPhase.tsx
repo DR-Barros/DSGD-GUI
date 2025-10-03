@@ -172,13 +172,13 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
         <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "16px", position: "relative", minHeight: "calc(80vh- 40px)" }}>
             <Stepper sx={{ width: '100%', maxWidth: 600, margin: '20px auto' }}>
                 <Step key={0}>
-                    <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : ''}>{t('experiment.metrics')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(0)} className={activeStep === 0 ? 'active' : 'no-active'}>{t('experiment.metrics')}</StepButton>
                 </Step>
                 <Step key={1}>
-                    <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : ''}>{t('experiment.rules')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : 'no-active'}>{t('experiment.rules')}</StepButton>
                 </Step>
                 <Step key={2}>
-                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : ''}>{t('experiment.predict')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : 'no-active'}>{t('experiment.predict')}</StepButton>
                 </Step>
             </Stepper>
             {/* Cards en fila */}
@@ -192,6 +192,14 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                     {t("postTrain.compareMetrics")}
                 </Button>
                 </div>
+                {(postTrainData && postTrainData.training_status === "error") &&
+                <Card style={{ backgroundColor: "#ffcccc", padding: "16px", marginBottom: "16px" }}>
+                    <CardContent>
+                    <h3 style={{ color: "#cc0000" }}>{t("postTrain.trainingError")}</h3>
+                    <p>{postTrainData.training_message}</p>
+                    </CardContent>
+                </Card>
+                }
                 {!compareMode &&
                 <>
                 <div style={{ display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap" }}>

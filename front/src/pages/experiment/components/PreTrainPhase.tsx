@@ -117,20 +117,11 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
 
             if (status === 200) {
                 console.log("Generated rules:", data.rules);
-                /* for (let i = 0; i < data.rules.length; i++) {
-                    console.log(`Rule ${i}:`, data.rules[i]);
-                    let parsed = desParseExpr(data.rules[i][0], data.rules[i][1]);
-                    console.log(`Parsed Rule ${i}:`, parsed);
-                    let reparsed = parseExpr(parsed, generateRuleParams.selectedColumns || []);
-                    console.log(`Re-parsed Rule ${i}:`, reparsed);
-                } */
                 console.log("Masses:", data.masses);
 
                 const updatedRules: Array<GroupedRule> = [
                     ...encodedRules
                 ];
-
-                
 
                 const newGroupedRules: GroupedRule[] = [];
 

@@ -20,12 +20,12 @@ import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-const drawerWidth = 250;
+const drawerWidth = 230;
 
 export default function DrawerMenu(
     { id, openIterations, train }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void }
 ) {
-    const [mobileOpen, setMobileOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(true);
     const [modalUploadOpen, setModalUploadOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [params, setParams] = useState({
@@ -128,6 +128,13 @@ export default function DrawerMenu(
 
     const drawerContent = (
         <Box sx={{ width: drawerWidth-20, display: 'flex', flexDirection: 'column', pt: 1, pb: 1 }} role="presentation">
+            <Button onClick={() => setMobileOpen(false)} variant="contained" color="primary" style={{ marginBottom: "10px", marginLeft: "10px", width: '90%' }}>
+                {t('close')}
+            </Button>
+            <Typography variant="h6" component="div" style={{paddingLeft: "10px"}}>
+                {t('experiment.iterations')}:
+            </Typography>
+            <hr style={{width: "90%", borderTop: "1px solid #000", marginLeft: "10px"}} />
             {iterations.map((item) => (
                     <div key={item.id} style={{paddingLeft: "10px"}}>
                         <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
@@ -146,9 +153,11 @@ export default function DrawerMenu(
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <p>acc: {item.accuracy?.toFixed(2)}</p>
                         {item.training_status === "completed" && (
-                            <button onClick={() => handleDownload(item.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#1976d2" }}>
-                                <DownloadForOfflineIcon style={{ marginRight: "5px" }} />
-                            </button>
+                            <Tooltip title={t('experiment.downloadModel')} arrow>
+                                <button onClick={() => handleDownload(item.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#1976d2" }}>
+                                    <DownloadForOfflineIcon style={{ marginRight: "5px" }} />
+                                </button>
+                            </Tooltip>
                         )}
                             <button onClick={() => handleDelete(item.id.toString())} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#d32f2f" }}>
                                 <DeleteIcon style={{ marginRight: "5px" }} />
@@ -177,11 +186,12 @@ export default function DrawerMenu(
     return (
         <>
             <Drawer
-                variant="temporary"
+                variant="persistent"
                 anchor="left"
                 open={mobileOpen}
                 onClose={toggleDrawer(false)}
                 ModalProps={{ keepMounted: true }}
+                style={{ zIndex: 1301 }}
                 sx={{
                     zIndex: 1301,
                     [`& .MuiDrawer-paper`]: {
@@ -263,7 +273,6 @@ export default function DrawerMenu(
                     position: 'fixed',
                     top: 75,
                     left: 16,
-                    zIndex: 1300,
                     borderRadius: '10px',
                     backgroundColor: '#F5F3F3',
                 }}

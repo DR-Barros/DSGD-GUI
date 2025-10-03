@@ -39,6 +39,7 @@
   },
   "experiment":{
     "openIterations": "Open Iterations Menu",
+    "iterations": "Iterations",
     "dataset": "Dataset",
     "rules": "Rules",
     "rule": "Rule",
@@ -113,6 +114,7 @@
     "labelEncoder": "Label Encoder",
     "labelEncoderTooltip": "Provide a mapping of classes to numbers (e.g. {'class1': 0, 'class2': 1}). If the classes are already numbers, enter a mapping of each class to itself, e.g. {'0': 0, '1': 1}.",
     "upload": "Upload",
+    "download": "Download",
     "errorUploadingModel": "Error uploading model.",
     "modelUploadedSuccessfully": "Model uploaded successfully."
   },
@@ -165,7 +167,8 @@
     "rules": "Go to Rules",
     "predict": "Go to Predict",
     "viewMetrics": "View Metrics",
-    "compareMetrics": "Compare Metrics"
+    "compareMetrics": "Compare Metrics",
+    "trainingError": "Training Error"
   },
   "rulesDocumentation": {
     "title": "Rules Documentation",
