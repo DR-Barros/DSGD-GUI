@@ -175,6 +175,58 @@
     "compareMetrics": "Compare Metrics",
     "trainingError": "Training Error"
   },
+  "datasetsDocumentation": {
+    "title": "Datasets Documentation",
+    "introduction": "To train a model, you need to upload a dataset. You can upload datasets in CSV or Excel format.",
+    "supportedFormats": {
+      "title": "Supported Formats",
+      "csv": "CSV (Comma-Separated Values)",
+      "excel": "Excel (.xlsx)"
+    },
+    "uploadingDatasets": {
+      "title": "Uploading Datasets",
+      "description": "You can upload datasets in two ways, depending on how your data is organized.",
+      "singleFile": {
+        "title": "Single File Upload",
+        "description": "You can upload a single file if your dataset is complete. Supported formats include CSV and Excel. Ensure that the file has a header row with column names."
+      },
+      "multipleFiles": {
+        "title": "Multiple Files Upload",
+        "description": "If your dataset is split into training and testing sets, you can upload two files. Ensure both files have the same column structure."
+      },
+      "instructions": {
+        "title": "Instructions",
+        "step1": "Select the appropriate upload method (single or multiple files).",
+        "step2": "Indicate whether the file(s) contain a header row.",
+        "step3": "Select the file(s) to upload.",
+        "step4": "Click 'continue' to preview the dataset.",
+        "step5": "Select the target column (class) for classification tasks.",
+        "step6": "Provide a name for the dataset.",
+        "step7": "Click 'Save' to complete the process."
+      }
+    }
+  },
+  "experimentDocumentation": {
+    "title": "Experiment Documentation",
+    "introduction": "An experiment is an instance of training a DSGD model using a specific dataset. Each experiment can have multiple iterations, each representing a separate attempt to train the model with defined rules.",
+    "creatingExperiment": {
+      "title": "Creating an Experiment",
+      "description": "To create a new experiment, follow these steps:",
+      "step1": "Navigate to the 'Experiments' section.",
+      "step2": "Click on 'Create Experiment' (blue button with a plus sign).",
+      "step3": "Select an existing dataset or upload a new one.",
+      "step4": "Assign a name to the experiment.",
+      "step5": "Click 'Create Experiment' to finish."
+    },
+    "trainingIterations": {
+      "title": "Training Iterations",
+      "description": "Each experiment can have multiple training iterations. Each iteration represents a separate attempt to train the model with the defined rules. You can start a new iteration by clicking on 'Open Iterations Menu' and then selecting 'New Iteration'."
+    },
+    "postTraining": {
+      "title": "After Training",
+      "description": "Once a training iteration is completed, you can review performance metrics, generated rules, and make predictions on new data. You can also compare metrics between different iterations to evaluate the impact of various configurations or rules."
+    }
+  },
   "rulesDocumentation": {
     "title": "Rules Documentation",
     "introduction": "Rules are expressions that combine variables, values, mathematical operators, and logical operators to define conditions on a dataset. Each column in the dataset can be used as a variable in the expression.",

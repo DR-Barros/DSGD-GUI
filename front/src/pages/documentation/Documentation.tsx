@@ -28,20 +28,120 @@ export default function Documentation() {
             boxShadow: 3,
             margin: "20px auto"
         }}>
-        {/* Título */}
+        <Typography variant="h4" gutterBottom>
+            {t("datasetsDocumentation.title")}
+        </Typography>
+        <Typography variant="body1" gutterBottom sx={{ mb: 3 }}>
+            {t("datasetsDocumentation.introduction")}
+        </Typography>
+        <Card sx={{ mb: 3 }}>
+            <CardContent>
+            <Typography variant="h6">{t("datasetsDocumentation.supportedFormats.title")}</Typography>
+            <ul>
+                <li>{t("datasetsDocumentation.supportedFormats.csv")}</li>
+                <li>{t("datasetsDocumentation.supportedFormats.excel")}</li>
+            </ul>
+            </CardContent>
+        </Card>
+        <Card sx={{ mb: 3 }}>
+            <CardContent>
+            <Typography variant="h6">{t("datasetsDocumentation.uploadingDatasets.title")}</Typography>
+            <Typography>{t("datasetsDocumentation.uploadingDatasets.description")}</Typography>
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>{t("datasetsDocumentation.uploadingDatasets.singleFile.title")}</Typography>
+            <Typography>{t("datasetsDocumentation.uploadingDatasets.singleFile.description")}</Typography>
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>{t("datasetsDocumentation.uploadingDatasets.multipleFiles.title")}</Typography>
+            <Typography>{t("datasetsDocumentation.uploadingDatasets.multipleFiles.description")}</Typography>
+            <Typography variant="h6" sx={{marginTop: 2}}><strong>{t("datasetsDocumentation.uploadingDatasets.instructions.title")}</strong></Typography>
+            <ol>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step1")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step2")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step3")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step4")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step5")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step6")}</li>
+                <li>{t("datasetsDocumentation.uploadingDatasets.instructions.step7")}</li>
+            </ol>
+            </CardContent>
+        </Card>
+        </Box>
+        <Box
+            sx={{
+            maxWidth: 1200,
+            backgroundColor: "#f9f9f9",
+            padding: 3,
+            borderRadius: 2,
+            boxShadow: 3,
+            margin: "20px auto",
+            }}
+        >
+            <Typography variant="h4" gutterBottom>
+            {t("experimentDocumentation.title")}
+            </Typography>
+
+            <Typography variant="body1" gutterBottom sx={{ mb: 3 }}>
+            {t("experimentDocumentation.introduction")}
+            </Typography>
+
+            {/* Crear Experimento */}
+            <Card sx={{ mb: 3 }}>
+            <CardContent>
+                <Typography variant="h6">
+                {t("experimentDocumentation.creatingExperiment.title")}
+                </Typography>
+                <Typography sx={{ mb: 2 }}>
+                {t("experimentDocumentation.creatingExperiment.description")}
+                </Typography>
+                <ol>
+                <li>{t("experimentDocumentation.creatingExperiment.step1")}</li>
+                <li>{t("experimentDocumentation.creatingExperiment.step2")}</li>
+                <li>{t("experimentDocumentation.creatingExperiment.step3")}</li>
+                <li>{t("experimentDocumentation.creatingExperiment.step4")}</li>
+                <li>{t("experimentDocumentation.creatingExperiment.step5")}</li>
+                </ol>
+            </CardContent>
+            </Card>
+
+            {/* Iteraciones de Entrenamiento */}
+            <Card sx={{ mb: 3 }}>
+            <CardContent>
+                <Typography variant="h6">
+                {t("experimentDocumentation.trainingIterations.title")}
+                </Typography>
+                <Typography>
+                {t("experimentDocumentation.trainingIterations.description")}
+                </Typography>
+            </CardContent>
+            </Card>
+
+            {/* Después del Entrenamiento */}
+            <Card sx={{ mb: 3 }}>
+            <CardContent>
+                <Typography variant="h6">
+                {t("experimentDocumentation.postTraining.title")}
+                </Typography>
+                <Typography>
+                {t("experimentDocumentation.postTraining.description")}
+                </Typography>
+            </CardContent>
+            </Card>
+        </Box>
+        <Box sx={{
+            maxWidth: 1200,
+            backgroundColor: "#f9f9f9",
+            padding: 3,
+            borderRadius: 2,
+            boxShadow: 3,
+            margin: "20px auto"
+        }}>
         <Typography variant="h4" gutterBottom>
             {t("rulesDocumentation.title")}
         </Typography>
-
-        {/* Introducción */}
         <Card sx={{ mb: 3 }}>
             <CardContent>
             <Typography variant="h6">Introduction</Typography>
             <Typography>{t("rulesDocumentation.introduction")}</Typography>
             </CardContent>
         </Card>
-
-        {/* Sintaxis Permitida */}
         <Card sx={{ mb: 3 }}>
             <CardContent>
             <Typography variant="h6">{t("rulesDocumentation.syntax.title")}</Typography>
@@ -65,8 +165,6 @@ export default function Documentation() {
             </Typography>
             </CardContent>
         </Card>
-
-        {/* Ejemplos */}
         <Card sx={{ mb: 3 }}>
             <CardContent>
             <Typography variant="h6">{t("rulesDocumentation.examples.title")}</Typography>
@@ -97,8 +195,6 @@ export default function Documentation() {
             </ul>
             </CardContent>
         </Card>
-
-        {/* Errores Comunes */}
         <Card>
             <CardContent>
             <Typography variant="h6">{t("rulesDocumentation.errors.title")}</Typography>

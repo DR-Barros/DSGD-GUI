@@ -175,6 +175,58 @@
     "compareMetrics": "Comparar Métricas",
     "trainingError": "Error de entrenamiento"
   },
+  "datasetsDocumentation": {
+    "title": "Documentación de Conjuntos de Datos",
+    "introduction": "Para entrenar un modelo, necesitas subir un conjunto de datos. Puedes subir conjuntos de datos en formato CSV o Excel.",
+    "supportedFormats": {
+      "title": "Formatos Soportados",
+      "csv": "CSV (Comma-Separated Values)",
+      "excel": "Excel (.xlsx)"
+    },
+    "uploadingDatasets": {
+      "title": "Subir Conjuntos de Datos",
+      "description": "Puedes subir conjuntos de datos de dos maneras, dependiendo de cómo esté organizado tu data.",
+      "singleFile": {
+        "title": "Subir un solo archivo",
+        "description": "Puedes subir un solo archivo si tu dataset está completo. Los formatos soportados incluyen CSV y Excel. Asegúrate de que el archivo tenga una fila de encabezado con los nombres de las columnas."
+      },
+      "multipleFiles": {
+        "title": "Subir archivos múltiples",
+        "description": "Si tu dataset está dividido en conjuntos de entrenamiento y prueba, puedes subir dos archivos (uno para cada conjunto). Asegúrate de que ambos archivos tengan la misma estructura de columnas. "
+      },
+      "instructions": {
+        "title": "Instrucciones",
+        "step1": "Selecciona el método de subida apropiado (archivo único o múltiples archivos).",
+        "step2": "Indica si el/los archivo(s) contienen una fila de encabezado.",
+        "step3": "Selecciona el/los archivo(s) desde tu computadora.",
+        "step4": "Click en 'Continuar' para previsualizar el conjunto de datos.",
+        "step5": "Selecciona la columna que contiene las etiquetas de clase.",
+        "step6": "Asigna un nombre al conjunto de datos.",
+        "step7": "Click en 'Guardar' para completar el proceso."
+      }
+    }
+  },
+  "experimentDocumentation": {
+    "title": "Documentación de Experimentos",
+    "introduction": "Un experimento es una instancia de entrenamiento de un modelo DSGD utilizando un conjunto de datos específico. Cada experimento puede tener múltiples iteraciones, cada una representando un intento separado de entrenar el modelo reglas definidas.",
+    "creatingExperiment": {
+      "title": "Creando un Experimento",
+      "description": "Para crear un nuevo experimento, sigue estos pasos:",
+      "step1": "Navega a la sección 'Experimentos'.",
+      "step2": "Haz click en 'Crear experimento' (botón azul con signo +).",
+      "step3": "Selecciona un conjunto de datos existente o sube uno nuevo.",
+      "step4": "Asigna un nombre al experimento.",
+      "step5": "Haz click en 'Crear Experimento' para finalizar."
+    },
+    "trainingIterations": {
+      "title": "Iteraciones de Entrenamiento",
+      "description": "Cada experimento puede tener múltiples iteraciones de entrenamiento. Cada iteración representa un intento separado de entrenar el modelo con las reglas definidas. Puedes iniciar una nueva iteración haciendo click en 'Abrir menú de iteraciones' y luego en 'Nueva Iteración'."
+    }, 
+    "postTraining": {
+      "title": "Después del Entrenamiento",
+      "description": "Una vez que una iteración de entrenamiento se completa, puedes revisar las métricas de rendimiento, las reglas generadas y hacer predicciones en nuevos datos. También puedes comparar métricas entre diferentes iteraciones para evaluar el impacto de diferentes configuraciones o reglas."
+    }
+  },
   "rulesDocumentation": {
     "title": "Documentación de Reglas",
     "introduction": "Las reglas son expresiones que combinan variables, valores, operadores matemáticos y lógicos para definir condiciones sobre un dataset. Cada columna del dataset se puede usar como una variable en la expresión.",
