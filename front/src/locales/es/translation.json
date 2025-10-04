@@ -38,7 +38,9 @@
     "addExperiment": "Crear Experimento",
     "dataset": "Conjunto de datos",
     "createdAt": "Creado el",
-    "goToExperiment": "Ir al Experimento"
+    "goToExperiment": "Ir al Experimento",
+    "deleteExperiment": "Eliminar Experimento",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este experimento? Esta acción no se puede deshacer."
   },
   "experiment":{
     "openIterations": "Abrir Menu de Iteraciones",

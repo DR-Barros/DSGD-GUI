@@ -51,6 +51,11 @@ async def delete_experiment(experiment_id: int, db: Session = Depends(get_db), c
     experiment = db.query(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
     if not experiment:
         raise HTTPException(status_code=404, detail="Experiment not found")
+    iterations = db.query(Iteration).filter(Iteration.experiment_id == experiment_id).all()
+    for iteration in iterations:
+        if os.path.exists(iteration.model_path):
+            os.remove(iteration.model_path)
+        db.delete(iteration)
     db.delete(experiment)
     db.commit()
     return {"detail": "Experiment deleted"}

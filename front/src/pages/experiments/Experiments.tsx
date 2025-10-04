@@ -1,12 +1,15 @@
-import { List, ListItem, ListItemText, ListItemIcon, Divider, Select, MenuItem, Button, Tooltip } from "@mui/material";
+import { List, ListItem, ListItemText, ListItemIcon, Divider, Select, MenuItem, Button, Tooltip, CircularProgress } from "@mui/material";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useTranslation } from "react-i18next";
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import EditOffIcon from '@mui/icons-material/EditOff';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {Fab} from "@mui/material";
 import { useEffect, useState } from "react";
 import ModalExperiment from "./components/ModalExperiment";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchProtected } from "../../api/client";
+import { deleteProtected, fetchProtected } from "../../api/client";
 import type { Experiment } from "../../types/experiment";
 
 import "./Experiments.css"
@@ -21,6 +24,8 @@ export default function Experiments() {
     const [tempPage, setTempPage] = useState("1");
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const rowsOptions = [5, 10, 20];
+    const [edit, setEdit] = useState(false);
+    const [loading, setLoading] = useState(false);
 
 
     const handleAddExperiment = () => {
@@ -34,6 +39,18 @@ export default function Experiments() {
             setExperiments(data);
         } else {
             console.log("Error fetching experiments");
+        }
+    };
+
+    const deleteExperiment = async (id: number) => {
+        setLoading(true);
+        try {
+            await deleteProtected(`/experiments/${id}`);
+            setExperiments(experiments.filter(exp => exp.id !== id));
+        } catch (error) {
+            console.error("Error deleting experiment:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -62,11 +79,22 @@ export default function Experiments() {
                         </p>
                     } />
                 <ListItemIcon>
+                    {edit ?
+                    <Tooltip title={t("experiments.deleteExperiment")} placement="top">
+                    <Button onClick={() => {
+                        if (window.confirm(t("experiments.confirmDelete"))) {
+                            deleteExperiment(exp.id);
+                        }
+                    }}>
+                        <DeleteIcon color="error" />
+                    </Button>
+                    </Tooltip>
+                    :
                     <Tooltip title={t("experiments.goToExperiment")} placement="top">
                     <Button onClick={() => navigate(`/experiment/${exp.id}`)}>
                         <ArrowForwardIcon color="primary" />
                     </Button>
-                    </Tooltip>
+                    </Tooltip>}
                 </ListItemIcon>
                 </ListItem>
                 <Divider />
@@ -141,7 +169,21 @@ export default function Experiments() {
                 <AddIcon />
             </Fab>
         </Tooltip>
+        <Tooltip title={t("experiments.editExperiment")} placement="top">
+            <Fab color="primary" aria-label="add" style={{
+                position: "absolute",
+                bottom: 16,
+                left: 16
+            }}
+                onClick={() => setEdit(!edit)}
+            >
+                {edit ? <EditOffIcon /> : <EditIcon />}
+            </Fab>
+        </Tooltip>
         <ModalExperiment open={modalOpen} onClose={() => setModalOpen(false)} reload={fetchExperiments} />
+        {loading && <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(255, 255, 255, 0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000}}>
+            <CircularProgress />
+        </div>}
     </div>
 );
 }

@@ -133,6 +133,9 @@ export async function deleteProtected(endpoint: string) {
     redirectToLogin();
     throw new Error("No autorizado");
   }
+  else if (!res.ok) {
+    throw new Error(`Error en la solicitud: ${res.statusText}`);
+  }
   return res.json();
 }
 
