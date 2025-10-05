@@ -45,6 +45,7 @@ export type Metrics = {
     precision: number;
     recall: number;
     f1Score: number;
+    rocAuc: number;
     iteration_id: number;
     created_at: string;
 }

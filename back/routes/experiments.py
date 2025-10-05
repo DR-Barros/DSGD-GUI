@@ -282,13 +282,11 @@ async def upload_experiment_iteration(
                 X_test[key] = X_test[key].replace(column_encoder)
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
-    
     contents = await file.read()
     model_path = f"{settings.MODELS_FOLDER}/uploaded_model_{experiment_id}_{int(datetime.now().timestamp())}.bin"
     with open(model_path, "wb") as f:
         f.write(contents)
     try:
-        pass
         ds = classifier.DSClassifierMultiQ(
             num_classes=dataset.n_classes,
             lr=learning_rate,
@@ -304,11 +302,13 @@ async def upload_experiment_iteration(
         ds.model.load_rules_bin(model_path)
         for rule in ds.model.preds:
             parser.lambda_rule_to_json(rule.ld, X_test.columns.tolist())
-        print("Model loaded successfully")
         X_test_np = X_test.to_numpy()
-        y_test = y_test.map(label_encoder)
+        y_test = y_test.astype(str).map(label_encoder)
         y_pred = ds.predict(X_test_np)
         acc = accuracy_score(y_test, y_pred)
+        y_proba = ds.predict_proba(X_test_np)
+        y_proba = y_proba[:, 1] if dataset.n_classes == 2 else y_proba
+        roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
         precision = precision_score(y_test, y_pred, average='weighted')
         recall = recall_score(y_test, y_pred, average='weighted')
         f1 = f1_score(y_test, y_pred, average='weighted')
@@ -344,6 +344,7 @@ async def upload_experiment_iteration(
         f1_score=f1,
         confusion_matrix=confusion.tolist(),
         classification_report=report,
+        roc_auc=roc,
         training_status="completed",
         training_message="Model uploaded successfully",
         training_start_time=datetime.now(),
@@ -371,8 +372,9 @@ async def get_experiment_metrics(
             "accuracy": iteration.accuracy,
             "precision": iteration.precision,
             "recall": iteration.recall,
-            "f1_score": iteration.f1_score
-        } for iteration in iterations if iteration.accuracy is not None and iteration.precision is not None and iteration.recall is not None and iteration.f1_score is not None
+            "f1Score": iteration.f1_score,
+            "rocAuc": iteration.roc_auc
+        } for iteration in iterations if iteration.accuracy is not None and iteration.precision is not None and iteration.recall is not None and iteration.f1_score is not None and iteration.roc_auc is not None
     ]
     return metrics
 

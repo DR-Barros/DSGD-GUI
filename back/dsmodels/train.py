@@ -97,14 +97,16 @@ def train_model(
         f1 = f1_score(y_test, y_pred, average='weighted')
         confusion = confusion_matrix(y_test, y_pred)
         report = classification_report(y_test, y_pred, output_dict=True)
-        #roc = roc_auc_score(y_test, ds.predict_proba(X_test_np), multi_class='ovr')
+        y_proba = ds.predict_proba(X_test_np)
+        y_proba = y_proba[:, 1] if n_classes == 2 else y_proba
+        roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
         iteration.accuracy = acc
         iteration.precision = precision
         iteration.recall = recall
         iteration.f1_score = f1
         iteration.confusion_matrix = confusion.tolist()
         iteration.classification_report = report
-        #iteration.roc_auc = roc
+        iteration.roc_auc = roc
         db.commit()
         print(acc)
         print(precision)
