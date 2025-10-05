@@ -7,12 +7,11 @@ from utils.sanitize import sanitize_json
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
 from models.dataset_file import FileType, DatasetType
+from models.iteration import Status
 from .auth import get_current_user_from_cookie
 from datetime import datetime
 from core.config import settings
 import pandas as pd
-import numpy as np
-from dsmodels import classifier, DSParser
 import asyncio
 import threading
 from dsmodels.train import train_model
@@ -152,7 +151,7 @@ async def train_model_post(
         loss_function = loss_function,
         optimizer = optim_function,
         learning_rate = learning_rate,
-        training_status = "pending",
+        training_status = Status.PENDING,
         label_encoder = sanitize_json(label_to_num)
     )
     db.add(iteration)
@@ -209,7 +208,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, db: Session = D
                 #actualizamos el estado en la base de datos
                 iteration = db.query(Iteration).filter(Iteration.id == int(task_id)).first()
                 if iteration:
-                    iteration.training_status = "error"
+                    iteration.training_status = Status.ERROR
                     iteration.training_end_time = datetime.now()
                     iteration.training_message = status
                     db.commit()

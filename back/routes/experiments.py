@@ -10,6 +10,7 @@ from utils.sanitize import sanitize_json
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
 from models.dataset_file import FileType, DatasetType
+from models.iteration import Status
 from schemas.experiment import ExperimentOut
 from .auth import get_current_user_from_cookie
 from datetime import datetime
@@ -345,7 +346,7 @@ async def upload_experiment_iteration(
         confusion_matrix=confusion.tolist(),
         classification_report=report,
         roc_auc=roc,
-        training_status="completed",
+        training_status=Status.COMPLETED,
         training_message="Model uploaded successfully",
         training_start_time=datetime.now(),
         training_end_time=datetime.now()

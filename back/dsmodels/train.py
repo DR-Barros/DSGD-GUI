@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
-from models.iteration import Iteration
+from models.iteration import Iteration, Status
 from dsmodels import classifier, DSParser
 from core.config import settings
 from dsgd import DSRule
@@ -62,7 +62,7 @@ def train_model(
             ds.model.add_rule(DSRule(rule, label), m_sing=m_sing, m_uncert=m_uncert)
 
         iteration = db.query(Iteration).filter(Iteration.id == int(tasks_id)).first()
-        iteration.training_status = "running"
+        iteration.training_status = Status.RUNNING
         iteration.training_start_time = datetime.now()
         db.commit()
 
@@ -70,7 +70,7 @@ def train_model(
             previous_msg = settings.TASKS_PROGRESS.get(tasks_id, "")
             if previous_msg== '{"status": "Training stopped by user"}':
                 print("Training stopped by user")
-                iteration.training_status = "stopped"
+                iteration.training_status = Status.STOPPED
                 iteration.training_end_time = datetime.now()
                 db.commit()
                 break
@@ -86,7 +86,7 @@ def train_model(
         ds.model.save_rules_bin(path)
         iteration.training_end_time = datetime.now()
         iteration.trained = True
-        iteration.training_status = "completed"
+        iteration.training_status = Status.COMPLETED
         iteration.model_path = path
         db.commit()
         print("Final evaluation...")
@@ -108,17 +108,12 @@ def train_model(
         iteration.classification_report = report
         iteration.roc_auc = roc
         db.commit()
-        print(acc)
-        print(precision)
-        print(recall)
-        print(f1)
-        print(confusion)
-        print(report)
+        print("Training finished successfully")
         
         settings.TASKS_PROGRESS[tasks_id] = "Training finished ✅"
     except Exception as e:
         print(f"Error during training: {e}")
         settings.TASKS_PROGRESS[tasks_id] = f"Error during training: {e}"
-        iteration.training_status = "error"
+        iteration.training_status = Status.ERROR
         iteration.training_message = str(e)
         db.commit()
