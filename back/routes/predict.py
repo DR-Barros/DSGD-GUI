@@ -14,11 +14,7 @@ from datetime import datetime
 from core.config import settings
 import pandas as pd
 import numpy as np
-from dsmodels import classifier, DSParser
-import asyncio
-import threading
-from dsmodels.train import train_model
-
+from dsmodels import classifier
 api_router = APIRouter()
 
 
@@ -51,6 +47,11 @@ async def predict(
     df = pd.DataFrame(data["predictData"], columns=columns)
     if df.empty:
         raise HTTPException(status_code=400, detail="No data provided for prediction")
+    columnEncoder = dataset.columns_encoder 
+    df.columns = df.columns.map(str)
+    for key, column_encoder in columnEncoder.items():
+        if key in df.columns:
+            df[key] = df[key].replace(column_encoder)
     df.replace("", np.nan, inplace=True)
     #convertir a numérico donde sea posible
     for col in df.select_dtypes(include=['object']).columns:
