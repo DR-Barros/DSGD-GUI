@@ -91,15 +91,36 @@ def train_model(
         db.commit()
         print("Final evaluation...")
         y_pred = ds.predict(X_test_np)
-        acc = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred, average='weighted')
-        recall = recall_score(y_test, y_pred, average='weighted')
-        f1 = f1_score(y_test, y_pred, average='weighted')
-        confusion = confusion_matrix(y_test, y_pred)
-        report = classification_report(y_test, y_pred, output_dict=True)
-        y_proba = ds.predict_proba(X_test_np)
-        y_proba = y_proba[:, 1] if n_classes == 2 else y_proba
-        roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
+        try:
+            acc = accuracy_score(y_test, y_pred)
+        except:
+            acc = 0.0
+        try:
+            precision = precision_score(y_test, y_pred, average='weighted')
+        except:
+            precision = 0.0
+        try:
+            recall = recall_score(y_test, y_pred, average='weighted')
+        except:
+            recall = 0.0
+        try:
+            f1 = f1_score(y_test, y_pred, average='weighted')
+        except:
+            f1 = 0.0
+        try:
+            confusion = confusion_matrix(y_test, y_pred)
+        except:
+            confusion = np.zeros((n_classes, n_classes))
+        try:
+            report = classification_report(y_test, y_pred, output_dict=True)
+        except:
+            report = {}
+        try:
+            y_proba = ds.predict_proba(X_test_np).cpu().numpy()
+            y_proba = y_proba[:, 1] if n_classes == 2 else y_proba
+            roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
+        except:
+            roc = 0.0
         iteration.accuracy = acc
         iteration.precision = precision
         iteration.recall = recall
