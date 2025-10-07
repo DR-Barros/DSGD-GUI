@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { API_URL } from "../../api/client";
 import {Card, CardContent, Select, MenuItem, TextField, Snackbar, Alert, Button  } from '@mui/material';
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { changeLanguage } from "i18next";
 
 
 export default function ResetPassword() {
