@@ -6,6 +6,7 @@ const Experiment = lazy(() => import("./pages/experiment/Experiment"));
 const Datasets = lazy(() => import("./pages/dataset/Datasets"));
 const UploadDatasets = lazy(() => import("./pages/dataset/UploadDatasets"));
 const Documentation = lazy(() => import("./pages/documentation/Documentation"));
+const ResetPassword = lazy(() => import("./pages/resetpassword/ResetPassword"));
 import "./i18n";
 import PrivateRoute from "./components/PrivateRoute";
 import { CircularProgress } from "@mui/material";
@@ -28,6 +29,7 @@ function App() {
             <Route path="/documentation" element={<Documentation />} />
           </Route>
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

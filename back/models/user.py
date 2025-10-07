@@ -29,3 +29,4 @@ class User(Base):
 
     datasets = relationship("Datasets", back_populates="user")
     experiments = relationship("Experiment", back_populates="user")
+    password_reset_tokens = relationship("PasswordResetToken", back_populates="user")

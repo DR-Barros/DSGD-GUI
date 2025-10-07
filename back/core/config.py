@@ -37,6 +37,11 @@ class Settings:
         DB_NAME = os.getenv("DB_NAME")
         DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         engine = create_engine(DATABASE_URL)
+        
+    # Email configuration
+    EMAIL_USER = os.getenv("EMAIL_USER")
+    EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
     def __init__(self):

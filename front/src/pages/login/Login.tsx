@@ -9,7 +9,7 @@ import "./Login.css"
 
 export default function Login() {
     const { t, i18n } = useTranslation();
-    const [loginState, setLoginState] = useState<string>("logging");
+    const [loginState, setLoginState] = useState<"logging" | "register" | "resetPassword">("logging");
     const [credentials, setCredentials] = useState<{ email: string; password: string; name: string; password2: string }>({
         email: "",
         password: "",
@@ -84,6 +84,33 @@ export default function Login() {
         }
     };
 
+    const resetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        try {
+            const res = await fetch(`${API_URL}/auth/forgot-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: credentials.email
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 200) {
+                setSnackbar({ open: true, message: t("reset_email_sent"), type: "success" });
+                setTimeout(() => setLoginState("logging"), 1500); // vuelve a login
+            } else {
+                setSnackbar({ open: true, message: data.message || t("reset_failed"), type: "error" });
+            }
+        } catch (err) {
+            setSnackbar({ open: true, message: t("network_error"), type: "error" });
+        }
+    }
+
     return (
         <div className="login-container">
             <h1>{t("welcome")}</h1>
@@ -127,6 +154,14 @@ export default function Login() {
                         />
                         <button type="submit">{t("login")}</button>
                         <button type="button" onClick={() => setLoginState("register")}>{t("register")}</button>
+                        <button type="button" onClick={() => setLoginState("resetPassword")} style={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: '#007bff',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                            marginTop: '10px'
+                        }}>{t("forgot_password")}</button>
                     </form>
                 )}
                 {loginState === "register" && (
@@ -166,6 +201,20 @@ export default function Login() {
                             required
                         />
                         <button type="submit">{t("signup")}</button>
+                        <button type="button" onClick={() => setLoginState("logging")}>{t("backToLogin")}</button>
+                    </form>
+                )}
+                {loginState === "resetPassword" && (
+                    <form className="login-form" onSubmit={resetPassword}>
+                        <TextField
+                            label={t("email")}
+                            variant="outlined"
+                            value={credentials.email}
+                            onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                            className="input"
+                            required
+                        />
+                        <button type="submit">{t("reset_password")}</button>
                         <button type="button" onClick={() => setLoginState("logging")}>{t("backToLogin")}</button>
                     </form>
                 )}

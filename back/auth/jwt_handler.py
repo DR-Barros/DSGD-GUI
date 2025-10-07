@@ -53,3 +53,19 @@ def get_current_user_from_refresh_token(token: str, db: Session) -> User:
     if user is None:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
     return user
+
+def create_reset_password_token(email: str):
+    to_encode = {"sub": email}
+    expire = datetime.now(timezone.utc) + timedelta(hours=1)
+    to_encode.update({"exp": expire, "type": "reset"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def verify_reset_password_token(token: str):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "reset":
+            return None
+        return payload.get("sub")
+    except JWTError:
+        return None
