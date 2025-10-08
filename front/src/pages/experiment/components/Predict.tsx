@@ -1,4 +1,4 @@
-import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button, Modal, CircularProgress } from "@mui/material";
+import { Paper, Table, TableContainer, TableBody, TableHead, TableRow, TableCell, TableFooter, TablePagination, Button, Modal, CircularProgress, Box } from "@mui/material";
 import { fetchProtected, postProtected } from "../../../api/client";
 import { useEffect, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -6,6 +6,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import CloseIcon from '@mui/icons-material/Close';
 
 
 interface PredictData {
@@ -56,7 +57,11 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             complete: (results) => {
                 const parsedData = results.data as Record<string, string>[];
                 const formattedData = parsedData
-                .filter(row => Object.keys(row).length > 0) 
+                .filter(row =>
+                    Object.values(row).some(
+                    value => value !== null && value !== undefined && value.toString().trim() !== ""
+                    )
+                )
                 .map(row =>
                     columns.map(col => row[col] ?? "") 
                 );
@@ -175,7 +180,7 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                     </TableBody>
                     <TableFooter>
                         <TableRow>
-                            <TableCell colSpan={columns.length}>
+                            <TableCell colSpan={columns.length-1}>
                                 <TablePagination
                                     rowsPerPageOptions={[5, 10, 15]}
                                     count={predictData.length}
@@ -184,6 +189,21 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                                     onPageChange={handleChangePage}
                                     onRowsPerPageChange={handleChangeRowsPerPage}
                                 />
+                            </TableCell>
+                            <TableCell>
+                                {predictData.length > 0 && 
+                                <button
+                                    onClick={() => setData([])}
+                                    style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    padding: 0,
+                                    }}
+                                >
+                                    <DeleteIcon /> {t("experiment.deleteAll")}
+                                </button>
+                                }
                             </TableCell>
                         </TableRow>
                     </TableFooter>
@@ -200,14 +220,14 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             >
                 {t("experiment.addRow")}
             </Button>
-            <label style={{ marginRight: "10px", padding: "6px 12px", backgroundColor: "#1976d2", color: "white", borderRadius: "4px", cursor: "pointer" }}>
+            <label style={{ marginLeft: "10px", padding: "6px 12px", backgroundColor: "#1976d2", color: "white", borderRadius: "4px", cursor: "pointer" }}>
                 {t("experiment.uploadCSV")}
-            <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-            />
+                <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                />
             </label>
             <Button
                 variant="contained"
@@ -308,6 +328,25 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                     padding: '20px',
                 }}>
                     <h1 style={{margin: 0}}>{t("row")} {modalId}</h1>
+                    <button
+                        onClick={() => setModalId(null)}
+                        style={{
+                            position: 'absolute',
+                            top: '15px',
+                            right: '15px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            height: '24px',
+                            width: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <CloseIcon />
+                    </button>
                     <h2>
                         <strong>{t("class")}:</strong>{" "}
                         {modalId !== null ? predictedResults[modalId]?.class : ""}
@@ -315,9 +354,18 @@ export default function Predict({ iterationId }: { iterationId: number | string 
                             ? ` (${invertLabels(labels)[predictedResults[modalId !== null ? modalId : 0]?.class]})`
                             : ""}
                     </h2>
+                    <Box 
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" },
+                            gap: 2,
+                            mb: 2
+                        }}
+                    >
                     {columns.map((col, idx) => (
                         <p key={idx}><strong>{col}:</strong> {predictData[modalId !== null ? modalId : 0][idx]}</p>
                     ))}
+                    </Box>
                     <p>
                         <strong>{t("experiment.probabilities")}:</strong>{" "}
                         {predictedResults[modalId !== null ? modalId : 0]?.probabilities

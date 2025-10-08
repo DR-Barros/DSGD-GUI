@@ -302,7 +302,7 @@ export default function DatasetsView(
                         );
                         }
                     }}
-                    style={{ width: 75, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
+                    style={{ width: 60, background: "transparent", border: "none", fontSize: "inherit", textAlign: "right" }}
                     />
                     <p> / {Math.ceil((rows.length || 0) / rowsPerPage)}</p>
                 </div>

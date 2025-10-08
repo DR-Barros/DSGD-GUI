@@ -67,3 +67,25 @@
 .upload-datasets-container .upload-buttons button:hover {
     background-color: #1d4ed8;
 }
+
+@media (max-width: 650px) {
+    .upload-datasets-container h1{
+        font-size: 2.5rem;
+        margin-bottom: 40px;
+    }
+    .upload-datasets-container .upload-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    .upload-datasets-container .upload-buttons button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .upload-datasets-container h1{
+        font-size: 2rem;
+        margin-bottom: 40px;
+    }
+}

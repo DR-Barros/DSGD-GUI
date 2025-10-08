@@ -150,7 +150,7 @@ export default function Experiment() {
                     }, 10);
                 }}
             />
-            <div className="experiment-container" style={{ marginLeft: drawerOpen ? 240 : "auto", width: drawerOpen ? "calc(100% - 230px)" : "100%" }}>
+            <div className="experiment-container" style={{ marginLeft: drawerOpen ? 240 : "auto", width: drawerOpen ? "calc(100% - 290px)" : "calc(100% - 40px)" }}>
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} sendStopTraining={sendStopTraining} />}
                 {phase === "posttrain" && <PostTrainPhase iterationId={iterations} back={() => setPhase("pretrain")} />}

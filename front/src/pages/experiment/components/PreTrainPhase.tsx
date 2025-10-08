@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import DatasetsView from '../../../components/DatasetsView';
 import { useTranslation } from "react-i18next";
 import type { Dataset } from '../../../types/dataset';
-import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, CircularProgress, Select, Snackbar, TextField, Tooltip } from '@mui/material';
+import { Alert, Button, Card, CardContent, Checkbox, FormControlLabel, MenuItem, CircularProgress, Select, Snackbar, TextField, Tooltip, Box } from '@mui/material';
 import { fetchProtected, postProtected } from '../../../api/client';
 import RuleGroup from './RuleGroup';
 import LoopIcon from '@mui/icons-material/Loop';
@@ -169,7 +169,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             <div>
             {activeStep === 0 && <>
                 <Card>
-                    <CardContent sx={{ display: "flex", flexDirection: "row", gap: "16px" }}>
+                    <CardContent sx={{ display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap", justifyContent: "space-between" }}>
                     {datasetPreview.length === 1 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -247,7 +247,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     </div>
                     </CardContent>
                 </Card>
-                <div style={{ display: "flex", flexDirection: "row", gap: "40px", marginTop: "20px", marginBottom: "20px", alignItems: "center", justifyContent: "space-evenly" }}>
+                <div style={{ display: "flex", flexDirection: "row", gap: "40px", marginTop: "20px", marginBottom: "20px", alignItems: "center", justifyContent: "space-evenly", flexWrap: "wrap" }}>
                     <p>{t("columns")}: {Dataset?.columns.length}</p>
                     <p>{t("classes")}: {Dataset?.n_classes}</p>
                     <p>{t("rows")}: {Dataset?.n_rows}</p>
@@ -284,108 +284,121 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             {activeStep === 1 && <>
                 <Card sx={{marginBottom: 2}}>
                     <h2 style={{marginLeft: "16px"}}>{t("experiment.generateRules")}</h2>
-                    <CardContent sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={generateRuleParams.singleRule}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, singleRule: e.target.checked })}
-                                />
-                            }
-                            label={
-                                <>
-                                <span>{t("experiment.singleRule")}</span>
-                                <Tooltip title={<>
-                                    <p>{t("experiment.singleRuleInfo")}</p>
-                                    <p>{t("experiment.singleRuleExample")}</p>
-                                </>}>
-                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
-                                </Tooltip>
-                                </>
-                            }
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        />
-                        <FormControlLabel
-                            control={
-                                <TextField
-                                
-                                    type="number"
-                                    value={generateRuleParams.breakRules}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, breakRules: parseInt(e.target.value) })}
-                                    style={{ width: '100px' }}
-                                    inputProps={{
-                                        min: 1,
-                                        step: 1,
+                    <CardContent sx={{display: 'flex', flexDirection: 'row', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}
+                        >
+                            <div style={{display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center'}}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={generateRuleParams.singleRule}
+                                            onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, singleRule: e.target.checked })}
+                                        />
+                                    }
+                                    label={
+                                        <>
+                                        <span>{t("experiment.singleRule")}</span>
+                                        <Tooltip title={<>
+                                            <p>{t("experiment.singleRuleInfo")}</p>
+                                            <p>{t("experiment.singleRuleExample")}</p>
+                                        </>}>
+                                            <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                        </Tooltip>
+                                        </>
+                                    }
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        height: '56px'
                                     }}
-                                    />
-                                }
-                            label={t("experiment.breakRules")}
-                            labelPlacement='start'
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Select
-                                    multiple
-                                    value={generateRuleParams.selectedColumns}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, selectedColumns: e.target.value as string[] })}
-                                    renderValue={(selected) => (selected as string[]).join(', ')}
-                                    style={{ maxWidth: '300px' }}
-                                    >
-                                {Dataset?.columns
-                                .filter((col) => col !== Dataset.target_column)
-                                .map((col) => (
-                                    <MenuItem key={col} value={col}>
-                                        <input type="checkbox" checked={generateRuleParams.selectedColumns.indexOf(col) > -1} readOnly />   
-                                        {col}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                            }
-                            label={t("experiment.selectColumns")}
-                            labelPlacement='start'
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={generateRuleParams.multipleRules}
-                                    onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, multipleRules: e.target.checked })}
                                 />
-                            }
-                            label={
-                            <>
-                            <span>{t("experiment.multipleRules")}</span>
-                            <Tooltip title={<>
-                                <p>{t("experiment.multipleRulesInfo")}</p>
-                                <p>{t("experiment.multipleRulesExample")}</p>
-                            </>}>
-                                <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
-                            </Tooltip>
-                            </>}
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        />
-                        <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={generateRuleParams.multipleRules}
+                                            onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, multipleRules: e.target.checked })}
+                                        />
+                                    }
+                                    label={
+                                    <>
+                                    <span>{t("experiment.multipleRules")}</span>
+                                    <Tooltip title={<>
+                                        <p>{t("experiment.multipleRulesInfo")}</p>
+                                        <p>{t("experiment.multipleRulesExample")}</p>
+                                    </>}>
+                                        <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                    </Tooltip>
+                                    </>}
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        height: '56px'
+                                    }}
+                                />
+                            </div>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center'}}>
+                                <FormControlLabel
+                                    control={
+                                        <TextField
+                                        
+                                            type="number"
+                                            value={generateRuleParams.breakRules}
+                                            onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, breakRules: parseInt(e.target.value) })}
+                                            style={{ width: '100px' }}
+                                            inputProps={{
+                                                min: 1,
+                                                step: 1,
+                                            }}
+                                            />
+                                        }
+                                    label={t("experiment.breakRules")}
+                                    labelPlacement='start'
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        gap: 1,
+                                    }}
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Select
+                                            multiple
+                                            value={generateRuleParams.selectedColumns}
+                                            onChange={(e) => setGenerateRuleParams({ ...generateRuleParams, selectedColumns: e.target.value as string[] })}
+                                            renderValue={(selected) => (selected as string[]).join(', ')}
+                                            sx={{ 
+                                                maxWidth: {
+                                                    xs: 200,
+                                                    sm: 300,
+                                                    md: 300
+                                                }
+                                            }}
+                                            >
+                                        {Dataset?.columns
+                                        .filter((col) => col !== Dataset.target_column)
+                                        .map((col) => (
+                                            <MenuItem key={col} value={col}>
+                                                <input type="checkbox" checked={generateRuleParams.selectedColumns.indexOf(col) > -1} readOnly />   
+                                                {col}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    }
+                                    label={t("experiment.selectColumns")}
+                                    labelPlacement='start'
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        gap: 1,
+                                    }}
+                                />
+                            </div>
+                        <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
                         <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleGenerateRules} disabled={loadingRules}>
                             {t("experiment.generateRules")}
                         </Button>
@@ -419,17 +432,30 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             </>}
             {activeStep === 2 && <>
                 <Card sx={{marginBottom: 10, marginTop: 10}}>
-                    <CardContent sx={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2}}>
-                        <h2 style={{gridColumn: 'span 3', textAlign: 'center'}}>
+                    <CardContent>
+                        <h2 style={{width: '100%', textAlign: 'center'}}>
                             {t("experiment.training")}
                         </h2>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                xs: '1fr',       // móvil: una columna
+                                sm: '1fr 1fr',   // tablet: dos columnas
+                                md: '1fr 1fr 1fr', // desktop: tres columnas
+                                },
+                                gap: 3,
+                                justifyItems: 'center',
+                                mb: 3
+                            }}
+                        >
                         <FormControlLabel
                             control={
                                 <TextField
                                     type="number"
                                     value={params.maxEpochs}
                                     onChange={(e) => setParams({ ...params, maxEpochs: parseInt(e.target.value) })}
-                                    style={{ width: '100px' }}
+                                    fullWidth
                                     slotProps={{
                                         htmlInput: {
                                             min: params.minEpochs + 1,
@@ -447,7 +473,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     type="number"
                                     value={params.minEpochs}
                                     onChange={(e) => setParams({ ...params, minEpochs: parseInt(e.target.value) })}
-                                    style={{ width: '100px' }}
+                                    fullWidth
                                     slotProps={{
                                         htmlInput: {
                                             min: 1,
@@ -465,7 +491,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     type="number"
                                     value={params.batchSize}
                                     onChange={(e) => setParams({ ...params, batchSize: parseInt(e.target.value) })}
-                                    style={{ width: '100px' }}
+                                    fullWidth
                                     slotProps={{
                                         htmlInput: {
                                             min: 1
@@ -482,7 +508,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                     type="number"
                                     value={params.learningRate}
                                     onChange={(e) => setParams({ ...params, learningRate: parseFloat(e.target.value) })}
-                                    style={{ width: '100px' }}
+                                    fullWidth
                                     slotProps={{
                                         htmlInput: {
                                             min: 0.0000000000001,
@@ -523,7 +549,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             label={t("experiment.optimFunction")}
                             labelPlacement='start'
                         />
-                        <div style={{gridColumn: 'span 3', margin: '0 auto'}}>
+                        </Box>
+                        <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
                         <Button
                             variant="contained"
                             color="primary"

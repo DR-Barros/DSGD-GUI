@@ -427,6 +427,12 @@ export default function UploadDatasets() {
                             </select>
                         </label>
                         <br />
+                        <TextField
+                            label={t("datasets.upload.dataset_name")}
+                            value={datasetName}
+                            onChange={(e) => setDatasetName(e.target.value)}
+                        />
+                        <br />
                         {parsedData.length > 0 && (
                             <>
                             <h3>{nFiles === 1 ? t("datasets.dataset") : t("datasets.train_dataset")}</h3>
@@ -480,12 +486,6 @@ export default function UploadDatasets() {
                             </>
                         )}
                     </div>
-                    <TextField
-                        label={t("datasets.upload.dataset_name")}
-                        value={datasetName}
-                        onChange={(e) => setDatasetName(e.target.value)}
-                    />
-                    <br />
                     <div className="upload-buttons">
                     <button onClick={() => {
                         setUploadPhase(0);

@@ -201,8 +201,14 @@ export default function DrawerMenu(
                     [`& .MuiDrawer-paper`]: {
                         width: drawerWidth,
                         boxSizing: 'border-box',
-                        top: 64,
-                        height: 'calc(100vh - 64px)',
+                        top: {
+                            xs: '56px',
+                            sm: '64px',
+                        },
+                        height: {
+                            xs: 'calc(100% - 56px)',
+                            sm: 'calc(100% - 64px)',
+                        },
                     },
                 }}
             >
