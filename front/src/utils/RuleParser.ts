@@ -68,12 +68,13 @@ function parseExpr(exprStr: string, columns: string[]): expression {
     console.log("Parsing expression:", exprStr, "with columns:", columns);
     let varMap: Record<string, string> = {};
     let tempExpr = exprStr;
-    columns.forEach((col, idx) => {
-        let varName = `__var${idx}__`;
+    const sortedCols = [...columns].sort((a, b) => b.length - a.length);
+    sortedCols.forEach((col, idx) => {
+        const varName = `__var${idx}__`;
         varMap[varName] = col;
-        while (tempExpr.includes(col)) {
-            tempExpr = tempExpr.replace(col, varName);
-        }
+        const safeCol = col.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b${safeCol}\\b`, 'g');
+        tempExpr = tempExpr.replace(regex, varName);
     });
     const ast = acorn.parse(tempExpr, { ecmaVersion: 6 }) as acorn.Node & { body: any[] };
     const firstStmt = ast.body[0];
