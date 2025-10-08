@@ -19,6 +19,7 @@ export default function Experiment() {
     const [Dataset, setDataset] = useState<Dataset | null>(null);
     const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
     const [iterations, setIterations] = useState<number | null>(null);
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const wsRef = useRef<WebSocket | null>(null);
     const navigation = useNavigate();
 
@@ -131,7 +132,7 @@ export default function Experiment() {
 
     return (
         <div>
-            <DrawerMenu id={id} openIterations={(iterationId, status) => {
+            <DrawerMenu setDrawerOpen={setDrawerOpen} id={id} openIterations={(iterationId, status) => {
                     setIterations(iterationId);
                     if (wsRef.current) {
                         wsRef.current.close();
@@ -149,7 +150,7 @@ export default function Experiment() {
                     }, 10);
                 }}
             />
-            <div className="experiment-container">
+            <div className="experiment-container" style={{ marginLeft: drawerOpen ? 240 : "auto", width: drawerOpen ? "calc(100% - 230px)" : "100%" }}>
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} sendStopTraining={sendStopTraining} />}
                 {phase === "posttrain" && <PostTrainPhase iterationId={iterations} back={() => setPhase("pretrain")} />}

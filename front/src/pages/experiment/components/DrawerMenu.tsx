@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom';
 const drawerWidth = 230;
 
 export default function DrawerMenu(
-    { id, openIterations, train }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void }
+    { id, openIterations, train, setDrawerOpen }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void, setDrawerOpen: (open: boolean) => void }
 ) {
     const [mobileOpen, setMobileOpen] = useState(true);
     const [modalUploadOpen, setModalUploadOpen] = useState(false);
@@ -39,6 +39,10 @@ export default function DrawerMenu(
     const [iterations, setIterations] = useState<Iteration[]>([]);
     const { t } = useTranslation();
     const navigation = useNavigate();
+
+    useEffect(() => {
+        setDrawerOpen(mobileOpen);
+    }, [mobileOpen]);
 
     const handleIterations = async () => {
         const { data, status } = await fetchProtected(`/experiments/iteration/${id}`);
