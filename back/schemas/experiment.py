@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from .dataset import DatasetOut
 
@@ -9,5 +9,4 @@ class ExperimentOut(BaseModel):
     created_at: datetime
     datasets: DatasetOut
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
