@@ -5,7 +5,8 @@ export const API_URL: string = `${URL}dsgd/api`;
 export const API_WS_URL: string = `${WS_URL}dsgd/api`;
 
 function redirectToLogin() {
-  window.location.href = '/login';
+  const basename = import.meta.env.MODE === 'production' ? '/dsgd/' : '/'
+  window.location.href = `${basename}login`;
 }
 
 export async function fetchProtected(endpoint: string) {
