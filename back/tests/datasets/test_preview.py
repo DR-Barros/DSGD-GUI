@@ -33,7 +33,6 @@ def test_preview_dataset(client, tmp_path):
     preview_response = client.get("/dsgd/api/datasets/preview/1")
     assert preview_response.status_code == 200
     preview_data = preview_response.json()[0]
-    print(preview_data["stats"])
     #check type
     assert preview_data["type"] == "all"
     #check data
