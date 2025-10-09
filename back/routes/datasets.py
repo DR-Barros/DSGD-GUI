@@ -33,6 +33,8 @@ async def preview_dataset(
     db: Session = Depends(get_db)
 ):
     dataset_files = db.query(DatasetFile).filter(DatasetFile.dataset_id == dataset_id).all()
+    if not dataset_files or len(dataset_files) == 0:
+        raise HTTPException(status_code=404, detail="Dataset no encontrado")
     dataset_data = []
     for dataset_file in dataset_files:
         if dataset_file.type_file == FileType.CSV:
