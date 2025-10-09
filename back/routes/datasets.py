@@ -1,9 +1,10 @@
 import json
+import os
 from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from typing import List
 from sqlalchemy.orm import Session
 from database import get_db
-from models import User, DatasetFile, Datasets
+from models import User, DatasetFile, Datasets, Experiment, Iteration
 from models.dataset_file import FileType, DatasetType
 from .auth import get_current_user_from_cookie
 from datetime import datetime
@@ -206,3 +207,41 @@ async def upload_dataset(
     db.commit()
     db.refresh(new_dataset)
     return {"info": f"Dataset '{name}' uploaded successfully"}
+
+@api_router.delete("/{dataset_id}")
+async def delete_dataset(
+    dataset_id: int,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db)
+):
+    dataset = db.query(Datasets).filter(Datasets.id == dataset_id, Datasets.user_id == current_user.id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset no encontrado")
+    
+    #Buscamos experimentos que usen este dataset
+    experiments = db.query(Experiment).filter(Experiment.dataset_id == dataset_id).all()
+    for experiment in experiments:
+        #Eliminar iteraciones asociadas
+        iterations = db.query(Iteration).filter(Iteration.experiment_id == experiment.id).all()
+        for iteration in iterations:
+            if iteration.model_path and os.path.exists(iteration.model_path):
+                try:
+                    os.remove(iteration.model_path)
+                except Exception as e:
+                    print(f"Error al eliminar el archivo {iteration.model_path}: {e}")
+            db.delete(iteration)
+        db.delete(experiment)
+    db.commit()
+    
+    # Eliminar archivos asociados
+    dataset_files = db.query(DatasetFile).filter(DatasetFile.dataset_id == dataset_id).all()
+    for dataset_file in dataset_files:
+        try:
+            os.remove(dataset_file.file_path)
+        except Exception as e:
+            print(f"Error al eliminar el archivo {dataset_file.file_path}: {e}")
+        db.delete(dataset_file)
+    
+    db.delete(dataset)
+    db.commit()
+    return {"info": f"Dataset '{dataset.name}' eliminado exitosamente"}

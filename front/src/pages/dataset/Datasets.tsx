@@ -3,11 +3,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from "react-i18next";
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from "react-router-dom";
-import { fetchProtected } from "../../api/client";
+import { deleteProtected, fetchProtected } from "../../api/client";
 import type { Dataset } from "../../types/dataset";
 import { useEffect, useState } from "react";
 import CloseIcon from '@mui/icons-material/Close';
-
+import EditIcon from '@mui/icons-material/Edit';
+import EditOffIcon from '@mui/icons-material/EditOff';
+import DeleteIcon from '@mui/icons-material/Delete';
 import "./Datasets.css"
 import DatasetsView from "../../components/DatasetsView";
 
@@ -21,6 +23,7 @@ export default function Datasets() {
     const [tempPage, setTempPage] = useState("1");
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const rowsOptions = [5, 10, 20];
+    const [edit, setEdit] = useState(false);
     const navigate = useNavigate();
 
     const handleAddDataset = () => {
@@ -40,6 +43,15 @@ export default function Datasets() {
             console.log("Error fetching datasets");
         }
     };
+
+    const deleteDataset = async (id: number) => {
+        try {
+            await deleteProtected(`/datasets/${id}`);
+            setDatasets(datasets.filter(dataset => dataset.id !== id));
+        } catch (error) {
+            console.error("Error deleting dataset:", error);
+        }
+    }
 
     const handlePreviewDataset = async (datasetId: Number) => {
         setSelectedDataset(datasets.find(dataset => dataset.id === datasetId) || null);
@@ -85,9 +97,21 @@ export default function Datasets() {
                     </div>
                 } />
                 <ListItemIcon className="dataset-item-preview-icon">
+                    {edit ?
+                    <Tooltip title={t("datasets.deleteDataset")} placement="top">
+                    <Button onClick={() => {
+                        if (window.confirm(t("datasets.confirmDelete"))) {
+                            deleteDataset(exp.id);
+                        }
+                    }}>
+                        <DeleteIcon color="error" />
+                    </Button>
+                    </Tooltip>
+                    :
                     <Button onClick={() => handlePreviewDataset(exp.id)}>
                         <VisibilityIcon color="primary" />
                     </Button>
+                    }
                 </ListItemIcon>
                 </ListItem>
                 <Divider />
@@ -160,6 +184,17 @@ export default function Datasets() {
             onClick={handleAddDataset}
         >
             <AddIcon />
+        </Fab>
+        </Tooltip>
+        <Tooltip title={t("datasets.editDataset")} placement="top">
+        <Fab color="primary" aria-label="edit" style={{
+            position: "absolute",
+            bottom: 16,
+            left: 16
+        }}
+            onClick={() => setEdit(!edit)}
+        >
+            {edit ? <EditOffIcon /> : <EditIcon />}
         </Fab>
         </Tooltip>
         <Modal

@@ -170,7 +170,7 @@ export default function Experiments() {
             </Fab>
         </Tooltip>
         <Tooltip title={t("experiments.editExperiment")} placement="top">
-            <Fab color="primary" aria-label="add" style={{
+            <Fab color="primary" aria-label="edit" style={{
                 position: "absolute",
                 bottom: 16,
                 left: 16

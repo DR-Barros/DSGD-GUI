@@ -47,7 +47,8 @@
     "createdAt": "Creado el",
     "goToExperiment": "Ir al Experimento",
     "deleteExperiment": "Eliminar Experimento",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este experimento? Esta acción no se puede deshacer."
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este experimento? Esta acción no se puede deshacer.",
+    "editExperiment": "Editar Experimento"
   },
   "experiment":{
     "openIterations": "Abrir Menu de Iteraciones",
@@ -132,6 +133,9 @@
     "modelUploadedSuccessfully": "Modelo subido exitosamente."
   },
   "datasets": {
+    "editDataset": "Editar conjunto de datos",
+    "deleteDataset": "Eliminar conjunto de datos",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este conjunto de datos? Se eliminarán los experimentos asociados. Esta acción no se puede deshacer.",
     "title": "Conjuntos de datos",
     "addDataset": "Agregar conjunto de datos",
     "dataset": "Conjunto de datos",
