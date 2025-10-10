@@ -44,6 +44,7 @@ class Iteration(Base):
         learning_rate (float): Tasa de aprendizaje del optimizador.
         optimizer (str): Nombre del optimizador utilizado.
         loss_function (str): Función de pérdida utilizada.
+        min_dloss (float): Cambio mínimo en la pérdida para considerar convergencia.
         precompute_rules (bool): Si se precomputaron reglas antes del entrenamiento.
         force_precompute (bool): Si se forzó el recálculo de las reglas previas.
 
@@ -86,6 +87,7 @@ class Iteration(Base):
     learning_rate = Column(Float, nullable=True)
     optimizer = Column(String, nullable=True)
     loss_function = Column(String, nullable=True)
+    min_dloss = Column(Float, nullable=True)
     precompute_rules = Column(Boolean, default=False)
     force_precompute = Column(Boolean, default=False)
 

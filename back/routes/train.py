@@ -152,6 +152,7 @@ async def train_model_post(
         loss_function = loss_function,
         optimizer = optim_function,
         learning_rate = learning_rate,
+        min_dloss = min_dloss,
         training_status = Status.PENDING,
         label_encoder = sanitize_json(label_to_num)
     )
