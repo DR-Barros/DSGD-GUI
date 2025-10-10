@@ -112,7 +112,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 singleRule: generateRuleParams.singleRule,
                 multipleRule: generateRuleParams.multipleRules,
                 breakRules: generateRuleParams.breakRules,
-                selectedColumns: generateRuleParams.selectedColumns
+                selectedColumns: generateRuleParams.selectedColumns,
+                testSize: params.testSize,
+                splitSeed: params.splitSeed,
+                shuffle: params.shuffle,
+                dropNulls: params.dropNulls,
+                dropDuplicates: params.dropDuplicates
             });
 
             if (status === 200) {

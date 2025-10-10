@@ -10,6 +10,7 @@ from dsmodels import classifier, DSParser
 import pandas as pd
 import numpy as np
 from models.dataset_file import FileType, DatasetType
+from sklearn.model_selection import train_test_split
 
 api_router = APIRouter()
 
@@ -25,7 +26,11 @@ async def generate_rules(
         breakRules = rule_params.breakRules
         singleRule = rule_params.singleRule
         multipleRule = rule_params.multipleRule
-        print(multipleRule, singleRule, breakRules, selectedColumns)
+        dropNulls = rule_params.dropNulls
+        dropDuplicates = rule_params.dropDuplicates
+        testSize = rule_params.testSize
+        splitSeed = rule_params.splitSeed
+        shuffle = rule_params.shuffle
         dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
         if not dataset_files:
             raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
@@ -40,11 +45,16 @@ async def generate_rules(
                 X = pd.read_parquet(dataset_file.file_path)
             else:
                 return HTTPException(status_code=400, detail="Unsupported file type")
+        if dropNulls:
+            X = X.dropna()
+        if dropDuplicates:
+            X = X.drop_duplicates()
+        if len(dataset_files) == 1: # Si solo hay un archivo, hacemos el split
+            X, _ = train_test_split(X, test_size=testSize, random_state=splitSeed, shuffle=shuffle)
         dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
         columnEncoder = dataset.columns_encoder # dict para pasar las columnas categoricas a numeros
         if not dataset:
             raise HTTPException(status_code=404, detail="Dataset not found")
-        print("Selected columns:", selectedColumns)
         X.columns = X.columns.map(str)
         #nos quedamos con selectedColumns
         X = X[selectedColumns]
