@@ -10,6 +10,7 @@ export type TrainingParams = {
     lossFunction: string;
     optimFunction: string;
     learningRate: number;
+    minDloss: number;
 };
 
 export type RuleParams = {

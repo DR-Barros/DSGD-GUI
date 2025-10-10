@@ -41,7 +41,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         batchSize: 4000,
         lossFunction: "MSE",
         optimFunction: "adam",
-        learningRate: 0.005
+        learningRate: 0.005,
+        minDloss: 0.0001
     });
     const [generateRuleParams, setGenerateRuleParams] = useState<RuleParams>({
         singleRule: true,
@@ -445,115 +446,110 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             sx={{
                                 display: 'grid',
                                 gridTemplateColumns: {
-                                xs: '1fr',       // móvil: una columna
-                                sm: '1fr 1fr',   // tablet: dos columnas
-                                md: '1fr 1fr 1fr', // desktop: tres columnas
+                                xs: '1fr',      
+                                sm: '1fr 1fr',  
+                                md: '1fr 1fr 1fr 1fr',
                                 },
                                 gap: 3,
                                 justifyItems: 'center',
                                 mb: 3
                             }}
                         >
-                        <FormControlLabel
-                            control={
-                                <TextField
-                                    type="number"
-                                    value={params.maxEpochs}
-                                    onChange={(e) => setParams({ ...params, maxEpochs: parseInt(e.target.value) })}
-                                    fullWidth
-                                    slotProps={{
-                                        htmlInput: {
-                                            min: params.minEpochs + 1,
-                                            max: 10000
-                                        }
-                                    }}
-                                />
-                            }
-                            label={t("experiment.maxEpochs")}
-                            labelPlacement='start'
-                        />
-                        <FormControlLabel
-                            control={
-                                <TextField
-                                    type="number"
-                                    value={params.minEpochs}
-                                    onChange={(e) => setParams({ ...params, minEpochs: parseInt(e.target.value) })}
-                                    fullWidth
-                                    slotProps={{
-                                        htmlInput: {
-                                            min: 1,
-                                            max: params.maxEpochs - 1
-                                        }
-                                    }}
-                                />
-                            }
-                            label={t("experiment.minEpochs")}
-                            labelPlacement='start'
-                        />
-                        <FormControlLabel
-                            control={
-                                <TextField
-                                    type="number"
-                                    value={params.batchSize}
-                                    onChange={(e) => setParams({ ...params, batchSize: parseInt(e.target.value) })}
-                                    fullWidth
-                                    slotProps={{
-                                        htmlInput: {
-                                            min: 1
-                                        }
-                                    }}
-                                />
-                            }
-                            label={t("experiment.batchSize")}
-                            labelPlacement='start'
-                        />
-                        <FormControlLabel
-                            control={
-                                <TextField
-                                    type="number"
-                                    value={params.learningRate}
-                                    onChange={(e) => setParams({ ...params, learningRate: parseFloat(e.target.value) })}
-                                    fullWidth
-                                    slotProps={{
-                                        htmlInput: {
-                                            min: 0.0000000000001,
-                                            max: 0.9999999999999,
-                                            step: 0.0001
-                                        }
-                                    }}
-                                />
-                            }
-                            label={t("experiment.learningRate")}
-                            labelPlacement='start'
-                        />
-                        <FormControlLabel
-                            control={
-                                <Select
-                                    value={params.lossFunction}
-                                    onChange={(e) => setParams({ ...params, lossFunction: e.target.value })}
-                                    style={{ width: '150px' }}
-                                >
-                                    <MenuItem value="MSE">MSE</MenuItem>
-                                    <MenuItem value="CE">CrossEntropy</MenuItem>
-                                </Select>
-                            }
-                            label={t("experiment.lossFunction")}
-                            labelPlacement='start'
-                        />
-                        <FormControlLabel
-                            control={
-                                <Select
-                                    value={params.optimFunction}
-                                    onChange={(e) => setParams({ ...params, optimFunction: e.target.value })}
-                                    style={{ width: '150px' }}
-                                >
-                                    <MenuItem value="adam">Adam</MenuItem>
-                                    <MenuItem value="sgd">SGD</MenuItem>
-                                </Select>
-                            }
-                            label={t("experiment.optimFunction")}
-                            labelPlacement='start'
-                        />
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.maxEpochsInfo")} arrow>
+                                <span>{t("experiment.maxEpochs")}</span>
+                            </Tooltip>
+                            <input
+                                type="number"
+                                value={params.maxEpochs}
+                                onChange={(e) => setParams({ ...params, maxEpochs: parseInt(e.target.value) })}
+                                style={{ width: '100px', marginLeft: '10px', textAlign: 'center', padding: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                step={1}
+                                min={params.minEpochs + 1}
+                                max={10000}
+                            />
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.minEpochsInfo")} arrow>
+                                <span>{t("experiment.minEpochs")}</span>
+                            </Tooltip>
+                            <input
+                                type="number"
+                                value={params.minEpochs}
+                                onChange={(e) => setParams({ ...params, minEpochs: parseInt(e.target.value) })}
+                                style={{ width: '100px', marginLeft: '10px', textAlign: 'center', padding: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                step={1}
+                                min={1}
+                                max={params.maxEpochs - 1}
+                            />
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.batchSizeInfo")} arrow>
+                                <span>{t("experiment.batchSize")}</span>
+                            </Tooltip>
+                            <input
+                                type="number"
+                                value={params.batchSize}
+                                onChange={(e) => setParams({ ...params, batchSize: parseInt(e.target.value) })}
+                                style={{ width: '100px', marginLeft: '10px', textAlign: 'center', padding: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                step={1}
+                                min={1}
+                            />
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.learningRateInfo")} arrow>
+                                <span>{t("experiment.learningRate")}</span>
+                            </Tooltip>
+                            <input
+                                type="number"
+                                value={params.learningRate}
+                                onChange={(e) => setParams({ ...params, learningRate: parseFloat(e.target.value) })}
+                                style={{ width: '100px', marginLeft: '10px', textAlign: 'center', padding: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                step={0.0001}
+                                min={0.00000001}
+                                max={0.99999999}
+                            />
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.lossFunctionInfo")} arrow>
+                                <span>{t("experiment.lossFunction")}</span>
+                            </Tooltip>
+                            <Select
+                                value={params.lossFunction}
+                                onChange={(e) => setParams({ ...params, lossFunction: e.target.value })}
+                                style={{ width: '150px', marginLeft: '10px' }}
+                            >
+                                <MenuItem value="MSE">MSE</MenuItem>
+                                <MenuItem value="CE">CrossEntropy</MenuItem>
+                            </Select>
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.optimFunctionInfo")} arrow>
+                                <span>{t("experiment.optimFunction")}</span>
+                            </Tooltip>
+                            <Select
+                                value={params.optimFunction}
+                                onChange={(e) => setParams({ ...params, optimFunction: e.target.value })}
+                                style={{ width: '150px', marginLeft: '10px' }}
+                            >
+                                <MenuItem value="adam">Adam</MenuItem>
+                                <MenuItem value="sgd">SGD</MenuItem>
+                            </Select>
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <Tooltip title={t("experiment.minDlossInfo")} arrow>
+                                <span>{t("experiment.minDloss")}</span>
+                            </Tooltip>
+                            <input
+                                type="number"
+                                value={params.minDloss}
+                                onChange={(e) => setParams({ ...params, minDloss: parseFloat(e.target.value) })}
+                                style={{ width: '100px', marginLeft: '10px', textAlign: 'center', padding: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                step={0.0001}
+                                min={0.0000000000001}
+                                max={0.9999999999999}
+                            />
+                        </label>
                         </Box>
                         <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
                         <Button

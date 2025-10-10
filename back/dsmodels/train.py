@@ -22,6 +22,7 @@ def train_model(
     loss_function: str = "MSE",
     optimizer: str = "adam",
     learning_rate: float = 0.001,
+    min_dloss: float = 0.0001,
     rules: list = [],
     n_classes: int = 2,
     label_to_num: dict = None,
@@ -51,7 +52,8 @@ def train_model(
             lossfn=loss_function,
             optim=optimizer,
             debug_mode=True,
-            device=settings.DEVICE
+            device=settings.DEVICE,
+            min_dloss=min_dloss,
         )
         for rule, mass, label in functions:
             m_uncert = None

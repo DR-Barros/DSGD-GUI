@@ -126,6 +126,7 @@ async def train_model_post(
     loss_function = data.get("lossFunction", "MSE").upper()
     optim_function = data.get("optimFunction", "adam").lower()
     learning_rate = data.get("learningRate", 0.001)
+    min_dloss = data.get("minDloss", 0.0001)
     rules = data.get("rules", [])
     masses = data.get("masses", [])
     labels = data.get("labels", [])
@@ -170,6 +171,7 @@ async def train_model_post(
         loss_function,
         optim_function,
         learning_rate,
+        min_dloss,
         rules,
         dataset.n_classes,
         label_to_num,
