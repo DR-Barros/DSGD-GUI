@@ -60,7 +60,7 @@ async def generate_rules(
         X = X[selectedColumns]
         for key, column_encoder in dataset.columns_encoder.items():
             if key in X.columns:
-                X[key] = X[key].replace(column_encoder)
+                X[key] = X[key].map(column_encoder)
         X_np = X.to_numpy()
         # Get the experiment from the database
         experiment = db.query(Experiment).filter(Experiment.id == experiment_id).first()
@@ -150,7 +150,7 @@ async def coverage_rules(
         #aplicamos columnEncoder
         for key, column_encoder in columnEncoder.items():
             if key in X.columns:
-                X[key] = X[key].replace(column_encoder)
+                X[key] = X[key].map(column_encoder)
         ds_parser = DSParser.DSParser()
         fn = ds_parser.json_to_lambda(rule["rule"], X.columns.tolist())
         #calculamos el numero de filas que cumplen la regla

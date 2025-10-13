@@ -24,6 +24,38 @@ def test_extract_condition_bool_and():
     result = parser.extract_condition(expr)
     assert result["op"] == "and"
     assert len(result["values"]) == 2
+    
+def test_extract_condition_bool_or():
+    parser = DSParser()
+    expr = ast.parse("x == 3 or y != 7").body[0].value
+    result = parser.extract_condition(expr)
+    assert result["op"] == "or"
+    assert len(result["values"]) == 2
+    
+def test_extract_condition_sum():
+    parser = DSParser()
+    expr = ast.parse("x + 2 > 10").body[0].value
+    result = parser.extract_condition(expr)
+    assert result == [{"left": {"op": "+", "left": "x", "right": 2}, "op": ">", "right": 10}]
+    
+def test_extract_condition_substract():
+    parser = DSParser()
+    expr = ast.parse("y - 3 <= 4").body[0].value
+    result = parser.extract_condition(expr)
+    assert result == [{"left": {"op": "-", "left": "y", "right": 3}, "op": "<=", "right": 4}]
+
+def test_extract_condition_unsupported_boolop():
+    parser = DSParser()
+    # Crear una expresión booleana con operador no soportado (por ejemplo, BitAnd)
+    expr = ast.BoolOp(op=ast.BitAnd(), values=[ast.Constant(True), ast.Constant(False)])
+    with pytest.raises(NotImplementedError):
+        parser.extract_condition(expr)  
+    
+def test_extract_condition_unsupported_expr():
+    parser = DSParser()
+    expr = ast.Call(func=ast.Name(id="func", ctx=ast.Load()), args=[], keywords=[])
+    with pytest.raises(NotImplementedError):
+        parser.extract_condition(expr)
 
 def test_build_expr_single_condition():
     parser = DSParser()
