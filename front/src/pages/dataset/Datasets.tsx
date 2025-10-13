@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemText, ListItemIcon, Divider, Fab, Button, Modal, Select, MenuItem, Tooltip } from "@mui/material";
+import { List, ListItem, ListItemText, ListItemIcon, Divider, Fab, Button, Modal, Select, MenuItem, Tooltip, CircularProgress } from "@mui/material";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from "react-i18next";
 import AddIcon from '@mui/icons-material/Add';
@@ -16,6 +16,7 @@ import DatasetsView from "../../components/DatasetsView";
 export default function Datasets() {
     const { t } = useTranslation();
     const [datasets, setDatasets] = useState<Dataset[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
     const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
     const [datasetPreview, setDatasetPreview] = useState<any[]>([]);
     const [datasetStats, setDatasetStats] = useState<any[]>([]);
@@ -35,6 +36,7 @@ export default function Datasets() {
     }, []);
 
     const fetchDatasets = async () => {
+        setLoading(true);
         const { data, status } = await fetchProtected("/datasets");
         if (status === 200) {
             console.log("Datasets fetched successfully", data);
@@ -42,15 +44,18 @@ export default function Datasets() {
         } else {
             console.log("Error fetching datasets");
         }
+        setLoading(false);
     };
 
     const deleteDataset = async (id: number) => {
+        setLoading(true);
         try {
             await deleteProtected(`/datasets/${id}`);
             setDatasets(datasets.filter(dataset => dataset.id !== id));
         } catch (error) {
             console.error("Error deleting dataset:", error);
         }
+        setLoading(false);
     }
 
     const handlePreviewDataset = async (datasetId: Number) => {
@@ -76,6 +81,22 @@ export default function Datasets() {
     return (
         <div className="datasets-container">
         <h1>{t("datasets.title")}</h1>
+        {loading && (
+            <div style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                top: 0,
+                left: 0,
+                backgroundColor: "rgba(255, 255, 255, 0.7)",
+                zIndex: 9999,
+            }}>
+                <CircularProgress />
+            </div>
+        )}
         <List>
             <Divider />
             {datasets
@@ -241,6 +262,11 @@ export default function Datasets() {
                     <p>{t("classes")}: {selectedDataset.n_classes}</p>
                     <p>{t("rows")}: {selectedDataset.n_rows}</p>
                     </div>
+                    {(datasetPreview.length === 0 || datasetStats.length === 0) && (
+                        <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "80vh"}}>
+                            <CircularProgress />
+                        </div>
+                    )}
                     {(datasetPreview.length > 0 && datasetStats.length > 0) && (
                         <DatasetsView
                             rows={datasetPreview[0]}

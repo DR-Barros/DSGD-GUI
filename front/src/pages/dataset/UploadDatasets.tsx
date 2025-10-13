@@ -36,6 +36,7 @@ export default function UploadDatasets() {
     const [canContinue, setCanContinue] = useState<boolean>(false);
     const [errorMsg, setErrorMsg] = useState<TranslationReturn | null>(null);
     const [loadingPhase0, setLoadingPhase0] = useState<boolean>(false);
+    const [loadingPhase1, setLoadingPhase1] = useState<boolean>(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -234,6 +235,8 @@ export default function UploadDatasets() {
         formsData.append("header", hasHeader.toString());
         //enviamos columna objetivo
         formsData.append("target_column", targetColumn ? targetColumn : "");
+        setErrorMsg(null);
+        setLoadingPhase1(true);
         let { data, status } = await postProtected("/datasets/upload", formsData)
         console.log("Response from server:", data, status);
         if (status === 200) {
@@ -242,6 +245,7 @@ export default function UploadDatasets() {
             console.error("Error al subir el dataset:", data);
             setErrorMsg(t("datasets.upload.error.upload_failed"));
         }
+        setLoadingPhase1(false);
     };
 
     useEffect(() => {
@@ -427,11 +431,23 @@ export default function UploadDatasets() {
                             </select>
                         </label>
                         <br />
+                        <div className="upload-buttons">
                         <TextField
                             label={t("datasets.upload.dataset_name")}
                             value={datasetName}
                             onChange={(e) => setDatasetName(e.target.value)}
+                            sx={{
+                                height: "100%"
+                            }}
                         />
+                        {errorMsg && <p style={{ color: "red", marginTop: 0, marginBottom: 0, marginLeft: 10 }}>{errorMsg}</p>}
+                        {loadingPhase1 && 
+                        <div className="loading-indicator">
+                            <CircularProgress />
+                        </div>
+                        }
+                        <button onClick={handleSave} disabled={loadingPhase1}>{t("save")}</button>
+                        </div>
                         <br />
                         {parsedData.length > 0 && (
                             <>
@@ -497,8 +513,6 @@ export default function UploadDatasets() {
                     }}>
                         {t("back")}
                     </button>
-                    {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-                    <button onClick={handleSave}>{t("save")}</button>
                     </div>
                 </>
             )}
