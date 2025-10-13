@@ -32,7 +32,8 @@ export default function Experiments() {
         setModalOpen(true);
     };
 
-     const fetchExperiments = async () => {
+    const fetchExperiments = async () => {
+        setLoading(true);
         const { data, status } = await fetchProtected("/experiments");
         if (status === 200) {
             console.log("Experiments fetched successfully", data);
@@ -40,6 +41,7 @@ export default function Experiments() {
         } else {
             console.log("Error fetching experiments");
         }
+        setLoading(false);
     };
 
     const deleteExperiment = async (id: number) => {

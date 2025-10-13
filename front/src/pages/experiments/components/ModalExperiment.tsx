@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Select, MenuItem, TextField } from "@mui/material";
+import { Box, Button, Modal, Select, MenuItem, TextField, CircularProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { Dataset } from "../../../types/dataset";
 import { useState, useEffect } from "react";
@@ -19,6 +19,7 @@ export default function ModalExperiment(
     const [datasetsOptions, setDatasetsOptions] = useState<Dataset[]>([]);
     const [selectedDataset, setSelectedDataset] = useState<number | null>(null);
     const [experimentName, setExperimentName] = useState<string>(location.state?.experimentName || "");
+    const [loading, setLoading] = useState(false);
     const { t } = useTranslation();
 
 
@@ -27,6 +28,7 @@ export default function ModalExperiment(
     }, []);
     
     const fetchDatasets = async () => {
+        setLoading(true);
         const { data, status } = await fetchProtected("/datasets");
         if (status === 200) {
             console.log("Datasets fetched successfully", data);
@@ -34,6 +36,7 @@ export default function ModalExperiment(
         } else {
             console.log("Error fetching datasets");
         }
+        setLoading(false);
     };
 
     const handleCreateExperiment = async () => {
@@ -44,7 +47,7 @@ export default function ModalExperiment(
         const formData = new FormData();
         formData.append("dataset_id", selectedDataset!.toString());
         formData.append("name", experimentName);
-
+        setLoading(true);
         const { data, status } = await postProtected("/experiments", formData);
         if (status === 200) {
             console.log("Experiment created successfully", data);
@@ -53,6 +56,7 @@ export default function ModalExperiment(
         } else {
             console.log("Error creating experiment");
         }
+        setLoading(false);
     };
 
     return (
@@ -71,7 +75,8 @@ export default function ModalExperiment(
                 display: "flex",
                 flexDirection: "column",
                 gap: "20px",
-                boxShadow: 24
+                boxShadow: 24,
+                position: 'relative',
             }}>
                 <h2>{t("experiments.add_experiment")}</h2>
                 <label htmlFor="dataset-select">{t("experiments.select_dataset")}</label>
@@ -103,6 +108,9 @@ export default function ModalExperiment(
                     {t("experiments.add_experiment")}
                 </Button>
                 <Button onClick={onClose}>{t("close")}</Button>
+                {loading && <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(255, 255, 255, 0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000}}>
+                    <CircularProgress />
+                </div>}
             </Box>
         </Modal>
     );
