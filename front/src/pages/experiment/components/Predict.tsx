@@ -26,9 +26,11 @@ export default function Predict({ iterationId }: { iterationId: number | string 
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [modalId, setModalId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
     const { t } = useTranslation();
 
     const fetchPostTrainData = async (experimentId: number) => {
+        setLoading(true);
         const { data, status } = await fetchProtected(`/experiments/dataset/${experimentId}/columns`);
         if (status === 200) {
             console.log("Fetched post-training data:", data);
@@ -36,6 +38,7 @@ export default function Predict({ iterationId }: { iterationId: number | string 
         } else {
             console.error("Error fetching post-training data");
         }
+        setLoading(false);
     };
     useEffect(() => {
         if (id) {
@@ -127,6 +130,9 @@ export default function Predict({ iterationId }: { iterationId: number | string 
             <h2>{t("experiment.predict")}</h2>
             {status == "idle" &&
             <>
+            {loading && <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px' }}>
+                <CircularProgress />
+            </div>}
             <TableContainer component={Paper} sx={{ marginBottom: "50px" }}>
                 <Table>
                     <TableHead>

@@ -261,6 +261,11 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         {t("experiment.seeRules")}
                     </Button>
                 </div>
+                {(datasetPreview.length === 0 || datasetStats.length === 0) && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px' }}>
+                        <CircularProgress />
+                    </div>
+                )}
                 {(datasetPreview.length > 0 && datasetStats.length > 0) && (
                     <DatasetsView
                         rows={datasetPreview[0]}

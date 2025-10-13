@@ -5,7 +5,7 @@ import StepButton from '@mui/joy/StepButton';
 import { useEffect, useState } from "react";
 import { fetchProtected } from "../../../api/client";
 import type { Iteration } from '../../../types/experiment';
-import { Button, Card, CardContent} from "@mui/material";
+import { Button, Card, CardContent, CircularProgress} from "@mui/material";
 import {
   Chart as ChartJS,
   Title,
@@ -83,7 +83,9 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
     };
 
     if (!postTrainData) {
-        return <p>{t("postTrain.loading")}</p>;
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+            <CircularProgress />
+        </div>;
     }
 
     const cm = postTrainData.confusion_matrix;
