@@ -5,11 +5,10 @@ import StepButton from '@mui/joy/StepButton';
 import { useEffect, useState } from "react";
 import { fetchProtected } from "../../../api/client";
 import type { Iteration } from '../../../types/experiment';
-import { Button, Card, CardContent, CircularProgress} from "@mui/material";
+import { Button, Card, CardContent, CircularProgress, Tooltip} from "@mui/material";
 import {
   Chart as ChartJS,
   Title,
-  Tooltip,
   Legend,
   LinearScale,
   CategoryScale
@@ -21,10 +20,10 @@ import RuleView from "./RuleView";
 import Predict from "./Predict";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Metrics } from "../../../types/experiment";
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 ChartJS.register(
   Title,
-  Tooltip,
   Legend,
   LinearScale,
   CategoryScale,
@@ -282,7 +281,19 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
                     {Object.keys(metrics[0]).filter(k => k !== 'iteration_id' && k !== 'created_at').map(metric => (
                         <div key={metric} style={{ marginBottom: '30px', width: '100%', maxWidth: 400, margin: '0 auto' }}>
-                        <h3 style={{ textTransform: 'capitalize' }}>{metric.replace(/([A-Z])/g, ' $1')}</h3>
+                        <h3 style={{ textTransform: 'capitalize' }}>
+                            {metric.replace(/([A-Z])/g, ' $1')}
+                            <Tooltip title={
+                                metric === 'accuracy' ? t('postTrain.accuracyInfo') :
+                                metric === 'precision' ? t('postTrain.precisionInfo') :
+                                metric === 'recall' ? t('postTrain.recallInfo') :
+                                metric === 'f1Score' ? t('postTrain.f1ScoreInfo') :
+                                metric === 'rocAuc' ? t('postTrain.aucInfo') :
+                                ''
+                            }>
+                                <HelpOutlineIcon style={{ fontSize: 16, marginLeft: 4, cursor: 'pointer' }} />
+                            </Tooltip>
+                        </h3>
                         <Bar
                             data={{
                                 labels: metrics.map(m => `It: ${m.iteration_id}`),

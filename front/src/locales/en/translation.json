@@ -193,7 +193,12 @@
     "predict": "Go to Predict",
     "viewMetrics": "View Metrics",
     "compareMetrics": "Compare Metrics",
-    "trainingError": "Training Error"
+    "trainingError": "Training Error",
+    "accuracyInfo": "Accuracy: The proportion of correct predictions out of all predictions",
+    "precisionInfo": "Precision: The proportion of true positives out of all positive predictions",
+    "recallInfo": "Recall: The proportion of true positives out of all actual positive cases",
+    "f1ScoreInfo": "F1 Score: The harmonic mean of precision and recall",
+    "aucInfo": "AUC: Area Under the ROC Curve, measures the model's ability to distinguish between classes"
   },
   "datasetsDocumentation": {
     "title": "Datasets Documentation",
