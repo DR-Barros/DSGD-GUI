@@ -6,7 +6,8 @@ import {
     Modal,
     Typography,
     Button,
-    Tooltip
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -37,6 +38,7 @@ export default function DrawerMenu(
         dropDuplicates: true,
     });
     const [iterations, setIterations] = useState<Iteration[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
     const { t } = useTranslation();
     const navigation = useNavigate();
 
@@ -45,6 +47,7 @@ export default function DrawerMenu(
     }, [mobileOpen]);
 
     const handleIterations = async () => {
+        setLoading(true);
         const { data, status } = await fetchProtected(`/experiments/iteration/${id}`);
         console.log("Dataset preview data:", data);
         if (status !== 200) {
@@ -64,24 +67,31 @@ export default function DrawerMenu(
                 });
             }
         }
+        setLoading(false);
     };
 
     const handleDownload = (iterationId: number) => {
+        setLoading(true);
         downloadProtected(`/experiments/${iterationId}/download`, `iteration_${iterationId}.zip`)
         .catch((err) => {
             console.error("Error en descarga:", err);
             alert("No se pudo descargar el archivo");
+        })
+        .finally(() => {
+            setLoading(false);
         });
     };
 
     const handleDelete = async (iterationId: string) => {
         if (window.confirm(t('experiment.confirmDeleteIteration'))) {
+            setLoading(true);
             try {
                 await deleteProtected(`/experiments/iteration/${iterationId}`);
             } catch (error) {
                 console.error("Error deleting iteration:", error);
                 alert(t('experiment.errorDeletingIteration'));
             } finally {
+                setLoading(false);
                 handleIterations();
             }
         }
@@ -139,6 +149,9 @@ export default function DrawerMenu(
                 {t('experiment.iterations')}:
             </Typography>
             <hr style={{width: "90%", borderTop: "1px solid #000", marginLeft: "10px"}} />
+            {loading && <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px' }}>
+                <CircularProgress />
+            </div>} 
             {iterations.map((item) => (
                     <div key={item.id} style={{paddingLeft: "10px"}}>
                         <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
@@ -158,12 +171,12 @@ export default function DrawerMenu(
                         <p>acc: {item.accuracy?.toFixed(2)}</p>
                         {item.training_status === "completed" && (
                             <Tooltip title={t('experiment.downloadModel')} arrow>
-                                <button onClick={() => handleDownload(item.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#1976d2" }}>
+                                <button onClick={() => handleDownload(item.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#1976d2" }} disabled={loading}>
                                     <DownloadForOfflineIcon style={{ marginRight: "5px" }} />
                                 </button>
                             </Tooltip>
                         )}
-                            <button onClick={() => handleDelete(item.id.toString())} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#d32f2f" }}>
+                            <button onClick={() => handleDelete(item.id.toString())} style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#d32f2f" }} disabled={loading}>
                                 <DeleteIcon style={{ marginRight: "5px" }} />
                             </button>
                         </div>

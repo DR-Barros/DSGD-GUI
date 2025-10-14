@@ -53,6 +53,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
     });
     const [encodedRules, setEncodedRules] = useState<Array<GroupedRule>>([]);
     const [loadingRules, setLoadingRules] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { t } = useTranslation();
     const {id, iteration_id} = useParams();
     const [snackbar, setSnackbar] = useState<{open: boolean, message: String, type: 'error' | 'info' | 'success' | 'warning'}>({open: false, message: '', type: 'info'});
@@ -90,6 +91,39 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             console.error("Error fetching rules:", data);
         }
     }
+
+    const handleTrain = async () => {
+        // Flatten all rule arrays and extract parsedRule
+        if (encodedRules.length === 0) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.noRules"),
+                type: 'error'
+            });
+            return;
+        }
+        try {
+            const allRulesWithValues: any[] = Object.values(encodedRules)
+                .flat()
+                .map((rule: any) => parseExpr(rule.parsedRule, Dataset?.columns || []));   
+            const allMases: any [] = Object.values(encodedRules)
+                .flat()
+                .map((rule:any) => rule.mass)
+            const allLabels: any [] = Object.values(encodedRules)
+                .flat()
+                .map((rule:any) => rule.labels)
+            setLoading(true);
+            startTraining(params, allRulesWithValues, allMases, allLabels);
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.errorMessage") +
+                    (error instanceof Error ? error.message : String(error)),
+                type: 'error'
+            });
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         console.log("Dataset changed, updating selectedColumns and manualColumns");
@@ -556,44 +590,17 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             />
                         </label>
                         </Box>
-                        <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
+                        <div style={{width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
                         <Button
+                            disabled={loading}
                             variant="contained"
                             color="primary"
                             style={{ marginTop: '20px' }}
-                            onClick={() => {
-                                // Flatten all rule arrays and extract parsedRule
-                                if (encodedRules.length === 0) {
-                                    setSnackbar({
-                                        open: true,
-                                        message: t("experiment.noRules"),
-                                        type: 'error'
-                                    });
-                                    return;
-                                }
-                                try {
-                                const allRulesWithValues: any[] = Object.values(encodedRules)
-                                    .flat()
-                                    .map((rule: any) => parseExpr(rule.parsedRule, Dataset?.columns || []));   
-                                const allMases: any [] = Object.values(encodedRules)
-                                    .flat()
-                                    .map((rule:any) => rule.mass)
-                                const allLabels: any [] = Object.values(encodedRules)
-                                    .flat()
-                                    .map((rule:any) => rule.labels)
-                                startTraining(params, allRulesWithValues, allMases, allLabels)
-                            } catch (error) {
-                                setSnackbar({
-                                    open: true,
-                                    message: t("experiment.errorMessage") +
-                                        (error instanceof Error ? error.message : String(error)),
-                                    type: 'error'
-                                });
-                            }
-                        }}
-                    >
+                            onClick={handleTrain}
+                        >
                             {t("experiment.train")}
                         </Button>
+                        {loading && <CircularProgress size={24} style={{ marginLeft: '15px' }} />}
                         </div>
                     </CardContent>
                 </Card>
