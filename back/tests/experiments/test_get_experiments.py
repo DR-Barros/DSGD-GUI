@@ -52,7 +52,6 @@ def test_get_experiments(client, tmp_path):
     response = client.get("/dsgd/api/experiments/")
     assert response.status_code == 200
     experiments = response.json()
-    print(experiments)
     assert len(experiments) == 1
     assert experiments[0]["name"] == "Mi Experimento"
     assert experiments[0]["datasets"]["id"] == dataset_id

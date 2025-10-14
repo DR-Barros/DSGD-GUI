@@ -306,16 +306,36 @@ async def upload_experiment_iteration(
         X_test_np = X_test.to_numpy()
         y_test = y_test.astype(str).map(label_encoder)
         y_pred = ds.predict(X_test_np)
-        acc = accuracy_score(y_test, y_pred)
-        y_proba = ds.predict_proba(X_test_np)
-        y_proba = y_proba[:, 1] if dataset.n_classes == 2 else y_proba
-        roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
-        precision = precision_score(y_test, y_pred, average='weighted')
-        recall = recall_score(y_test, y_pred, average='weighted')
-        f1 = f1_score(y_test, y_pred, average='weighted')
-        confusion = confusion_matrix(y_test, y_pred)
-        report = classification_report(y_test, y_pred, output_dict=True)
-        print(f"Uploaded model accuracy: {acc}, precision: {precision}, recall: {recall}, f1: {f1}")
+        try:
+            acc = accuracy_score(y_test, y_pred)
+        except:
+            acc = 0.0
+        try:
+            y_proba = ds.predict_proba(X_test_np)
+            y_proba = y_proba[:, 1] if dataset.n_classes == 2 else y_proba
+            roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
+        except:
+            roc = 0.0
+        try:
+            precision = precision_score(y_test, y_pred, average='weighted')
+        except:
+            precision = 0.0
+        try:
+            recall = recall_score(y_test, y_pred, average='weighted')
+        except:
+            recall = 0.0
+        try:
+            f1 = f1_score(y_test, y_pred, average='weighted')
+        except:
+            f1 = 0.0
+        try:
+            confusion = confusion_matrix(y_test, y_pred)
+        except:
+            confusion = np.zeros((dataset.n_classes, dataset.n_classes))
+        try:
+            report = classification_report(y_test, y_pred, output_dict=True)
+        except:
+            report = {}
     except Exception as e:
         #eliminar el modelo guardado
         os.remove(model_path)
@@ -412,8 +432,6 @@ async def get_results(
     labels = []
     for rule in rules:
         vars = rule.ld.__defaults__
-        #pasamos los valores np.float a float
-        print("Vars before:", vars)
         if vars is not None:
             vars = [float(v) if isinstance(v, np.float64) else v for v in vars]
         lambda_fn = ds_parser.lambda_rule_to_json(rule.ld, vars)
