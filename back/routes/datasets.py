@@ -13,6 +13,7 @@ from schemas.dataset import DatasetOut
 import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
+from utils.loadDataset import load_datasets
 
 api_router = APIRouter()
 
@@ -36,15 +37,9 @@ async def preview_dataset(
     if not dataset_files or len(dataset_files) == 0:
         raise HTTPException(status_code=404, detail="Dataset no encontrado")
     dataset_data = []
-    for dataset_file in dataset_files:
-        if dataset_file.type_file == FileType.CSV:
-            df = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.EXCEL:
-            df = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.PARQUET:
-            df = pd.read_parquet(dataset_file.file_path)
-        else:
-            return HTTPException(status_code=400, detail="Tipo de archivo no soportado")
+    datasets = load_datasets(dataset_files)
+    for dataset in datasets:
+        df = dataset["data"]
         stats = []
         n_rows = len(df)
         for col in df.columns:
@@ -83,7 +78,7 @@ async def preview_dataset(
             })
         min_rows = min(n_rows, 1000)
         df = df.where(pd.notnull(df), None)
-        dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
+        dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset["dataset_type"]})
 
     return dataset_data
 

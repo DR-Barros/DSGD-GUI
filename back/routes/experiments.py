@@ -20,6 +20,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report, roc_auc_score
 import os
+from utils.loadDataset import load_datasets
 
 
 api_router = APIRouter()
@@ -68,15 +69,9 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
     dataset_data = []
-    for dataset_file in dataset_files:
-        if dataset_file.type_file == FileType.CSV:
-            df = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.EXCEL:
-            df = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.PARQUET:
-            df = pd.read_parquet(dataset_file.file_path)
-        else:
-            return HTTPException(status_code=400, detail="Unsupported file type")
+    datasets= load_datasets(dataset_files)
+    for dataset in datasets:
+        df = dataset["data"]
         stats = []
         n_rows = len(df)
         for col in df.columns:
@@ -117,7 +112,7 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
         data = df.head(min_rows)
         #remplazar NaN por None
         data = data.where(pd.notnull(data), None)
-        dataset_data.append({ "data": data.to_dict(orient='records'), "stats": stats, "type": dataset_file.dataset_type })
+        dataset_data.append({ "data": data.to_dict(orient='records'), "stats": stats, "type": dataset["dataset_type"]})
     dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
     return {
         "data": dataset_data,

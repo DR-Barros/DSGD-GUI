@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from database import get_db
 from .auth import get_current_user_from_cookie
 from dsmodels import classifier, DSParser
-import pandas as pd
 import numpy as np
-from models.dataset_file import FileType, DatasetType
+from models.dataset_file import DatasetType
 from sklearn.model_selection import train_test_split
+from utils.loadDataset import load_datasets
 
 api_router = APIRouter()
 
@@ -34,17 +34,10 @@ async def generate_rules(
         dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
         if not dataset_files:
             raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-        for dataset_file in dataset_files:
-            if dataset_file.dataset_type == DatasetType.TESTING:
-                continue
-            if dataset_file.type_file == FileType.CSV:
-                X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-            elif dataset_file.type_file == FileType.EXCEL:
-                X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-            elif dataset_file.type_file == FileType.PARQUET:
-                X = pd.read_parquet(dataset_file.file_path)
-            else:
-                return HTTPException(status_code=400, detail="Unsupported file type")
+        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL])
+        if not datasets:
+            raise HTTPException(status_code=404, detail="No training dataset found for this experiment")
+        X = datasets[0]["data"]
         if dropNulls:
             X = X.dropna()
         if dropDuplicates:
@@ -132,17 +125,10 @@ async def coverage_rules(
         dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
         if not dataset_files:
             raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-        for dataset_file in dataset_files:
-            if dataset_file.dataset_type == DatasetType.TESTING:
-                continue
-            if dataset_file.type_file == FileType.CSV:
-                X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-            elif dataset_file.type_file == FileType.EXCEL:
-                X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-            elif dataset_file.type_file == FileType.PARQUET:
-                X = pd.read_parquet(dataset_file.file_path)
-            else:
-                return HTTPException(status_code=400, detail="Unsupported file type")
+        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL])
+        if not datasets:
+            raise HTTPException(status_code=404, detail="No training dataset found for this experiment")
+        X = datasets[0]["data"]
         dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
         columnEncoder = dataset.columns_encoder # dict para pasar las columnas categoricas a numeros
         if not dataset:

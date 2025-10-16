@@ -1,20 +1,20 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException, Form, File, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from sklearn.calibration import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sqlalchemy.orm import Session 
 from utils.sanitize import sanitize_json
 from database import get_db
 from models import User, Experiment, DatasetFile, Datasets, Iteration
-from models.dataset_file import FileType, DatasetType
+from models.dataset_file import DatasetType
 from models.iteration import Status
 from .auth import get_current_user_from_cookie
 from datetime import datetime
 from core.config import settings
-import pandas as pd
 import asyncio
 import threading
 from dsmodels.train import train_model
+from utils.loadDataset import load_datasets
 
 api_router = APIRouter()
 
@@ -54,21 +54,7 @@ async def train_model_post(
     dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-    datasets = []
-    for dataset_file in dataset_files:
-        if dataset_file.type_file == FileType.CSV:
-            X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.EXCEL:
-            X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.PARQUET:
-            X = pd.read_parquet(dataset_file.file_path)
-        else:
-            return HTTPException(status_code=400, detail="Unsupported file type")
-        datasets.append({
-            "data": X,
-            "header": dataset_file.header,
-            "dataset_type": dataset_file.dataset_type
-        })
+    datasets = load_datasets(dataset_files)
     drop_na = data.get("dropNulls", True)
     drop_duplicates = data.get("dropDuplicates", True)
     test_size = data.get("testSize", 0.2)
