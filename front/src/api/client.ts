@@ -10,34 +10,39 @@ function redirectToLogin() {
 }
 
 export async function fetchProtected(endpoint: string) {
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      credentials: "include",
+    });
 
-  if (res.status === 401) {
-      const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
-        method: "GET",
-        credentials: "include",
-      });
-      if (refreshRes.status === 200) {
-        const data = await refreshRes.json();
-        localStorage.setItem("jwt", data.access_token);
-        // Reintentar la solicitud original
-        const retryRes = await fetch(`${API_URL}${endpoint}`, {
+    if (res.status === 401) {
+        const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
+          method: "GET",
           credentials: "include",
         });
-        if (retryRes.status === 200) {
-          return { data: await retryRes.json(), status: retryRes.status };
+        if (refreshRes.status === 200) {
+          const data = await refreshRes.json();
+          localStorage.setItem("jwt", data.access_token);
+          // Reintentar la solicitud original
+          const retryRes = await fetch(`${API_URL}${endpoint}`, {
+            credentials: "include",
+          });
+          if (retryRes.status === 200) {
+            return { data: await retryRes.json(), status: retryRes.status };
+          }
+          redirectToLogin();
+          throw new Error("No autorizado");
+        } else {
+          redirectToLogin();
+          throw new Error("No autorizado");
         }
-        redirectToLogin();
-        throw new Error("No autorizado");
-      } else {
-        redirectToLogin();
-        throw new Error("No autorizado");
-      }
-  }
+    }
 
-  return { data: await res.json(), status: res.status };
+    return { data: await res.json(), status: res.status };
+  } catch (error) {
+    console.error("Error en fetchProtected:", error);
+    throw error;
+  }
 }
 
 export async function postProtected(endpoint: string, body: any) {
