@@ -336,7 +336,7 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                                 scales: {
                                     y: {
                                         beginAtZero: false,
-                                        max: 1,
+                                        max: Math.ceil(Math.min(1, Math.max(...metrics.map(m => (m as any)[metric]))) * 10) / 10,
                                         min: Math.floor(Math.max(0, Math.min(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 
                                     }
                                 }
