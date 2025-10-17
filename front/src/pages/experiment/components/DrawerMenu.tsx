@@ -39,6 +39,7 @@ export default function DrawerMenu(
     });
     const [iterations, setIterations] = useState<Iteration[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [loadingModal, setLoadingModal] = useState<boolean>(false);
     const { t } = useTranslation();
     const navigation = useNavigate();
 
@@ -110,6 +111,8 @@ export default function DrawerMenu(
         formData.append('shuffle', params.shuffle ? "true" : "false");
         formData.append('drop_nulls', params.dropNulls ? "true" : "false");
         formData.append('drop_duplicates', params.dropDuplicates ? "true" : "false");
+        setLoadingModal(true);
+        try {
         const { data, status } = await postProtected(`/experiments/${id}/upload`, formData);
         if (status !== 200) {
             console.error("Error uploading model:", data);
@@ -119,6 +122,12 @@ export default function DrawerMenu(
             setModalUploadOpen(false);
             setFile(null);
             handleIterations();
+        }
+        } catch (error) {
+            console.error("Error uploading model:", error);
+            alert(t('experiment.errorUploadingModel'));
+        } finally {
+            setLoadingModal(false);
         }
     };
 
@@ -279,12 +288,25 @@ export default function DrawerMenu(
                             {t('experiment.dropDuplicates')}:
                             <input type="checkbox" style={{ marginLeft: '10px' }} checked={params.dropDuplicates} onChange={(e) => setParams({...params, dropDuplicates: e.target.checked})}/>
                         </label>
-                        <Button onClick={handleUpload} variant="contained" color="primary" style={{ marginTop: "10px", marginRight: "10px" }}>
+                        <Button onClick={handleUpload} variant="contained" color="primary" style={{ marginTop: "10px", marginRight: "10px" }} disabled={loadingModal}>
                             {t('experiment.upload')}
                         </Button>
                         <Button onClick={() => setModalUploadOpen(false)} variant="contained" color="primary" style={{ marginTop: "10px" }}>
-                            Close
+                            {t('close')}
                         </Button>
+                        {loadingModal && <div style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "rgba(255, 255, 255, 0.7)",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <CircularProgress />
+                        </div>}
                     </Box>
                 </Modal>
             </Drawer>

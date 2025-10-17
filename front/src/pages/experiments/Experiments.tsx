@@ -34,14 +34,19 @@ export default function Experiments() {
 
     const fetchExperiments = async () => {
         setLoading(true);
-        const { data, status } = await fetchProtected("/experiments");
-        if (status === 200) {
-            console.log("Experiments fetched successfully", data);
-            setExperiments(data);
-        } else {
-            console.log("Error fetching experiments");
+        try {
+            const { data, status } = await fetchProtected("/experiments");
+            if (status === 200) {
+                console.log("Experiments fetched successfully", data);
+                setExperiments(data);
+            } else {
+                console.log("Error fetching experiments");
+            }
+        } catch (error) {
+            console.error("Error fetching experiments:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const deleteExperiment = async (id: number) => {
@@ -65,6 +70,9 @@ export default function Experiments() {
         <h1>{t("experiments.title")}</h1>
         <List>
             <Divider />
+            {loading && <div style={{width: "100%", height: 100, display: "flex", justifyContent: "center", alignItems: "center"}}>
+                <CircularProgress />
+            </div>}
             {experiments
             .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
             .map((exp, index) => (
@@ -183,9 +191,7 @@ export default function Experiments() {
             </Fab>
         </Tooltip>
         <ModalExperiment open={modalOpen} onClose={() => setModalOpen(false)} reload={fetchExperiments} />
-        {loading && <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(255, 255, 255, 0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000}}>
-            <CircularProgress />
-        </div>}
+        
     </div>
 );
 }

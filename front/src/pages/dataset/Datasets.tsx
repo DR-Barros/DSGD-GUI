@@ -37,14 +37,19 @@ export default function Datasets() {
 
     const fetchDatasets = async () => {
         setLoading(true);
-        const { data, status } = await fetchProtected("/datasets");
-        if (status === 200) {
-            console.log("Datasets fetched successfully", data);
-            setDatasets(data);
-        } else {
-            console.log("Error fetching datasets");
+        try {
+            const { data, status } = await fetchProtected("/datasets");
+            if (status === 200) {
+                console.log("Datasets fetched successfully", data);
+                setDatasets(data);
+            } else {
+                console.log("Error fetching datasets");
+            }
+        } catch (error) {
+            console.error("Error fetching datasets:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const deleteDataset = async (id: number) => {
@@ -81,24 +86,11 @@ export default function Datasets() {
     return (
         <div className="datasets-container">
         <h1>{t("datasets.title")}</h1>
-        {loading && (
-            <div style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                top: 0,
-                left: 0,
-                backgroundColor: "rgba(255, 255, 255, 0.7)",
-                zIndex: 9999,
-            }}>
-                <CircularProgress />
-            </div>
-        )}
         <List>
             <Divider />
+            {loading && <div style={{width: "100%", height: 100, display: "flex", justifyContent: "center", alignItems: "center"}}>
+                <CircularProgress />
+            </div>}
             {datasets
             .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
             .map((exp, index) => (
