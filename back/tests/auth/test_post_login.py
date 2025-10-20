@@ -1,4 +1,4 @@
-def test_register_and_login_and_refresh(client):
+def test_login(client):
     # Register
     payload = {"name": "Test", "email": "t@example.com", "password": "secret"}
     r = client.post("/dsgd/api/auth/register", json=payload)

@@ -117,9 +117,9 @@ async def train_model_post(
     masses = data.get("masses", [])
     labels = data.get("labels", [])
     if len(rules) == 0:
-        return HTTPException(status_code=404, detail="No rules provided for training")
-    if len(rules) != len(masses) != len(labels):
-        return HTTPException(status_code=404, detail="The rules are bad")
+        raise HTTPException(status_code=404, detail="No rules provided for training")
+    if len(rules) != len(masses) or len(rules) != len(labels) or len(masses) != len(labels):
+        raise HTTPException(status_code=404, detail="The rules are bad")
     rules = zip(rules, masses, labels)
     
     iteration = Iteration(
