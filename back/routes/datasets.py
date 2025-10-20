@@ -91,7 +91,7 @@ async def upload_dataset(
     target_column: str = Form(...),
     n_classes: int = Form(...),
     n_rows: int = Form(...),
-    header: bool = Form(...),
+    header: bool = Form(None),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db)
 ):
@@ -213,7 +213,7 @@ async def delete_dataset(
 ):
     dataset = db.query(Datasets).filter(Datasets.id == dataset_id, Datasets.user_id == current_user.id).first()
     if not dataset:
-        raise HTTPException(status_code=404, detail="Dataset no encontrado")
+        raise HTTPException(status_code=404, detail="Dataset not found")
     
     #Buscamos experimentos que usen este dataset
     experiments = db.query(Experiment).filter(Experiment.dataset_id == dataset_id).all()

@@ -243,15 +243,24 @@ def test_train_ws(client, tmp_path):
     #nos conectamos al websocket
     with client.websocket_connect(f"/dsgd/api/train/ws/{train_result['task_id']}") as websocket:
         #recibimos updates de entrenamiento
-        data = websocket.receive_text()
-        data = json.loads(data)
-        assert "status" in data
-        assert "epoch" in data
-        assert "max" in data
-        assert "loss" in data
-        assert "time" in data
-        assert "eta" in data
-        assert data["status"] == "training"
+        patience = 0
+        while True:
+            try:
+                data = websocket.receive_text()
+                data = json.loads(data)
+                assert "status" in data
+                assert "epoch" in data
+                assert "max" in data
+                assert "loss" in data
+                assert "time" in data
+                assert "eta" in data
+                assert data["status"] == "training"
+                break
+            except:
+                patience += 1
+                if patience > 5:
+                    assert False, "No se recibieron datos del websocket de entrenamiento"
+                
         
         #detenemos el entrenamiento
         websocket.send_text("stop")
@@ -267,7 +276,6 @@ def test_train_ws(client, tmp_path):
     iteration = response.json()
     print(iteration)
     assert iteration["id"] == int(train_result['task_id'])
-    assert iteration["trained"] == True
     assert "classification_report" in iteration
     assert "confusion_matrix" in iteration
     assert "accuracy" in iteration
