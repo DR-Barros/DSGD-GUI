@@ -67,7 +67,7 @@ def test_get_current_user_from_refresh_token_valid():
     user = User(id=1, email="user@example.com", name="test", password="hashed")
     db = DummyDB(user)
 
-    token = jwt_handler.create_refresh_token({"sub": "user@example.com", "type": "refresh"})
+    token = jwt_handler.create_refresh_token({"sub": "user@example.com"})
     result = jwt_handler.get_current_user_from_refresh_token(token, db)
 
     assert result is user
@@ -77,7 +77,7 @@ def test_get_current_user_from_refresh_token_invalid_type():
     user = User(id=1, email="user@example.com", name="test", password="hashed")
     db = DummyDB(user)
 
-    token = jwt_handler.create_refresh_token({"sub": "user@example.com", "type": "access"})
+    token = jwt_handler.create_access_token({"sub": "user@example.com"})
     with pytest.raises(HTTPException) as exc:
         jwt_handler.get_current_user_from_refresh_token(token, db)
     assert exc.value.status_code == 401
