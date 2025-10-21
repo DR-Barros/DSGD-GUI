@@ -88,7 +88,7 @@ def test_upload_dataset_2_files(client, tmp_path):
         "columns": json.dumps(["feature1", "feature2", "target"]),
         "target_column": "target",
         "n_classes": 2,
-        "n_rows": 6,
+        "n_rows": 3,
         "header": "true",
     }
 
@@ -101,7 +101,7 @@ def test_upload_dataset_2_files(client, tmp_path):
     assert response.status_code == 200
     datasets = response.json()
     assert len(datasets) == 1
-    assert datasets[0]["n_rows"] == 6
+    assert datasets[0]["n_rows"] == 3
     assert datasets[0]["name"] == "Mi Dataset"
     assert datasets[0]["n_classes"] == 2
     assert set(datasets[0]["columns"]) == {"feature1", "feature2", "target"}

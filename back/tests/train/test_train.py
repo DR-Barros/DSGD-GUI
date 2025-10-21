@@ -67,6 +67,80 @@ def test_train_model_1file(client, tmp_path):
     assert train_result["status"] == "Task enqueued"
     
     
+def test_train_model_2file(client, tmp_path):
+    df = pd.DataFrame({
+        "feature1": [1, 2, 3, 1, 1, 2, 3, 1, 2, 3],
+        "feature2": [3, 4, 5, 3, 3, 4, 5, 3, 4, 5],
+        "target": [0, 1, 0, 0, 0, 1, 0, 0, 1, 0]
+    })
+    df2 = pd.DataFrame({
+        "feature1": [1, 2, 3, 1, 1, 2, 3, 1, 2, 3],
+        "feature2": [3, 4, 5, 3, 3, 4, 5, 3, 4, 5],
+        "target": [0, 1, 0, 0, 0, 1, 0, 0, 1, 0]
+    })
+    csv_path = tmp_path / "test1.csv"
+    csv_path2 = tmp_path / "test2.csv"
+    df.to_csv(csv_path, index=False)
+    df2.to_csv(csv_path2, index=False)
+
+    files = [
+        ("files", ("test1.csv", open(csv_path, "rb"), "text/csv")),
+        ("files", ("test2.csv", open(csv_path2, "rb"), "text/csv"))
+    ]
+    data = {
+        "name": "Mi Dataset",
+        "columns": json.dumps(["feature1", "feature2", "target"]),
+        "target_column": "target",
+        "n_classes": 2,
+        "n_rows": 3,
+        "header": "true",
+    }
+
+    response = client.post("/dsgd/api/datasets/upload", data=data, files=files)
+    assert response.status_code == 200
+    assert "uploaded successfully" in response.json()["info"]
+    
+    # Verificar que el dataset se puede obtener
+    response = client.get("/dsgd/api/datasets/")
+    assert response.status_code == 200
+    datasets = response.json()
+    assert len(datasets) == 1
+    dataset_id = datasets[0]["id"]
+    # Crear experimento con el dataset subido
+    experiment_data = {
+        "name": "Mi Experimento",
+        "dataset_id": dataset_id
+    }
+    response = client.post("/dsgd/api/experiments/", data=experiment_data)
+    assert response.status_code == 200
+    experiment = response.json()
+    
+    rules = [
+        {"left": "feature1", "op": ">=", "right": 2},
+        {"left": "feature1", "op": "<", "right": 2},
+        {"left": "feature2", "op": ">=", "right": 4},
+        {"left": "feature2", "op": "<", "right": 4},
+    ]
+    masses = [[0.1, 0.1, 0.8], [0.2, 0.2, 0.6], [0.3, 0.3, 0.4], [0.4, 0.4, 0.2]]
+    labels = ["feature1>=2", "feature1<2", "feature2>=4", "feature2<4"]
+
+
+    #entrenar el modelo
+    response = client.post(f"/dsgd/api/train/train-model/{experiment['id']}", json={
+        "minEpochs": 1,
+        "maxEpochs": 1,
+        "rules": rules,
+        "labels": labels,
+        "masses": masses,
+    })
+    assert response.status_code == 200
+    train_result = response.json()
+    print(train_result)
+    assert "task_id" in train_result
+    assert "status" in train_result
+    assert train_result["status"] == "Task enqueued"
+    
+    
 def test_train_model_no_rules(client, tmp_path):
     df = pd.DataFrame({
         "feature1": [1, 2, 3, 1, 1, 2, 3, 1, 2, 3],
