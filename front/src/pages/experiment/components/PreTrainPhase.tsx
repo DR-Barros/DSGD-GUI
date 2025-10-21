@@ -102,6 +102,55 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
             });
             return;
         }
+        /* chequea que los parametros tengan valores validos */
+        if (params.maxEpochs <= params.minEpochs) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidEpochs"),
+                type: 'error'
+            });
+            return;
+        } 
+        if (params.batchSize <= 0) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidBatchSize"),
+                type: 'error'
+            });
+            return;
+        }
+        if (params.learningRate <= 0 || params.learningRate >= 1) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidLearningRate"),
+                type: 'error'
+            });
+            return;
+        }
+        if (params.testSize <= 0 || params.testSize >= 1) {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidTestSize"),
+                type: 'error'
+            });
+            return;
+        }
+        if (params.lossFunction === '') {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidLossFunction"),
+                type: 'error'
+            });
+            return;
+        }
+        if (params.optimFunction === '') {
+            setSnackbar({
+                open: true,
+                message: t("experiment.invalidOptimFunction"),
+                type: 'error'
+            });
+            return;
+        }
         try {
             const allRulesWithValues: any[] = Object.values(encodedRules)
                 .flat()
