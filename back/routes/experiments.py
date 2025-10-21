@@ -233,6 +233,7 @@ async def upload_experiment_iteration(
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
     datasets = load_datasets(dataset_files, columns=dataset.columns)
+    label_to_num = None
     if len(datasets) == 1:
         X = datasets[0]["data"]
         X.columns = X.columns.map(str)

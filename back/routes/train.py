@@ -60,6 +60,7 @@ async def train_model_post(
     test_size = data.get("testSize", 0.2)
     split_seed = data.get("splitSeed", 42)
     shuffle = data.get("shuffle", True)
+    label_to_num = None
     if len(datasets) == 1:
         X = datasets[0]["data"]
         X.columns = X.columns.map(str)
