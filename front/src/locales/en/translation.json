@@ -53,6 +53,7 @@
   "experiment":{
     "openIterations": "Open Iterations Menu",
     "iterations": "Iterations",
+    "iteration": "Iteration",
     "dataset": "Dataset",
     "rules": "Rules",
     "rule": "Rule",

@@ -182,6 +182,7 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                     <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : 'no-active'}>{t('experiment.predict')}</StepButton>
                 </Step>
             </Stepper>
+            <h2 style={{ textAlign: "center", margin: "0" }}>{t("experiment.iteration")}: {iterationId}</h2>
             {/* Cards en fila */}
             {activeStep === 0 &&
             <>
@@ -279,7 +280,11 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                 <>
                 {metrics ? (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    {Object.keys(metrics[0]).filter(k => k !== 'iteration_id' && k !== 'created_at').map(metric => (
+                    {Object.keys(metrics[0]).filter(k => k !== 'iteration_id' && k !== 'created_at').map(metric => {
+                        if (metrics.every(m => (m as any)[metric] == 0)) {
+                            return null; // Saltar métricas con todos los valores en 0
+                        }
+                        return(
                         <div key={metric} style={{ marginBottom: '30px', width: '100%', maxWidth: 400, margin: '0 auto' }}>
                         <h3 style={{ textTransform: 'capitalize' }}>
                             {metric.replace(/([A-Z])/g, ' $1')}
@@ -296,11 +301,11 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                         </h3>
                         <Bar
                             data={{
-                                labels: metrics.map(m => `It: ${m.iteration_id}`),
+                                labels: metrics.filter(m => (m as any)[metric] != 0).map(m => `It: ${m.iteration_id}`),
                                 datasets: [
                                     {
-                                        data: metrics.map(m => (m as any)[metric].toFixed(3)),
-                                        backgroundColor: metrics.map((_, i) => {
+                                        data: metrics.filter(m => (m as any)[metric] != 0).map(m => (m as any)[metric].toFixed(3)),
+                                        backgroundColor: metrics.filter(m => (m as any)[metric] != 0).map((_, i) => {
                                         const colors = [
                                             "rgba(52, 152, 219, 0.7)",
                                             "rgba(46, 204, 113, 0.7)",  
@@ -336,14 +341,14 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                                 scales: {
                                     y: {
                                         beginAtZero: false,
-                                        max: Math.ceil(Math.min(1, Math.max(...metrics.map(m => (m as any)[metric]))) * 10) / 10,
-                                        min: Math.floor(Math.max(0, Math.min(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 
+                                        max: Math.max(Math.ceil(Math.min(1, Math.max(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 1),
+                                        min: Math.min(Math.floor(Math.max(0, Math.min(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 0.95),
                                     }
                                 }
                             }}
                         />
                         </div>
-                    ))}
+                    )})}
                     </div>
                 ) : (
                     <p>{t("experiment.loadingMetrics")}</p>

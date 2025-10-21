@@ -53,6 +53,7 @@
   "experiment":{
     "openIterations": "Abrir Menu de Iteraciones",
     "iterations": "Iteraciones",
+    "iteration": "Iteración",
     "dataset": "Conjunto de datos",
     "rules": "Reglas",
     "rule": "Regla",
