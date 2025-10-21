@@ -34,7 +34,8 @@ async def generate_rules(
         dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
         if not dataset_files:
             raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL])
+        dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL], columns=dataset.columns)
         if not datasets:
             raise HTTPException(status_code=404, detail="No training dataset found for this experiment")
         X = datasets[0]["data"]
@@ -125,7 +126,8 @@ async def coverage_rules(
         dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
         if not dataset_files:
             raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL])
+        dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
+        datasets = load_datasets(dataset_files, datasetTypes=[DatasetType.TRAINING, DatasetType.ALL], columns=dataset.columns)
         if not datasets:
             raise HTTPException(status_code=404, detail="No training dataset found for this experiment")
         X = datasets[0]["data"]

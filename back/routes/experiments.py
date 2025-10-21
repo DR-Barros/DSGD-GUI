@@ -68,8 +68,9 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
     dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
+    dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
     dataset_data = []
-    datasets= load_datasets(dataset_files)
+    datasets= load_datasets(dataset_files, columns=dataset.columns)
     for dataset in datasets:
         df = dataset["data"]
         stats = []
@@ -231,21 +232,7 @@ async def upload_experiment_iteration(
     dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-    datasets = []
-    for dataset_file in dataset_files:
-        if dataset_file.type_file == FileType.CSV:
-            X = pd.read_csv(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.EXCEL:
-            X = pd.read_excel(dataset_file.file_path, header=0 if dataset_file.header else None)
-        elif dataset_file.type_file == FileType.PARQUET:
-            X = pd.read_parquet(dataset_file.file_path)
-        else:
-            return HTTPException(status_code=400, detail="Unsupported file type")
-        datasets.append({
-            "data": X,
-            "header": dataset_file.header,
-            "dataset_type": dataset_file.dataset_type
-        })
+    datasets = load_datasets(dataset_files, columns=dataset.columns)
     if len(datasets) == 1:
         X = datasets[0]["data"]
         X.columns = X.columns.map(str)

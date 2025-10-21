@@ -34,10 +34,11 @@ async def preview_dataset(
     db: Session = Depends(get_db)
 ):
     dataset_files = db.query(DatasetFile).filter(DatasetFile.dataset_id == dataset_id).all()
+    columns = db.query(Datasets).filter(Datasets.id == dataset_id, Datasets.user_id == current_user.id).first().columns
     if not dataset_files or len(dataset_files) == 0:
         raise HTTPException(status_code=404, detail="Dataset no encontrado")
     dataset_data = []
-    datasets = load_datasets(dataset_files)
+    datasets = load_datasets(dataset_files, columns=columns)
     for dataset in datasets:
         df = dataset["data"]
         stats = []
@@ -145,11 +146,11 @@ async def upload_dataset(
             content = await file.read()
             f.write(content)
         if type_file == FileType.CSV:
-            datasets.append(pd.read_csv(file_path))
+            datasets.append(pd.read_csv(file_path, header=0 if header else None, names=columns))
         elif type_file == FileType.EXCEL:
-            datasets.append(pd.read_excel(file_path))
+            datasets.append(pd.read_excel(file_path, header=0 if header else None, names=columns))
         else:
-            datasets.append(pd.read_parquet(file_path))
+            datasets.append(pd.read_parquet(file_path, columns=columns))
         dataset_file = DatasetFile(
             dataset_id=new_dataset.id,
             file_path=file_path,
@@ -175,11 +176,11 @@ async def upload_dataset(
                 content = await file.read()
                 f.write(content)
             if type_file == FileType.CSV:
-                datasets.append(pd.read_csv(file_path))
+                datasets.append(pd.read_csv(file_path, header=0 if header else None, names=columns))
             elif type_file == FileType.EXCEL:
-                datasets.append(pd.read_excel(file_path))
+                datasets.append(pd.read_excel(file_path, header=0 if header else None, names=columns))
             else:
-                datasets.append(pd.read_parquet(file_path))
+                datasets.append(pd.read_parquet(file_path, columns=columns))
             dataset_file = DatasetFile(
                 dataset_id=new_dataset.id,
                 file_path=file_path,

@@ -54,7 +54,7 @@ async def train_model_post(
     dataset_files = db.query(DatasetFile).join(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).all()
     if not dataset_files:
         raise HTTPException(status_code=404, detail="No dataset files found for this experiment")
-    datasets = load_datasets(dataset_files)
+    datasets = load_datasets(dataset_files, columns=dataset.columns)
     drop_na = data.get("dropNulls", True)
     drop_duplicates = data.get("dropDuplicates", True)
     test_size = data.get("testSize", 0.2)
