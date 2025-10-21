@@ -69,13 +69,14 @@ async def train_model_post(
         if drop_duplicates:
             X = X.drop_duplicates()
         y = X[dataset.target_column]
-        #pasar y a numeros
-        l = LabelEncoder()
-        y = l.fit_transform(y)
         X = X.drop(columns=[dataset.target_column])
         for key, column_encoder in dataset.columns_encoder.items():
             if key in X.columns:
                 X[key] = X[key].replace(column_encoder)
+            if key == dataset.target_column:
+                y = y.replace(column_encoder)
+                label_to_num = {label: num for label, num in column_encoder.items()}
+        
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
     elif len(datasets) == 2:
         X_train = datasets[0]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[1]["data"]
@@ -90,22 +91,21 @@ async def train_model_post(
             X_test = X_test.drop_duplicates()
         y_train = X_train[dataset.target_column]
         y_test = X_test[dataset.target_column]
-        #pasar y a numeros
-        l = LabelEncoder()
-        y_train = l.fit_transform(y_train)
-        y_test = l.transform(y_test)
         X_train = X_train.drop(columns=[dataset.target_column])
         X_test = X_test.drop(columns=[dataset.target_column])
         for key, column_encoder in dataset.columns_encoder.items():
-            if key in X_train.columns:
-                X_train[key] = X_train[key].replace(column_encoder)
-        for key, column_encoder in dataset.columns_encoder.items():
             if key in X_test.columns:
                 X_test[key] = X_test[key].replace(column_encoder)
+                X_train[key] = X_train[key].replace(column_encoder)
+            if key == dataset.target_column:
+                y_test = y_test.replace(column_encoder)
+                y_train = y_train.replace(column_encoder)
+                label_to_num = {label: num for label, num in column_encoder.items()}
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
     
-    label_to_num = {label: idx for idx, label in enumerate(l.classes_)}
+    if not label_to_num:
+        label_to_num = {str(label): label for label in y_train.unique()}
     max_epochs = data.get("maxEpochs", 100)
     min_epochs = data.get("minEpochs", 10)
     batch_size = data.get("batchSize", 4000)

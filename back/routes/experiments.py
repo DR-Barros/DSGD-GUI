@@ -203,7 +203,6 @@ async def download_experiment_iteration(iteration_id: int, db: Session = Depends
 async def upload_experiment_iteration(
     experiment_id: int,
     file: UploadFile = File(...),
-    label_encoder: str = Form(...),
     test_size: float = Form(0.2),
     split_seed: int = Form(42),
     shuffle: bool = Form(True),
@@ -220,9 +219,6 @@ async def upload_experiment_iteration(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie)
 ):
-    label_encoder = json.loads(label_encoder)
-    if label_encoder is None or not isinstance(label_encoder, dict) or len(label_encoder) == 0:
-        raise HTTPException(status_code=400, detail="Invalid label encoder")
     experiment = db.query(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
     if not experiment:
         raise HTTPException(status_code=404, detail="Experiment not found")
@@ -263,6 +259,9 @@ async def upload_experiment_iteration(
         for key, column_encoder in dataset.columns_encoder.items():
             if key in X.columns:
                 X[key] = X[key].replace(column_encoder)
+            if key == dataset.target_column:
+                y = y.replace(column_encoder)
+                label_to_num = {label: num for label, num in column_encoder.items()}
         _, X_test, _, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
     elif len(datasets) == 2:
         X_test = datasets[1]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[0]["data"]
@@ -276,8 +275,13 @@ async def upload_experiment_iteration(
         for key, column_encoder in dataset.columns_encoder.items():
             if key in X_test.columns:
                 X_test[key] = X_test[key].replace(column_encoder)
+            if key == dataset.target_column:
+                y_test = y_test.replace(column_encoder)
+                label_to_num = {label: num for label, num in column_encoder.items()}
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
+    if not label_to_num:
+        label_to_num = {str(label): label for label in y_test.unique()}
     contents = await file.read()
     model_path = f"{settings.MODELS_FOLDER}/uploaded_model_{experiment_id}_{int(datetime.now().timestamp())}.bin"
     with open(model_path, "wb") as f:
@@ -299,7 +303,6 @@ async def upload_experiment_iteration(
         for rule in ds.model.preds:
             parser.lambda_rule_to_json(rule.ld, X_test.columns.tolist())
         X_test_np = X_test.to_numpy()
-        y_test = y_test.astype(str).map(label_encoder)
         y_pred = ds.predict(X_test_np)
         try:
             acc = accuracy_score(y_test, y_pred)
@@ -340,7 +343,7 @@ async def upload_experiment_iteration(
         model_path=model_path,
         created_at=datetime.now(),
         trained=True,
-        label_encoder=label_encoder,
+        label_encoder= sanitize_json(label_to_num),
         train_test_split=test_size,
         train_test_split_seed=split_seed,
         shuffle=shuffle,

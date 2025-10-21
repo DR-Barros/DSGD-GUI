@@ -15,7 +15,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import PendingIcon from '@mui/icons-material/Pending';
 import DeleteIcon from '@mui/icons-material/Delete';
-import InfoIcon from '@mui/icons-material/Info';
 import { fetchProtected, downloadProtected, deleteProtected, postProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +29,6 @@ export default function DrawerMenu(
     const [modalUploadOpen, setModalUploadOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [params, setParams] = useState({
-        labelEncoder: "{}",
         splitSeed: 42,
         testSize: 0.2,
         shuffle: true,
@@ -59,7 +57,6 @@ export default function DrawerMenu(
             if (data.length > 0) {
                 setParams({
                     ...params,
-                    labelEncoder: data[0].label_encoder ? JSON.stringify(data[0].label_encoder) : "{}",
                     splitSeed: data[0].train_test_split_seed,
                     testSize: data[0].train_test_split,
                     shuffle: data[0].shuffle,
@@ -105,7 +102,6 @@ export default function DrawerMenu(
         }
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('label_encoder', params.labelEncoder);
         formData.append('split_seed', params.splitSeed.toString());
         formData.append('test_size', params.testSize.toString());
         formData.append('shuffle', params.shuffle ? "true" : "false");
@@ -255,19 +251,6 @@ export default function DrawerMenu(
                             />
                         </label>
                         {file && <span style={{ color: 'green' }}>{t('datasets.upload.selected_file')}: {file.name}</span>}
-                        <label>
-                            <p style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: 0 }}>
-                                {t('experiment.labelEncoder')}: 
-                                <Tooltip title={t('experiment.labelEncoderTooltip')} arrow>
-                                    <InfoIcon fontSize="small" style={{ color: '#1976d2' }} />
-                                </Tooltip>
-                            </p>
-                            <textarea
-                                placeholder="e.g. {'column1': {'A': 0, 'B': 1}, 'column2': {'X': 0, 'Y': 1}}"
-                                style={{ width: '100%', height: '100px', marginTop: '10px', border: '1px solid #ccc', borderRadius: '4px', padding: '5px' }}
-                                value={params.labelEncoder} onChange={(e) => setParams({...params, labelEncoder: e.target.value})}
-                            />
-                        </label>
                         <label>
                             {t('experiment.splitSeed')}:
                             <input type="number" style={{ marginLeft: '10px', border: '1px solid #ccc', borderRadius: '4px', padding: '5px' }} value={params.splitSeed} onChange={(e) => setParams({...params, splitSeed: Number(e.target.value)})} />
