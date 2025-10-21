@@ -200,6 +200,17 @@ async def upload_dataset(
         encoder.fit_transform(X[column])
         label_to_num = {label: idx for idx, label in enumerate(encoder.classes_)}
         columns_encoder[column] = label_to_num
+    #si es que la columna objetivo tiene valores numericos mayores que las clases hacer un mapeo
+    if target_column not in columns_encoder:
+        print("Checking target column for numeric labels...", target_column)
+        unique_values = X[target_column].unique()
+        print("Unique values in target column:", unique_values, unique_values.dtype)
+        if any(val >= n_classes for val in unique_values):
+            label_to_num = {str(label): idx for idx, label in enumerate(sorted(unique_values))}
+            columns_encoder[target_column] = label_to_num
+    #si la cantidad de valores de la columna objetivo son más que el numero de clases falla
+    if n_classes != X[target_column].nunique():
+        raise HTTPException(status_code=400, detail="Número de clases no coincide con los valores únicos en la columna objetivo")
     print(columns_encoder)
     new_dataset.columns_encoder = columns_encoder
     db.commit()

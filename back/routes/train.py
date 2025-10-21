@@ -75,6 +75,7 @@ async def train_model_post(
             if key in X.columns:
                 X[key] = X[key].replace(column_encoder)
             if key == dataset.target_column:
+                y = y.astype(str)
                 y = y.replace(column_encoder)
                 label_to_num = {label: num for label, num in column_encoder.items()}
         
@@ -99,6 +100,8 @@ async def train_model_post(
                 X_test[key] = X_test[key].replace(column_encoder)
                 X_train[key] = X_train[key].replace(column_encoder)
             if key == dataset.target_column:
+                y_test = y_test.astype(str)
+                y_train = y_train.astype(str)
                 y_test = y_test.replace(column_encoder)
                 y_train = y_train.replace(column_encoder)
                 label_to_num = {label: num for label, num in column_encoder.items()}
