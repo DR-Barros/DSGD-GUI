@@ -313,15 +313,21 @@ export default function UploadDatasets() {
         formsData.append("target_column", targetColHeader);
         setErrorMsg(null);
         setLoadingPhase1(true);
-        let { data, status } = await postProtected("/datasets/upload", formsData)
-        console.log("Response from server:", data, status);
-        if (status === 200) {
-            handleBack();
-        } else {
-            console.error("Error al subir el dataset:", data);
+        try {
+            let { data, status } = await postProtected("/datasets/upload", formsData)
+            console.log("Response from server:", data, status);
+            if (status === 200) {
+                handleBack();
+            } else {
+                console.error("Error al subir el dataset:", data);
+                setErrorMsg(t("datasets.upload.error.upload_failed"));
+            }
+        } catch (error) {
+            console.error("Error al subir el dataset:", error);
             setErrorMsg(t("datasets.upload.error.upload_failed"));
+        } finally {
+            setLoadingPhase1(false);
         }
-        setLoadingPhase1(false);
     };
 
     useEffect(() => {

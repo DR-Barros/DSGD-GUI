@@ -64,6 +64,7 @@ export default function Datasets() {
     }
 
     const handlePreviewDataset = async (datasetId: Number) => {
+        try {
         setSelectedDataset(datasets.find(dataset => dataset.id === datasetId) || null);
         const { data, status } = await fetchProtected(`/datasets/preview/${datasetId}`);
         console.log("Dataset preview data:", data);
@@ -73,6 +74,9 @@ export default function Datasets() {
         else {
             setDatasetPreview(data.map((item: any) => item.data));
             setDatasetStats(data.map((item: any) => item.stats));
+        }
+        } catch (error) {
+            console.error("Error fetching dataset preview:", error);
         }
     };
 

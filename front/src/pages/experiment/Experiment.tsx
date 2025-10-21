@@ -30,8 +30,8 @@ export default function Experiment() {
     }, [id]);
 
     const handlePreviewDataset = async () => {
+        try {
         const { data, status } = await fetchProtected(`/experiments/dataset/${id}`);
-        console.log("Dataset preview data:", data);
         if (status !== 200) {
             console.log("Error fetching dataset preview");
         }
@@ -39,6 +39,9 @@ export default function Experiment() {
             setDatasetPreview(data.data.map((item: any) => item.data));
             setDatasetStats(data.data.map((item: any) => item.stats));
             setDataset(data.info);
+        }
+        } catch (error) {
+            console.error("Error fetching dataset preview:", error);
         }
     };
 
