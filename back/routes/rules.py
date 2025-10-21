@@ -158,6 +158,8 @@ async def get_iteration_rules(
     iteration = db.query(Iteration).filter(Iteration.id == iteration_id, Experiment.user_id == current_user.id).first()
     dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == iteration.experiment_id, Experiment.user_id == current_user.id).first()
     path = iteration.model_path
+    if not path or path == "":
+        raise HTTPException(status_code=404, detail="Model not found for this iteration")
     model = classifier.DSClassifierMultiQ(dataset.n_classes)
     model.model.load_rules_bin(path)
     rules = []
