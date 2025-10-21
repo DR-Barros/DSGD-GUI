@@ -35,14 +35,21 @@ def train_model(
         X_test = X_test.select_dtypes(include=[np.number, 'bool'])
         dsparser = DSParser.DSParser()
         functions = []
+        print("Processing rules...")
         for rule, mass, label in rules:
             f = dsparser.json_to_lambda(rule, X_train.columns.tolist())
             functions.append((f, mass, label))
         print(X_train.dtypes)
         X_train_np = X_train.to_numpy()
         X_test_np = X_test.to_numpy()
+        #si y no es numpy array, convertirlo
+        if not isinstance(y_train, np.ndarray):
+            y_train = y_train.to_numpy()
+        if not isinstance(y_test, np.ndarray):
+            y_test = y_test.to_numpy()
         columns = X_train.columns.tolist()
         settings.TASKS_PROGRESS[tasks_id] = "Initializing model..."
+        print("Initializing model...")
         ds = classifier.DSClassifierMultiQ(
             num_classes=n_classes,
             lr=learning_rate,
@@ -55,6 +62,7 @@ def train_model(
             device=settings.DEVICE,
             min_dloss=min_dloss,
         )
+        print("Adding rules...")
         for rule, mass, label in functions:
             m_uncert = None
             m_sing = None
@@ -67,7 +75,7 @@ def train_model(
         iteration.training_status = Status.RUNNING
         iteration.training_start_time = datetime.now()
         db.commit()
-
+        print("Starting training...")
         for msg in ds.fit(X_train_np, y_train, add_single_rules=False, single_rules_breaks=3, add_mult_rules=False, column_names=columns, print_every_epochs=1, print_final_model=False):
             previous_msg = settings.TASKS_PROGRESS.get(tasks_id, "")
             if previous_msg== '{"status": "Training stopped by user"}':
