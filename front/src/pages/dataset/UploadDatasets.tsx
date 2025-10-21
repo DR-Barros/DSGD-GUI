@@ -39,9 +39,14 @@ export default function UploadDatasets() {
     const [loadingPhase1, setLoadingPhase1] = useState<boolean>(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const maxFileSizeMB = 50 * 1024 * 1024; // 50 MB
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+            if (e.target.files[0].size > maxFileSizeMB) {
+                setErrorMsg(t("datasets.upload.error.file_too_large"));
+                return;
+            }
             const filesArray = Array.from(e.target.files)
             setSelectedFile(filesArray[0] || null);
             setTargetColumn(null);
@@ -52,6 +57,10 @@ export default function UploadDatasets() {
 
     const handleFileChangeTest = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+            if (e.target.files[0].size > maxFileSizeMB) {
+                setErrorMsg(t("datasets.upload.error.file_too_large"));
+                return;
+            }
             const filesArray = Array.from(e.target.files)
             setSelectedFileTest(filesArray[0] || null);
             setTargetColumn(null);
@@ -95,21 +104,49 @@ export default function UploadDatasets() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const assignDefaultColumnNames = (data: any[][]) => {
+            // Si el archivo no tiene header, asignamos nombres tipo col_0, col_1, ...
+            if (!hasHeader && data.length > 0) {
+                const nCols = data[0].length;
+                const columns = Array.from({ length: nCols }, (_, i) => `col_${i}`);
+                const formatted = data.map((row) => {
+                    const obj: Record<string, any> = {};
+                    columns.forEach((col, i) => {
+                        obj[col] = row[i];
+                    });
+                    return obj;
+                });
+                return formatted;
+            }
+            return data;
+        };
+
         if (selectedFile) {
+            if (selectedFile.size > maxFileSizeMB) {
+                setErrorMsg(t("datasets.upload.error.file_too_large"));
+                return;
+            }
             setLoadingPhase0(true);
             console.log("Archivo seleccionado:", selectedFile);
             if (selectedFile.type === "text/csv") {
                 Papa.parse(selectedFile, {
                     header: hasHeader,
+                    skipEmptyLines: true,
                     complete: (results: Papa.ParseResult<any>) => {
-                        const filteredData = results.data.filter((row: any) => {
-                            return Object.values(row).some(
+                        let parsed = results.data;
+                        if (!hasHeader) {
+                            parsed = assignDefaultColumnNames(parsed);
+                        }
+
+                        // Filtrar filas vacías
+                        const filteredData = parsed.filter((row: any) =>
+                            Object.values(row).some(
                                 (val) => val !== null && val !== undefined && String(val).trim() !== ""
-                            );
-                        });
+                            )
+                        );
                         setParsedData([filteredData]);
                     },
-                });
+        });
             }
             else if (selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
                 const reader = new FileReader();
@@ -126,9 +163,13 @@ export default function UploadDatasets() {
                         defval: "",
                         header: hasHeader ? undefined : 1
                     });
+                    let parsed = jsonData;
+                    if (!hasHeader) {
+                        parsed = assignDefaultColumnNames(parsed);
+                    }
 
                     // Filtrar filas vacías
-                    const filteredData = jsonData.filter((row) =>
+                    const filteredData = parsed.filter((row) =>
                         Object.values(row).some(
                             (val) => val !== null && val !== undefined && String(val).trim() !== ""
                         )
@@ -148,16 +189,26 @@ export default function UploadDatasets() {
         }
         if (nFiles === 2){
             if (selectedFileTest) {
+                if (selectedFileTest.size > maxFileSizeMB) {
+                    setErrorMsg(t("datasets.upload.error.file_too_large"));
+                    return;
+                }
                 console.log("Archivo de prueba seleccionado:", selectedFileTest);
                 if (selectedFileTest.type === "text/csv") {
                     Papa.parse(selectedFileTest, {
                         header: hasHeader,
                         complete: (results: Papa.ParseResult<any>) => {
-                            const filteredData = results.data.filter((row: any) => {
-                                return Object.values(row).some(
+                            let parsed = results.data;
+                            if (!hasHeader) {
+                                parsed = assignDefaultColumnNames(parsed);
+                            }
+
+                            // Filtrar filas vacías
+                            const filteredData = parsed.filter((row: any) =>
+                                Object.values(row).some(
                                     (val) => val !== null && val !== undefined && String(val).trim() !== ""
-                                );
-                            });
+                                )
+                            );
                             setParsedData((prev) => [...prev, filteredData]);
                         },
                     });
@@ -175,8 +226,13 @@ export default function UploadDatasets() {
                         // Convertir a JSON
                         const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
+                        let parsed = jsonData;
+                        if (!hasHeader) {
+                            parsed = assignDefaultColumnNames(parsed);
+                        }
+
                         // Filtrar filas vacías
-                        const filteredData = jsonData.filter((row) =>
+                        const filteredData = parsed.filter((row) =>
                             Object.values(row).some(
                                 (val) => val !== null && val !== undefined && String(val).trim() !== ""
                             )
@@ -210,6 +266,24 @@ export default function UploadDatasets() {
             setErrorMsg(t("datasets.upload.error.target_column_required"));
             return;
         }
+        //cheque que ninguna columna tenga nombre vacio, duplicado o numerico
+        const colNames = columns.map(c => c.headerName ? c.headerName.toString().trim() : "");
+        const nameSet = new Set<string>();
+        for (let name of colNames) {
+            if (!name) {
+                setErrorMsg(t("datasets.upload.error.invalid_column_names"));
+                return;
+            }
+            if (!isNaN(Number(name))) {
+                setErrorMsg(t("datasets.upload.error.invalid_column_names"));
+                return;
+            }
+            if (nameSet.has(name)) {
+                setErrorMsg(t("datasets.upload.error.duplicate_column_names"));
+                return;
+            }
+            nameSet.add(name);
+        }
         // Implementar la lógica para guardar los datos analizados
         console.log("Guardando datos analizados:", parsedData);
         const formsData = new FormData();
@@ -223,7 +297,7 @@ export default function UploadDatasets() {
         //agregamos nombre
         formsData.append("name", datasetName);
         //enviamos array de columnas
-        formsData.append("columns", JSON.stringify(summaryStats[0].map((s) => s.column)));
+        formsData.append("columns", JSON.stringify(columns.map(c => c.headerName)));
         //enviamos numero de clases
         formsData.append("n_classes", summaryStats[0].filter(s => s.column === targetColumn).map(s => s.uniqueCount)[0]);
         //enviamos numero de filas
@@ -234,7 +308,9 @@ export default function UploadDatasets() {
         //enviamos si tiene header
         formsData.append("header", hasHeader.toString());
         //enviamos columna objetivo
-        formsData.append("target_column", targetColumn ? targetColumn : "");
+        const targetColIndex = columns.findIndex(c => c.field === targetColumn);
+        const targetColHeader = targetColIndex >= 0 ? String(columns[targetColIndex].headerName ?? "") : "";
+        formsData.append("target_column", targetColHeader);
         setErrorMsg(null);
         setLoadingPhase1(true);
         let { data, status } = await postProtected("/datasets/upload", formsData)
@@ -425,8 +501,10 @@ export default function UploadDatasets() {
                                     padding: "0 10px",
                                 }}
                             >
-                                {Object.keys(parsedData[0]?.[0] || {}).map((col) => (
-                                    <option key={col} value={col}>{col}</option>
+                                {columns.map((col) => (
+                                    <option key={col.field} value={col.field}>
+                                        {col.headerName}
+                                    </option>
                                 ))}
                             </select>
                         </label>
@@ -471,6 +549,8 @@ export default function UploadDatasets() {
                                 rows={rows[0]}
                                 columns={columns}
                                 targetColumn={targetColumn}
+                                editable={!hasHeader}
+                                setColumns={setColumns}
                             />
                             )}
                             </>

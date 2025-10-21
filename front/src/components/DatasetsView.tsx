@@ -32,10 +32,12 @@ interface Dataset {
     columns: GridColDef[];
     targetColumn: string | null;
     columns_encoder?: Record<string, Record<any, number>> | null;
+    editable?: boolean;
+    setColumns?: (cols: GridColDef[]) => void;
 }
 
 export default function DatasetsView(
-    { summaryStats, rows, columns, targetColumn, columns_encoder = null }: Dataset,
+    { summaryStats, rows, columns, targetColumn, columns_encoder = null, editable = false, setColumns = () => {} }: Dataset,
 ) {
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +69,32 @@ export default function DatasetsView(
                                 flexDirection: "column",
                             }}
                             >
-                            <span>{col.headerName}</span>
+                                {editable ? (
+                                    <input
+                                        type="text"
+                                        value={col.headerName}
+                                        onChange={(e) => {
+                                            const newColumns = columns.map((c) =>
+                                                c.field === col.field ? { ...c, headerName: e.target.value } : c
+                                            );
+                                            if (newColumns && newColumns.length > 0 && typeof newColumns[0] !== "undefined" && newColumns[0].hasOwnProperty('field')) {
+                                                // @ts-ignore
+                                                setColumns?.(newColumns);
+                                            }
+                                        }}
+                                        style={{
+                                            fontSize: "inherit",
+                                            fontWeight: "bold",
+                                            border: "1px solid #ccc",
+                                            borderRadius: 4,
+                                            padding: "2px 4px",
+                                            background: "transparent",
+                                            width: "calc(100% - 8px)",
+                                        }}
+                                    />
+                                ) : (
+                                    <span>{col.headerName}</span>
+                                )}
                             {(() => {
                                 const stats = summaryStats.find((s) => s.column === col.field);
                                 console.log(col.field, columns_encoder?.[col.field], stats);
@@ -165,7 +192,32 @@ export default function DatasetsView(
                                 flexDirection: "column",
                             }}
                             >
-                            <span>{col.headerName}</span>
+                            {editable ? (
+                                <input
+                                    type="text"
+                                    value={col.headerName}
+                                    onChange={(e) => {
+                                        const newColumns = columns.map((c) =>
+                                            c.field === col.field ? { ...c, headerName: e.target.value } : c
+                                        );
+                                        if (newColumns && newColumns.length > 0 && typeof newColumns[0] !== "undefined" && newColumns[0].hasOwnProperty('field')) {
+                                            // @ts-ignore
+                                            setColumns?.(newColumns);
+                                        }
+                                    }}
+                                    style={{
+                                        fontSize: "inherit",
+                                        fontWeight: "bold",
+                                        border: "1px solid #ccc",
+                                        borderRadius: 4,
+                                        padding: "2px 4px",
+                                        background: "transparent",
+                                        width: "calc(100% - 8px)",
+                                    }}
+                                />
+                            ) : (
+                                <span>{col.headerName}</span>
+                            )}
                             {(() => {
                                 const stats = summaryStats.find((s) => s.column === col.field);
                                 return stats ? (

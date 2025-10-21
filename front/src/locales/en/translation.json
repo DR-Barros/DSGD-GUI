@@ -188,7 +188,9 @@
         "no_files": "Please select at least one file.",
         "upload_failed": "Failed to upload files.",
         "target_column_required": "Please select a target column.",
-        "name_required": "Please enter a dataset name."
+        "name_required": "Please enter a dataset name.",
+        "invalid_column_names": "Invalid column names. Empty, duplicate, or numeric names are not allowed.",
+        "file_too_large": "File size exceeds the maximum limit of 50 MB."
       }
     }
   },

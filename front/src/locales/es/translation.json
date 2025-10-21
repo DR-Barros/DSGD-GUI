@@ -188,7 +188,9 @@
         "no_files": "Por favor, selecciona al menos un archivo.",
         "upload_failed": "Error al subir archivos.",
         "target_column_required": "Por favor, selecciona una columna objetivo.",
-        "name_required": "Por favor, ingresa un nombre para el conjunto de datos."
+        "name_required": "Por favor, ingresa un nombre para el conjunto de datos.",
+        "invalid_column_names": "Nombres de columna inválidos. No se permiten nombres vacíos, duplicados o numéricos.",
+        "file_too_large": "El tamaño del archivo excede el límite máximo de 50 MB."
       }
     }
   },
