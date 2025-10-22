@@ -12,7 +12,7 @@ import PostTrainPhase from "./components/PostTrainPhase";
 import { API_WS_URL, API_URL } from "../../api/client";
 
 export default function Experiment() {
-    const {id} = useParams();
+    const {id, iteration_id} = useParams();
     const [phase, setPhase] = useState<"pretrain" | "train" | "posttrain">("pretrain");
     const [datasetPreview, setDatasetPreview] = useState<any[]>([]);
     const [datasetStats, setDatasetStats] = useState<any[]>([]);
@@ -44,6 +44,17 @@ export default function Experiment() {
             console.error("Error fetching dataset preview:", error);
         }
     };
+
+    /* chequea si trained es parte del url entonces pasar a phase posttrain */
+    useEffect(() => {
+        console.log("Checking URL for trained phase...");
+        if (window.location.pathname.includes("/trained/")) {
+            console.log("Entrenamiento ya completado, pasando a fase posttrain");
+            setPhase("posttrain");
+            setIterations(iteration_id ? parseInt(iteration_id) : null);
+        }
+    }, []);
+    
 
     async function startTraining(params: TrainingParams, rulesWithValues: any[], masses: any[], labels: any[]) {
         try {
@@ -99,6 +110,10 @@ export default function Experiment() {
         ws.onmessage = (event) => {
             console.log(`Progreso: ${event.data}`);
             try {
+                //si comienza con Training, no parsear
+                if (event.data.startsWith("Training")) {
+                    return;
+                }
                 let evento = JSON.parse(event.data);
                 setTrainingMsg(evento);
             } catch (error) {
@@ -108,7 +123,9 @@ export default function Experiment() {
 
         ws.onclose = () => {
             console.log('WebSocket cerrado');
+            navigation(`/experiment/${id}/trained/${taskId}`);
             setPhase("posttrain");
+            setTrainingMsg(null);
         };
 
         ws.onerror = (error) => {
@@ -132,6 +149,10 @@ export default function Experiment() {
             }
         };
     }, []);
+    
+    useEffect(() => {
+        console.log("Current phase:", phase);
+    }, [phase]);
 
     return (
         <div>
@@ -144,7 +165,10 @@ export default function Experiment() {
                         setPhase("train");
                         websocket(iterationId.toString());
                     }
-                    else if (status === "completed") setPhase("posttrain");
+                    else if (status === "completed"){
+                        setPhase("posttrain");
+                        navigation(`/experiment/${id}/trained/${iterationId}`);
+                    }
                 }}
                 train={() => {
                     navigation(`/experiment/${id}`);

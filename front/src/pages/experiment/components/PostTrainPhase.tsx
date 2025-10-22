@@ -47,7 +47,7 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
             fetchPostTrainData(iterationId);
             fetchRules(iterationId);
             fetchMetrics();
-        }
+        } 
     }, [iterationId]);
 
     const fetchPostTrainData = async (iterationId: number) => {
@@ -268,7 +268,10 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                 }}>
                     {t("postTrain.backToSetup")}
                 </Button>
-                <Button variant="contained" color="primary" onClick={back} style={{
+                <Button variant="contained" color="primary" onClick={()=>{
+                    navigation(`/experiment/${postTrainData?.experiment_id}/${iterationId}`);
+                    back();
+                }} style={{
                     width: 300,
                     maxWidth: '90%',
                 }}>
@@ -341,7 +344,7 @@ export default function PostTrainPhase({ iterationId, back }: { iterationId: num
                                 scales: {
                                     y: {
                                         beginAtZero: false,
-                                        max: Math.max(Math.ceil(Math.min(1, Math.max(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 1),
+                                        max: Math.min(Math.ceil(Math.min(1, Math.max(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 1),
                                         min: Math.min(Math.floor(Math.max(0, Math.min(...metrics.map(m => (m as any)[metric]))) * 10) / 10, 0.95),
                                     }
                                 }

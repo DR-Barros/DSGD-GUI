@@ -18,12 +18,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchProtected, downloadProtected, deleteProtected, postProtected } from '../../../api/client';
 import type { Iteration } from '../../../types/experiment';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 230;
 
 export default function DrawerMenu(
-    { id, openIterations, train, setDrawerOpen }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void, setDrawerOpen: (open: boolean) => void }
+    { id, openIterations, train, setDrawerOpen}: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void, setDrawerOpen: (open: boolean) => void }
 ) {
     const [mobileOpen, setMobileOpen] = useState(true);
     const [modalUploadOpen, setModalUploadOpen] = useState(false);
@@ -40,6 +40,7 @@ export default function DrawerMenu(
     const [loadingModal, setLoadingModal] = useState<boolean>(false);
     const { t } = useTranslation();
     const navigation = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         setDrawerOpen(mobileOpen);
@@ -137,6 +138,14 @@ export default function DrawerMenu(
             handleIterations();
         }
     }, [mobileOpen]);
+
+    /* si cambia la url, reiniciar iteraciones */
+    useEffect(() => {
+        if (id) {
+            console.log("ID changed, refreshing iterations...");
+            handleIterations();
+        }
+    }, [location.pathname]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
