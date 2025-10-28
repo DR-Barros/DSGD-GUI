@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import ErrorIcon from "@mui/icons-material/Error";
-import { Link } from "react-router-dom";
 
 export default function Documentation() {
     const { t } = useTranslation();
