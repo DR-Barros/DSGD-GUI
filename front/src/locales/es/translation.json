@@ -179,7 +179,7 @@
       "selected_train_file": "Archivo de entrenamiento seleccionado",
       "selected_test_file": "Archivo de prueba seleccionado",
       "instructions1": "Puedes cargar un solo archivo en formato CSV o Excel si tu dataset está completo. ",
-      "instructions2": "Si tu dataset está dividido en conjuntos de train y test, selecciona dos archivos (uno para cada conjunto. Por defecto, el archivo más pequeño se considera el conjunto de test). ",
+      "instructions2": "Si tu dataset está dividido en conjuntos de train y test, selecciona dos archivos en el selector superior.",
       "instructions3": "Asegúrate de que ambos archivos tengan la misma estructura de columnas.",
       "error": {
         "file_type_mismatch": "Los archivos deben ser del mismo tipo.",

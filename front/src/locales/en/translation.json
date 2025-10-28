@@ -179,7 +179,7 @@
       "selected_train_file": "Selected Train File",
       "selected_test_file": "Selected Test File",
       "instructions1": "You can upload a single file in CSV or Excel format if your dataset is complete.",
-      "instructions2": "If your dataset is split into train and test sets, select two files (one for each set; by default, the smaller file is considered the test set).",
+      "instructions2": "If your dataset is split into train and test sets, select two files in the upper selector.",
       "instructions3": "Make sure both files have the same column structure.",
       "error": {
         "file_type_mismatch": "Files must be of the same type.",
