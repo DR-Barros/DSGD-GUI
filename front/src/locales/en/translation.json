@@ -321,5 +321,29 @@
         "solution": "Check syntax and column names"
       }
     }
+  },
+  "modelDocumentation": {
+    "title": "Model Documentation",
+    "DSGD": {
+      "title": "DSGD Classifier (Dempster Shafer)",
+      "description": "The DSGD classifier is based on Dempster Shafer Evidence Theory, which allows representing uncertainty and combining information from different sources. Instead of assigning direct probabilities to each class, the model uses Mass Assignment Functions (MAFs) that distribute 'evidence weight' among possible classes and overall uncertainty.",
+      "keyConcepts": {
+        "title": "Key Concepts",
+        "massAssignment": "Each MAF is represented as a vector with values for each possible class and an additional value measuring uncertainty. For example, in a two-class problem (Present, Absent), a MAF could be (0.5, 0.2, 0.3), where the last value reflects total uncertainty.",
+        "massAssignmentTitle": "Mass Assignment",
+        "beliefAndPlausibility": "From the MAFs, the model calculates two measures: belief and plausibility. Belief represents direct support for a class, while plausibility measures how possible that class is considering uncertainty.",
+        "beliefAndPlausibilityTitle": "Belief and Plausibility",
+        "dempsterRule": "To combine information from different rules or sources, the model applies Dempster's Rule, which fuses the MAFs into a new normalized mass distribution, reducing conflict and reinforcing coherent evidence.",
+        "dempsterRuleTitle": "Dempster's Rule",
+        "rules": "The model uses rules that relate conditions on attributes (e.g., 'high pressure' or 'age > 50') to a MAF. These rules can be automatically generated from training data.",
+        "rulesTitle": "Rules",
+        "ruleGeneration": "There are two main types of rule generators: single-attribute (which create simple conditions on one attribute) and two-attribute (which capture relationships between variables, e.g., 'high temperature and high glucose level').",
+        "ruleGenerationTitle": "Rule Generation",
+        "prediction": "During prediction, the model selects the rules that apply to a sample, combines their MAFs using Dempster's Rule, and determines the class with the highest belief. This allows obtaining not only a prediction but also an associated confidence level.",
+        "predictionTitle": "Prediction"
+      },
+      "links": "For more detailed information, refer to the original DSGD paper and the Dempster Shafer theory documentation.",
+      "linksTitle": "DSGD GitHub Repository"
+    }
   }
 }

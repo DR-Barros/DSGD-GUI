@@ -14,12 +14,44 @@ import {
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import ErrorIcon from "@mui/icons-material/Error";
+import { Link } from "react-router-dom";
 
 export default function Documentation() {
     const { t } = useTranslation();
 
     return (
         <>
+        <Box sx={{
+            maxWidth: 1200,
+            backgroundColor: "#f9f9f9",
+            padding: 3,
+            borderRadius: 2,
+            boxShadow: 3,
+            margin: "20px auto"
+        }}>
+        <Typography variant="h4" gutterBottom>
+            {t("modelDocumentation.title")}
+        </Typography>
+        <Card>
+            <CardContent>
+            <Typography variant="h6">{t("modelDocumentation.DSGD.title")}</Typography>
+            <Typography sx={{ mb: 2 }}>{t("modelDocumentation.DSGD.description")}</Typography>
+            <Typography variant="h6">{t("modelDocumentation.DSGD.keyConcepts.title")}</Typography>
+            <ul>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.massAssignmentTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.massAssignment")}</li>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.beliefAndPlausibilityTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.beliefAndPlausibility")}</li>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.dempsterRuleTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.dempsterRule")}</li>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.rulesTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.rules")}</li>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.ruleGenerationTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.ruleGeneration")}</li>
+                <li><strong>{t("modelDocumentation.DSGD.keyConcepts.predictionTitle")}</strong> {t("modelDocumentation.DSGD.keyConcepts.prediction")}</li>
+            </ul>
+            <Typography variant="h6">{t("modelDocumentation.DSGD.link")}</Typography>
+            <a href="https://github.com/Sergio-P/DSGD" target="_blank" rel="noopener noreferrer">
+                {t("modelDocumentation.DSGD.linkTitle")}
+            </a>
+        </CardContent>
+        </Card>
+        </Box>
         <Box sx={{
             maxWidth: 1200,
             backgroundColor: "#f9f9f9",
