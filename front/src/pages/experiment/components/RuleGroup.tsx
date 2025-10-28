@@ -6,7 +6,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Alert, Snackbar, TablePagination } from "@mui/material";
+import { Alert, Snackbar, TablePagination, Tooltip } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
 import ValidateRule from "./ValidateRule";
 
@@ -79,10 +79,14 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             </button>
             )}
             <button onClick={() => setViewStats(!viewStats)}>
-                {viewStats ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                {viewStats ? <VisibilityOffIcon /> : <Tooltip title={t("experiment.viewDatasetStats")}>
+                    <VisibilityIcon />
+                </Tooltip>}
             </button>
             <button onClick={() => setEditing(!editing)}>
-                {editing ? <EditOffIcon /> : <ModeEditIcon />}
+                {editing ? <EditOffIcon /> : <Tooltip title={t("experiment.editRules")}>
+                    <ModeEditIcon />
+                </Tooltip>}
             </button>
         </div>
         </div>
@@ -320,6 +324,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 parsedRule: "",
             };
             updated.push(newRule);
+            setSnackbar({ open: true, message: t("experiment.ruleAdded") + ` ${Math.ceil((updated.length) / rowsPerPage)})`, type: "success" });
             return updated;
             });
         }}

@@ -145,7 +145,10 @@
     "upload": "Upload",
     "download": "Download",
     "errorUploadingModel": "Error uploading model.",
-    "modelUploadedSuccessfully": "Model uploaded successfully."
+    "modelUploadedSuccessfully": "Model uploaded successfully.",
+    "viewDatasetStats": "View Dataset Statistics",
+    "editRules": "Edit and/or Create Rules",
+    "ruleAdded": "A new blank rule has been added at the end of the list (page"
   },
   "datasets": {
     "editDataset": "Edit Dataset",

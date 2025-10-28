@@ -145,7 +145,10 @@
     "labelEncoderTooltip": "Proporciona un mapeo de las clases a números (ej: {'clase1': 0, 'clase2': 1}). Si las clases ya son números, ingresa un mapeo de cada clase a sí misma, por ejemplo: {'0': 0, '1': 1}.",
     "upload": "Subir",
     "errorUploadingModel": "Error al subir el modelo.",
-    "modelUploadedSuccessfully": "Modelo subido exitosamente."
+    "modelUploadedSuccessfully": "Modelo subido exitosamente.",
+    "viewDatasetStats": "Ver estadísticas del conjunto de datos",
+    "editRules": "Editar y/o crear reglas",
+    "ruleAdded": "Se agregó una nueva regla en blanco al final del listado (página"
   },
   "datasets": {
     "editDataset": "Editar conjunto de datos",
