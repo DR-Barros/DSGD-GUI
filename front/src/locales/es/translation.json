@@ -74,6 +74,7 @@
     "multipleRulesInfo": "Generar reglas que involucren múltiples columnas. Útil para reglas más complejas.",
     "multipleRulesExample": "Ejemplo: '(PetalLength - 3.75) * (PetalWidth - 1.19) <= 0.0'",
     "breakRules": "Número de cortes",
+    "breakRulesInfo": "Número de puntos en los que se divide el rango de cada columna para generar reglas. Genera n + 1 reglas por columna.",
     "selectColumns": "Seleccionar columnas",
     "generateRules": "Generar reglas",
     "maxEpochs": "Número máximo de épocas",

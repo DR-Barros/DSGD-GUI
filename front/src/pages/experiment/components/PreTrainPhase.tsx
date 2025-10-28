@@ -448,7 +448,14 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                                             }}
                                             />
                                         }
-                                    label={t("experiment.breakRules")}
+                                    label={
+                                        <>
+                                        <span>{t("experiment.breakRules")}</span>
+                                        <Tooltip title={t("experiment.breakRulesInfo")}>
+                                            <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                        </Tooltip>
+                                        </>
+                                    }
                                     labelPlacement='start'
                                     sx={{
                                         display: "flex",
@@ -544,9 +551,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             }}
                         >
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.maxEpochsInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.maxEpochs")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.maxEpochsInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <input
                                 type="number"
                                 value={params.maxEpochs}
@@ -558,9 +568,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             />
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.minEpochsInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.minEpochs")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.minEpochsInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <input
                                 type="number"
                                 value={params.minEpochs}
@@ -572,9 +585,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             />
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.batchSizeInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.batchSize")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.batchSizeInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <input
                                 type="number"
                                 value={params.batchSize}
@@ -585,9 +601,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             />
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.learningRateInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.learningRate")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.learningRateInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <input
                                 type="number"
                                 value={params.learningRate}
@@ -599,9 +618,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             />
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.lossFunctionInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.lossFunction")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.lossFunctionInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <Select
                                 value={params.lossFunction}
                                 onChange={(e) => setParams({ ...params, lossFunction: e.target.value })}
@@ -612,9 +634,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             </Select>
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.optimFunctionInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.optimFunction")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.optimFunctionInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <Select
                                 value={params.optimFunction}
                                 onChange={(e) => setParams({ ...params, optimFunction: e.target.value })}
@@ -625,9 +650,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                             </Select>
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                            <Tooltip title={t("experiment.minDlossInfo")} arrow>
+                            <div>
                                 <span>{t("experiment.minDloss")}</span>
-                            </Tooltip>
+                                <Tooltip title={t("experiment.minDlossInfo")} arrow>
+                                    <HelpOutlineIcon style={{ fontSize: "18px", color: "#666", cursor: "pointer" }} />
+                                </Tooltip>
+                            </div>
                             <input
                                 type="number"
                                 value={params.minDloss}

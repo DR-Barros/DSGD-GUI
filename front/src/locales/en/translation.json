@@ -74,6 +74,7 @@
     "multipleRulesInfo": "Generate rules involving multiple columns. Useful for more complex rules.",
     "multipleRulesExample": "Example: '(PetalLength - 3.75) * (PetalWidth - 1.19) <= 0.0'",
     "breakRules": "Number of Break",
+    "breakRulesInfo": "Number of points at which to split the range of each column to generate rules. Generates n + 1 rules per column.",
     "selectColumns": "Select Columns",
     "generateRules": "Generate Rules",
     "maxEpochs": "Max Epochs",
