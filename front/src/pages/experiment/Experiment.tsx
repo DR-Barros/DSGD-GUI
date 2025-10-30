@@ -156,7 +156,7 @@ export default function Experiment() {
 
     return (
         <div>
-            <DrawerMenu setDrawerOpen={setDrawerOpen} id={id} openIterations={(iterationId, status) => {
+            <DrawerMenu nFilesDataset={datasetPreview.length} setDrawerOpen={setDrawerOpen} id={id} openIterations={(iterationId, status) => {
                     setIterations(iterationId);
                     if (wsRef.current) {
                         wsRef.current.close();

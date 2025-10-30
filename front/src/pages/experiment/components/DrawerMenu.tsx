@@ -23,7 +23,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const drawerWidth = 230;
 
 export default function DrawerMenu(
-    { id, openIterations, train, setDrawerOpen}: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void, setDrawerOpen: (open: boolean) => void }
+    { id, openIterations, train, setDrawerOpen, nFilesDataset }: { id: string | undefined, openIterations: (iterationId: number, status: string) => void, train: () => void, setDrawerOpen: (open: boolean) => void, nFilesDataset: number }
 ) {
     const [mobileOpen, setMobileOpen] = useState(true);
     const [modalUploadOpen, setModalUploadOpen] = useState(false);
@@ -260,6 +260,8 @@ export default function DrawerMenu(
                             />
                         </label>
                         {file && <span style={{ color: 'green' }}>{t('datasets.upload.selected_file')}: {file.name}</span>}
+                        {nFilesDataset === 1 &&
+                        <>
                         <label>
                             {t('experiment.splitSeed')}:
                             <input type="number" style={{ marginLeft: '10px', border: '1px solid #ccc', borderRadius: '4px', padding: '5px' }} value={params.splitSeed} onChange={(e) => setParams({...params, splitSeed: Number(e.target.value)})} />
@@ -280,6 +282,7 @@ export default function DrawerMenu(
                             {t('experiment.dropDuplicates')}:
                             <input type="checkbox" style={{ marginLeft: '10px' }} checked={params.dropDuplicates} onChange={(e) => setParams({...params, dropDuplicates: e.target.checked})}/>
                         </label>
+                        </>}
                         <Button onClick={handleUpload} variant="contained" color="primary" style={{ marginTop: "10px", marginRight: "10px" }} disabled={loadingModal}>
                             {t('experiment.upload')}
                         </Button>

@@ -253,6 +253,7 @@ async def upload_experiment_iteration(
                 label_to_num = {label: num for label, num in column_encoder.items()}
         _, X_test, _, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
     elif len(datasets) == 2:
+        print(datasets[0]["dataset_type"], datasets[1]["dataset_type"])
         X_test = datasets[1]["data"] if datasets[0]["dataset_type"] == DatasetType.TRAINING else datasets[0]["data"]
         X_test.columns = X_test.columns.map(str)
         if drop_nulls:
@@ -265,8 +266,8 @@ async def upload_experiment_iteration(
             if key in X_test.columns:
                 X_test[key] = X_test[key].replace(column_encoder)
             if key == dataset.target_column:
-                y_test = y_test.replace(column_encoder)
                 y_test = y_test.astype(str)
+                y_test = y_test.replace(column_encoder)
                 label_to_num = {label: num for label, num in column_encoder.items()}
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
@@ -294,9 +295,12 @@ async def upload_experiment_iteration(
             parser.lambda_rule_to_json(rule.ld, X_test.columns.tolist())
         X_test_np = X_test.to_numpy()
         y_pred = ds.predict(X_test_np)
+        print(y_pred)
+        print(y_test)
         try:
             acc = accuracy_score(y_test, y_pred)
-        except:
+        except Exception as e:
+            print("Error calculating accuracy:", e)
             acc = 0.0
         try:
             y_proba = ds.predict_proba(X_test_np)
