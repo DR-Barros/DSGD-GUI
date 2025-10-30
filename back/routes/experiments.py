@@ -248,6 +248,7 @@ async def upload_experiment_iteration(
             if key in X.columns:
                 X[key] = X[key].replace(column_encoder)
             if key == dataset.target_column:
+                y = y.astype(str)
                 y = y.replace(column_encoder)
                 label_to_num = {label: num for label, num in column_encoder.items()}
         _, X_test, _, y_test = train_test_split(X, y, test_size=test_size, random_state=split_seed, shuffle=shuffle)
@@ -265,6 +266,7 @@ async def upload_experiment_iteration(
                 X_test[key] = X_test[key].replace(column_encoder)
             if key == dataset.target_column:
                 y_test = y_test.replace(column_encoder)
+                y_test = y_test.astype(str)
                 label_to_num = {label: num for label, num in column_encoder.items()}
     else:
         return HTTPException(status_code=400, detail="More than 2 dataset files found")
