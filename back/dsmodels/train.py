@@ -2,7 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, classification_report, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize
 from models.iteration import Iteration, Status
 from dsmodels import classifier, DSParser
 from core.config import settings
@@ -126,10 +126,29 @@ def train_model(
         except:
             report = {}
         try:
-            y_proba = ds.predict_proba(X_test_np).cpu().numpy()
-            y_proba = y_proba[:, 1] if n_classes == 2 else y_proba
-            roc = roc_auc_score(y_true=y_test, y_score=y_proba, multi_class='ovr')
-        except:
+            y_proba = ds.predict_proba(X_test_np)
+            classes = list(label_to_num.values())
+            n_classes = len(classes)
+
+            # Binarizar etiquetas solo si hay más de 2 clases
+            if n_classes > 2:
+                y_true_bin = label_binarize(y_test, classes=classes)
+                roc = roc_auc_score(
+                    y_true_bin,
+                    y_proba,
+                    average='macro',
+                    multi_class='ovr'
+                )
+            else:
+                # Para clasificación binaria
+                # Asegurarse de que y_test sea 1D
+                y_true_bin = label_binarize(y_test, classes=classes).ravel()
+                # Tomar la probabilidad de la clase positiva (columna 1)
+                roc = roc_auc_score(y_true_bin, y_proba[:, 1])
+        except Exception as e:
+            print("--------------------------------")
+            print(f"Error calculating ROC AUC: {e}")
+            print("--------------------------------")
             roc = 0.0
         iteration.accuracy = acc
         iteration.precision = precision

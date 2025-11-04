@@ -378,7 +378,7 @@ class DSClassifierMultiQ(ClassifierMixin):
         with torch.no_grad():
             Xt = torch.Tensor(X).to(self.device)
             if one_hot:
-                return self.model(Xt).numpy()
+                return self.model(Xt).cpu().numpy()
             else:
                 _, yt_pred = torch.max(self.model(Xt), 1)
                 yt_pred = yt_pred.cpu().numpy()
