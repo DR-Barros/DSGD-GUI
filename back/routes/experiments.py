@@ -116,10 +116,10 @@ async def get_experiment_dataset(experiment_id: int, db: Session = Depends(get_d
         data = data.where(pd.notnull(data), None)
         dataset_data.append({ "data": data.to_dict(orient='records'), "stats": stats, "type": dataset["dataset_type"]})
     dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
-    return {
+    return sanitize_json({
         "data": dataset_data,
         "info": dataset
-    }
+    })
     
 @api_router.get("/dataset/{experiment_id}/columns")
 async def get_experiment_dataset_columns(experiment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_cookie)):

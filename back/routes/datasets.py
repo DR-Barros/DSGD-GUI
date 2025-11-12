@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
 from utils.loadDataset import load_datasets
+from utils.sanitize import sanitize_json
 
 api_router = APIRouter()
 
@@ -78,10 +79,9 @@ async def preview_dataset(
                 "histogram": histogram
             })
         min_rows = min(n_rows, 1000)
-        df = df.where(pd.notnull(df), None)
         dataset_data.append({ "data": df.head(min_rows).to_dict(orient='records'), "stats": stats, "type": dataset["dataset_type"]})
 
-    return dataset_data
+    return sanitize_json(dataset_data)
 
 
 @api_router.post("/upload")
