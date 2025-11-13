@@ -65,7 +65,6 @@ function desParseExpr(expr: expression, vars: Record<string, any>): string {
 
 function parseExpr(exprStr: string, columns: string[]): expression {
     // remplaza las columnas por variables temporales sin espacios
-    console.log("Parsing expression:", exprStr, "with columns:", columns);
     let varMap: Record<string, string> = {};
     let tempExpr = exprStr;
     const sortedCols = [...columns].sort((a, b) => b.length - a.length);
@@ -73,7 +72,7 @@ function parseExpr(exprStr: string, columns: string[]): expression {
         const varName = `__var${idx}__`;
         varMap[varName] = col;
         const safeCol = col.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`\\b${safeCol}\\b`, 'g');
+        const regex = new RegExp(`(?<![\\w.])${safeCol}(?![\\w.])`, 'g');
         tempExpr = tempExpr.replace(regex, varName);
     });
     const ast = acorn.parse(tempExpr, { ecmaVersion: 6 }) as acorn.Node & { body: any[] };
