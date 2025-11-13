@@ -51,6 +51,7 @@
     "editExperiment": "Editar Experimento"
   },
   "experiment":{
+    "exportRules": "Exportar Reglas a excel",
     "openIterations": "Abrir Menu de Iteraciones",
     "iterations": "Iteraciones",
     "iteration": "Iteración",

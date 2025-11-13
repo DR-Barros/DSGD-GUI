@@ -11,9 +11,11 @@ import {
     TableSortLabel,
     Autocomplete,
     TextField,
-    Button
+    Button,
+    TableFooter
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 
 export default function RuleView({ 
     rules
@@ -94,7 +96,7 @@ export default function RuleView({
                         direction={sortColumn === "rule" && !sortAsc ? "desc" : "asc"}
                         onClick={() => handleSort("rule")}
                     >
-                        Rule
+                        <strong>{t("experiment.rules")}</strong>
                     </TableSortLabel>
                     </TableCell>
 
@@ -105,7 +107,7 @@ export default function RuleView({
                         direction={sortColumn === idx && !sortAsc ? "desc" : "asc"}
                         onClick={() => handleSort(idx)}
                         >
-                        {idxToClassName[idx] ?? t("experiment.uncertainty")}
+                        <strong>{idxToClassName[idx] ?? t("experiment.uncertainty")}</strong>
                         </TableSortLabel>
                     </TableCell>
                     ))}
@@ -122,6 +124,34 @@ export default function RuleView({
                     </TableRow>
                 ))}
                 </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={rules.rules[0].mass.length + 1} align="right">
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    const worksheetData = [
+                                        [
+                                            t("experiment.rules"),
+                                            ...rules.rules[0].mass.map((_, idx) => idxToClassName[idx] ?? t("experiment.uncertainty"))
+                                        ],
+                                        ...sortedRules.map((rule) => [
+                                            rule.rule,
+                                            ...rule.mass.map((value) => value.toFixed(2))
+                                        ])
+                                    ];
+                                    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+                                    const workbook = XLSX.utils.book_new();
+                                    XLSX.utils.book_append_sheet(workbook, worksheet, "Rules");
+                                    XLSX.writeFile(workbook, "rules.xlsx");
+                                }}
+                            >
+                                {t("experiment.exportRules")}
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                </TableFooter>
             </Table>
             </TableContainer>
             ) : (
@@ -164,11 +194,11 @@ export default function RuleView({
                         <Table>
                             <TableHead>
                             <TableRow>
-                                <TableCell>{t("experiment.rules")}</TableCell>
-                                <TableCell>{t("experiment.score")}</TableCell>
+                                <TableCell><strong>{t("experiment.rules")}</strong></TableCell>
+                                <TableCell><strong>{t("experiment.score")}</strong></TableCell>
                                 {rulesWithScores[0].rule.mass.map((_, idx) => (
                                 <TableCell key={idx}>
-                                    {idxToClassName[idx] ?? t("experiment.uncertainty")}
+                                    <strong>{idxToClassName[idx] ?? t("experiment.uncertainty")}</strong>
                                 </TableCell>
                                 ))}
                             </TableRow>
