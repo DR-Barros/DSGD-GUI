@@ -96,6 +96,7 @@ export default function Datasets() {
                 <CircularProgress />
             </div>}
             {datasets
+            .sort((a, b) => b.id - a.id)
             .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
             .map((exp, index) => (
             <div key={index} className="dataset-item">
