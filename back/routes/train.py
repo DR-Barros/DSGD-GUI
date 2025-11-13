@@ -67,8 +67,12 @@ async def train_model_post(
         X = X[dataset.columns]
         if drop_na:
             X = X.dropna()
+            if X.empty:
+                raise HTTPException(status_code=400, detail="Dataset is empty after dropping nulls")
         if drop_duplicates:
             X = X.drop_duplicates()
+            if X.empty:
+                raise HTTPException(status_code=400, detail="Dataset is empty after dropping duplicates")
         y = X[dataset.target_column]
         X = X.drop(columns=[dataset.target_column])
         for key, column_encoder in dataset.columns_encoder.items():
@@ -88,9 +92,13 @@ async def train_model_post(
         if drop_na:
             X_train = X_train.dropna()
             X_test = X_test.dropna()
+            if X_train.empty or X_test.empty:
+                raise HTTPException(status_code=400, detail="One of the datasets is empty after dropping nulls")
         if drop_duplicates:
             X_train = X_train.drop_duplicates()
             X_test = X_test.drop_duplicates()
+            if X_train.empty or X_test.empty:
+                raise HTTPException(status_code=400, detail="One of the datasets is empty after dropping duplicates")
         y_train = X_train[dataset.target_column]
         y_test = X_test[dataset.target_column]
         X_train = X_train.drop(columns=[dataset.target_column])

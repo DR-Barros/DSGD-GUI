@@ -41,8 +41,12 @@ async def generate_rules(
         X = datasets[0]["data"]
         if dropNulls:
             X = X.dropna()
+            if X.empty:
+                raise HTTPException(status_code=400, detail="Dataset is empty after dropping nulls")
         if dropDuplicates:
             X = X.drop_duplicates()
+            if X.empty:
+                raise HTTPException(status_code=400, detail="Dataset is empty after dropping duplicates")
         if len(dataset_files) == 1: # Si solo hay un archivo, hacemos el split
             X, _ = train_test_split(X, test_size=testSize, random_state=splitSeed, shuffle=shuffle)
         dataset = db.query(Datasets).join(Experiment).filter(Experiment.id == experiment_id, Experiment.user_id == current_user.id).first()
@@ -112,7 +116,7 @@ async def generate_rules(
         return sanitize_json({"rules": encoded_rules, "masses": masses, "labels": labels, "columnsEncoder": columnEncoder})
     except Exception as e:
         print("Error generating rules:", e)
-        raise HTTPException(status_code=500, detail="Error generating rules")
+        raise HTTPException(status_code=500, detail=f"Error generating rules: {e}")
     
     
 @api_router.post("/coverage/{experiment_id}")
