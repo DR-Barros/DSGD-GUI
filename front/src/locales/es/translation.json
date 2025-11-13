@@ -63,7 +63,7 @@
     "randomSeed": "Semilla aleatoria",
     "testSize": "Tamaño de prueba",
     "splitSeed": "Semilla de división",
-    "shuffle": "Barajar",
+    "shuffle": "Aleatorizar",
     "dropNulls": "Eliminar nulos",
     "dropDuplicates": "Eliminar duplicados",
     "seeRules": "Ir a reglas",
