@@ -134,6 +134,7 @@
     "coverage": "Rule Coverage",
     "noRules": "No rules defined",
     "errorMessage": "Error starting training. Check the rules.",
+    "errorBackMessage": "Server error starting training. ",
     "uploadCSV": "Upload CSV for new prediction",
     "predictingInProgress": "Predicting in progress...",
     "tryAgain": "Try Again",

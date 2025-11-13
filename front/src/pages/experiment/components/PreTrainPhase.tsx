@@ -163,6 +163,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 .map((rule:any) => rule.labels)
             setLoading(true);
             startTraining(params, allRulesWithValues, allMases, allLabels);
+            setLoading(false);
         } catch (error) {
             setSnackbar({
                 open: true,
@@ -228,6 +229,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 setEncodedRules([...updatedRules, ...newGroupedRules]);
             } else {
                 console.error("Error generating rules:", data);
+                setSnackbar({ open: true, message: t("experiment.errorMessage") + (data.detail ? `: ${data.detail}` : ""), type: "error" });
             }
             setLoadingRules(false);
         } catch (error) {

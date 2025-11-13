@@ -134,6 +134,7 @@
     "coverage": "Cobertura de la regla",
     "noRules": "No hay reglas definidas",
     "errorMessage": "Error al iniciar el entrenamiento. Revisa las reglas.",
+    "errorBackMessage": "Error del servidor al iniciar el entrenamiento. ",
     "uploadCSV": "Subir CSV para nueva predicción",
     "predictingInProgress": "Predicción en progreso...",
     "tryAgain": "Intentar de nuevo",

@@ -10,6 +10,8 @@ import type { MessageData } from "../../types/train";
 import TrainPhase from "./components/TrainPhase";
 import PostTrainPhase from "./components/PostTrainPhase";
 import { API_WS_URL, API_URL } from "../../api/client";
+import { Alert, Snackbar } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 export default function Experiment() {
     const {id, iteration_id} = useParams();
@@ -20,8 +22,10 @@ export default function Experiment() {
     const [trainingMsg, setTrainingMsg] = useState<MessageData | null>(null);
     const [iterations, setIterations] = useState<number | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type: "error" | "success" | "info" }>({ open: false, message: "", type: "info" });
     const wsRef = useRef<WebSocket | null>(null);
     const navigation = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (id) {
@@ -75,7 +79,10 @@ export default function Experiment() {
             });
 
             if (!response.ok) {
-                throw new Error(`Error en POST: ${response.statusText}`);
+                //mostramos el mensaje de error
+                let data = await response.json();
+                setSnackbar({ open: true, message: t("experiment.errorBackMessage") + (data.detail ? `: ${data.detail}` : ""), type: "error" });
+                throw new Error(`Error en POST: ${data.detail || response.statusText}`);
             }
 
             const data = await response.json();
@@ -177,6 +184,19 @@ export default function Experiment() {
                     }, 10);
                 }}
             />
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+                <Alert
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    severity={snackbar.type}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
             <div className="experiment-container" style={{ marginLeft: drawerOpen ? 240 : "auto", width: drawerOpen ? "calc(100% - 290px)" : "calc(100% - 40px)" }}>
                 {phase === "pretrain" && <PreTrainPhase datasetPreview={datasetPreview} datasetStats={datasetStats} Dataset={Dataset} experimentId={id} startTraining={startTraining} />}
                 {phase === "train" && <TrainPhase trainingMsg={trainingMsg} sendStopTraining={sendStopTraining} />}
