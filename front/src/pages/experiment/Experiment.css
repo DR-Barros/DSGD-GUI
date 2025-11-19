@@ -20,6 +20,12 @@
     font-weight: normal;
 }
 
+.experiment-container .no-active-disabled {
+    color: #a0a0a0;
+    font-weight: normal;
+    cursor: not-allowed;
+}
+
 .experiment-container .no-active:hover {
     color: #174ca0;
     font-weight: bold;

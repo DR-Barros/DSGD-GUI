@@ -254,7 +254,10 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     <StepButton onClick={() => setActiveStep(1)} className={activeStep === 1 ? 'active' : 'no-active'}>{t('experiment.rules')}</StepButton>
                 </Step>
                 <Step key={2}>
-                    <StepButton onClick={() => setActiveStep(2)} className={activeStep === 2 ? 'active' : 'no-active'}>{t('experiment.train')}</StepButton>
+                    <StepButton onClick={() => setActiveStep(2)} 
+                    className={activeStep === 2 ? 'active' : encodedRules.length === 0 ? 'no-active-disabled' : 'no-active'}
+                    disabled={encodedRules.length === 0}
+                        >{t('experiment.train')}</StepButton>
                 </Step>
             </Stepper>
             <div>
@@ -512,7 +515,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                     <Button variant='contained' onClick={() => setActiveStep(0)}>
                         {t("back")}
                     </Button>
-                    <Button variant='contained' onClick={() => setActiveStep(2)}>
+                    <Button variant='contained' onClick={() => setActiveStep(2)} disabled={encodedRules.length === 0}>
                         {t("experiment.train")}
                     </Button>
                 </div>
