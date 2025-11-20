@@ -227,7 +227,7 @@
     },
     "uploadingDatasets": {
       "title": "Subir Conjuntos de Datos",
-      "description": "Puedes subir conjuntos de datos de dos maneras, dependiendo de cómo esté organizado tu data.",
+      "description": "Desde la sección de conjuntos de datos, haciendo click en el boton azul 'Agregar Conjunto de Datos', puedes subir conjuntos de datos de dos maneras, dependiendo de cómo esté organizado tu data.",
       "singleFile": {
         "title": "Subir un solo archivo",
         "description": "Puedes subir un solo archivo si tu dataset está completo. Los formatos soportados incluyen CSV y Excel. Asegúrate de que el archivo tenga una fila de encabezado con los nombres de las columnas."
@@ -330,20 +330,20 @@
     "title": "Documentación del Modelo",
     "DSGD": {
       "title": "Clasificador DSGD (Dempster Shafer)",
-      "description": "El clasificador DSGD se basa en la Teoría de la Evidencia de Dempster Shafer, la cual permite representar la incertidumbre y combinar información proveniente de diferentes fuentes. En lugar de asignar probabilidades directas a cada clase, el modelo utiliza funciones de asignación de masa (MAF) que distribuyen un 'peso de evidencia' entre las posibles clases y la incertidumbre general.",
+      "description": "El Clasificador DSGD es un modelo basado en la Teoría de la Evidencia de Dempster-Shafer, un enfoque matemático que permite trabajar explícitamente con la incertidumbre. A diferencia de los clasificadores tradicionales, DSGD combina la evidencia entregada por un conjunto de reglas y produce: una predicción de clase, un grado de creencia, y un nivel de incertidumbre asociado.Este modelo es especialmente útil cuando se quiere entender por qué se llega a una predicción y qué reglas fueron relevantes para tomar la decisión.",
       "keyConcepts": {
         "title": "Conceptos Clave",
-        "massAssignment": "Cada MAF se representa como un vector con valores para cada clase posible y un valor adicional que mide la incertidumbre. Por ejemplo, en un problema con dos clases (Presente, Ausente), una MAF podría ser (0.5, 0.2, 0.3), donde el último valor refleja la incertidumbre total.",
+        "massAssignment": "Las MAF son el núcleo del modelo. Una MAF asigna un “peso de evidencia” a: cada clase posible y a la incertidumbre total. Ejemplo, para dos clases: (Presente, Ausente, Incertidumbre) → (0.5, 0.2, 0.3) Aquí: 0.5 apoya la clase Presente, 0.2 apoya Ausente, 0.3 representa que el modelo no tiene suficiente evidencia para decidir. Todas las masas más la incertidumbre deben sumar 1.",
         "massAssignmentTitle": "Asignación de Masa",
         "beliefAndPlausibility": "A partir de las MAF, el modelo calcula dos medidas: la creencia (belief) y la plausibilidad (plausibility). La creencia representa el apoyo directo a una clase, mientras que la plausibilidad mide cuán posible es que esa clase sea cierta considerando la incertidumbre.",
         "beliefAndPlausibilityTitle": "Creencia y Plausibilidad",
-        "dempsterRule": "Para combinar la información de distintas reglas o fuentes, el modelo aplica la Regla de Dempster, que fusiona las MAF en una nueva distribución de masas normalizada, reduciendo el conflicto y reforzando las evidencias coherentes.",
+        "dempsterRule": "Cuando varias reglas se cumplen para una muestra, cada una entrega su MAF. Para fusionarlas, el modelo aplica la Regla de Dempster, que: combina la evidencia compatible, reduce el conflicto, y produce una nueva MAF más informativa. Este proceso permite que varias fuentes parciales de evidencia construyan una decisión final coherente.",
         "dempsterRuleTitle": "Regla de Dempster",
-        "rules": "El modelo utiliza reglas que relacionan condiciones sobre los atributos (por ejemplo, 'presión alta' o 'edad > 50') con una MAF. Estas reglas pueden ser generadas automáticamente a partir de los datos de entrenamiento.",
+        "rules": "Las reglas son condiciones lógicas basadas en los atributos del dataset. Cada regla se compone de una etiqueta que permite identificarla, la condición logica y las MAF. Las MAF representan la evidencia cuando la regla se cumple. Ejemplos: (\"edad\" > 50) o  (\"presión\" <= 120 && \"colesterol\" > 190). Cuando una regla es verdadera para una muestra, su MAF aporta evidencia al proceso de predicción.",
         "rulesTitle": "Reglas",
         "ruleGeneration": "Existen dos tipos principales de generadores de reglas: de un solo atributo (que crean condiciones simples sobre un atributo) y de dos atributos (que capturan relaciones entre variables, por ejemplo, 'alta temperatura y alto nivel de glucosa').",
         "ruleGenerationTitle": "Generación de Reglas",
-        "prediction": "Durante la predicción, el modelo selecciona las reglas que se cumplen para una muestra, combina sus MAF usando la Regla de Dempster, y determina la clase con mayor creencia. Esto permite obtener no solo una predicción, sino también un nivel de confianza asociado.",
+        "prediction": "Durante la predicción, el modelo selecciona las reglas que se cumplen para una muestra, combina sus MAF usando la Regla de Dempster, y determina la clase usando la transformación pignística para calcular las probabilidades. Esto permite obtener no solo una predicción, sino también permite observar las reglas relevantes y el nivel de incertidumbre asociado.",
         "predictionTitle": "Predicción"
       },
       "link": "Para más detalles sobre la implementación en python, visita el repositorio oficial de DSGD en GitHub.",

@@ -346,8 +346,8 @@
         "prediction": "During prediction, the model selects the rules that apply to a sample, combines their MAFs using Dempster's Rule, and determines the class with the highest belief. This allows obtaining not only a prediction but also an associated confidence level.",
         "predictionTitle": "Prediction"
       },
-      "links": "For more detailed information, refer to the original DSGD paper and the Dempster Shafer theory documentation.",
-      "linksTitle": "DSGD GitHub Repository"
+      "link": "For more detailed information, refer to the original DSGD paper and the Dempster Shafer theory documentation.",
+      "linkTitle": "DSGD GitHub Repository"
     }
   }
 }
