@@ -52,6 +52,8 @@
   },
   "experiment":{
     "exportRules": "Export Rules to Excel",
+    "useMassWeights": "Use Mass Weights and Uncertainty",
+    "useMassWeightsInfo": "If unchecked, all mass weights will be re-initialized during training and any previously assigned values will be ignored.",
     "openIterations": "Open Iterations Menu",
     "iterations": "Iterations",
     "iteration": "Iteration",
@@ -146,7 +148,7 @@
     "labelEncoder": "Label Encoder",
     "labelEncoderTooltip": "Provide a mapping of classes to numbers (e.g. {'class1': 0, 'class2': 1}). If the classes are already numbers, enter a mapping of each class to itself, e.g. {'0': 0, '1': 1}.",
     "upload": "Upload",
-    "download": "Download",
+    "downloadModel": "Download Trained Model",
     "errorUploadingModel": "Error uploading model.",
     "modelUploadedSuccessfully": "Model uploaded successfully.",
     "viewDatasetStats": "View Dataset Statistics",

@@ -44,6 +44,7 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
         learningRate: 0.005,
         minDloss: 0.0001
     });
+    const [useMassWeights, setUseMassWeights] = useState<boolean>(false);
     const [generateRuleParams, setGenerateRuleParams] = useState<RuleParams>({
         singleRule: true,
         multipleRules: false,
@@ -162,7 +163,12 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                 .flat()
                 .map((rule:any) => rule.labels)
             setLoading(true);
-            startTraining(params, allRulesWithValues, allMases, allLabels);
+            let MassWeights = allMases;
+            if (!useMassWeights) {
+                MassWeights = allMases.map((masses) => masses.map(() => 0));
+            }
+            console.log("Weights to use:", MassWeights);
+            startTraining(params, allRulesWithValues, MassWeights, allLabels);
             setLoading(false);
         } catch (error) {
             setSnackbar({
@@ -533,6 +539,8 @@ export default function PreTrainPhase({ datasetPreview, datasetStats, Dataset, e
                         t={t}
                         setEncodedRules={setEncodedRules}
                         columnsEncoder={Dataset?.columns_encoder || {}}
+                        useMassWeights={useMassWeights}
+                        setUseMassWeights={setUseMassWeights}
                     />
                 </div>
             </>}

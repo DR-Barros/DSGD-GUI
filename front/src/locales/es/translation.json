@@ -52,6 +52,8 @@
   },
   "experiment":{
     "exportRules": "Exportar Reglas a excel",
+    "useMassWeights": "Usar Pesos de Masa e Incertidumbre",
+    "useMassWeightsInfo": "Si no está seleccionado, todos los pesos de masa se inicializaran durante el entrenamiento, ignorándo los valores previos.",
     "openIterations": "Abrir Menu de Iteraciones",
     "iterations": "Iteraciones",
     "iteration": "Iteración",

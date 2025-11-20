@@ -6,7 +6,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Alert, Snackbar, TablePagination, Tooltip } from "@mui/material";
+import { Alert, Checkbox, FormControlLabel, Snackbar, TablePagination, Tooltip } from "@mui/material";
 import type { Dataset } from "../../../types/dataset";
 import ValidateRule from "./ValidateRule";
 
@@ -31,6 +31,8 @@ interface RuleGroupProps {
         React.SetStateAction<RuleItem[]>
     >;
     columnsEncoder: Record<string, Record<string, number>>;
+    useMassWeights: boolean;
+    setUseMassWeights: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const RuleGroup: React.FC<RuleGroupProps> = ({
@@ -40,7 +42,9 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
     Dataset,
     t,
     setEncodedRules,
-    columnsEncoder
+    columnsEncoder,
+    useMassWeights,
+    setUseMassWeights
 }) => {
     const [viewStats, setViewStats] = React.useState(false);
     const [editing, setEditing] = React.useState<boolean>(false);
@@ -69,6 +73,19 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             <h3>{t("experiment.rules")}</h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FormControlLabel
+                control={
+                    <Checkbox
+                        checked={useMassWeights}
+                        onChange={(e) => setUseMassWeights(e.target.checked)}
+                    />
+                }
+                label={
+                    <Tooltip title={t("experiment.useMassWeightsInfo")}>
+                        <span>{t("experiment.useMassWeights")}</span>
+                    </Tooltip>
+                }
+            />
             {editing && (
             <button
                 onClick={() => {
@@ -187,7 +204,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
             <th style={{ borderBottom: "1px solid #ccc", textAlign: "left", padding: "4px" }}>
                 {t("experiment.rule")}
             </th>
-            {rulesArray[0]?.mass.map((_: number, mi: number) => (
+            {useMassWeights && rulesArray[0]?.mass.map((_: number, mi: number) => (
                 <th
                 key={mi}
                 style={{
@@ -245,7 +262,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                 </td>
 
                 {/* Columnas Mass */}
-                {item.mass.map((m: number, mi: number) => (
+                {useMassWeights && item.mass.map((m: number, mi: number) => (
                 <td
                     key={mi}
                     style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}
@@ -289,6 +306,7 @@ const RuleGroup: React.FC<RuleGroupProps> = ({
                     columns={Dataset ? Dataset.columns.filter(col => col !== Dataset.target_column) : []}
                     id={idx}
                     t={t}
+                    useMassWeights={useMassWeights}
                 />
                 {editing && (
                 <td style={{ borderBottom: "1px solid #eee", padding: "4px", textAlign: "center" }}>

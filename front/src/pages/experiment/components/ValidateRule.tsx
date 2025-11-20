@@ -12,10 +12,11 @@ interface ValidateRuleProps {
     columns: string[];
     id: string;
     t: (key: string) => string;
+    useMassWeights: boolean;
 }
 
 
-const ValidateRule = ({ rule, mass, columns, id, t }: ValidateRuleProps) => {
+const ValidateRule = ({ rule, mass, columns, id, t, useMassWeights }: ValidateRuleProps) => {
     const [coverage, setCoverage] = useState<number | null>(null);
 
 
@@ -47,7 +48,10 @@ const ValidateRule = ({ rule, mass, columns, id, t }: ValidateRuleProps) => {
         >
         {(() => {
             const sum = mass.reduce((a, b) => a + b, 0);
-            const massSumValid = Math.abs(sum - 1) < 1e-6; // tolerancia pequeña
+            let massSumValid = Math.abs(sum - 1) < 1e-6; // tolerancia pequeña
+            if (!useMassWeights) {
+            massSumValid = true; // ignorar la validación si no se usan pesos de masa
+            }
             let exprValid = true;
 
             try {
